@@ -242,7 +242,7 @@ function rEndSet() {
   if (lastSet || RP.d.test) { rFinish(); return; }
   const p = RP.d.pauses[RP.set] || RP.d.pauses[0] || 60;
   RP.phase = 'rest'; RP.restEnd = performance.now() + p * 1000; RP.count = 0; RP.set++;
-  rSave(); beep(523, 300, .2); say(`¡Bien! Descanso de ${p} segundos. Siguiente: ${RP.d.sets[RP.set]} repeticiones.`);
+  rSave(); beep(523, 300, .2); { const n = RP.d.sets.length, r = n - RP.set; say(`¡Bien! Descanso de ${p} segundos. ${r <= 3 ? serieTxt(RP.set, n) + '. ' : ''}Siguiente: ${RP.d.sets[RP.set]} repeticiones.`); }
   rRender();
 }
 function rTick() {
@@ -253,17 +253,35 @@ function rTick() {
   if (RP.phase === 'rest') {
     const rem = Math.ceil((RP.restEnd - t) / 1000);
     if (rem !== RP.lastSec) { RP.lastSec = rem; if (rem <= 3 && rem >= 1) { beep(740, 100, .15); say(String(rem)); } }
-    if (t >= RP.restEnd) { RP.phase = 'work'; beep(1046, 300, .2); say(`¡Comienza! Serie ${RP.set + 1} de ${RP.d.sets.length}: ${rTarget()} repeticiones.`); rRender(); return; }
+    if (t >= RP.restEnd) { RP.phase = 'work'; beep(1046, 300, .2); say(`¡Comienza! ${serieTxt(RP.set, RP.d.sets.length)}: ${rTarget()} repeticiones.`); rRender(); return; }
     const el = $('#rp-num'); if (el) el.textContent = Math.max(0, rem);
   }
+}
+// series como línea de progreso; si no entran todas, se ve una ventana que avanza con la serie actual
+// las tres últimas series se nombran: «Quedan 3 series», «Penúltima serie», «Última serie»
+function serieTxt(i, n) { const r = n - i; return r === 3 ? 'Quedan 3 series' : r === 2 ? 'Penúltima serie' : r === 1 ? 'Última serie' : `Serie ${i + 1} de ${n}`; }
+function setsBar(sets, fill) {
+  const n = sets.length, cur = RP.set, el = $('#rp-sets');
+  const maxS = Math.max(4, Math.floor(((el && el.clientWidth) || 240) / 40));
+  const item = i => { const ok = i < cur, c = i === cur, w = ok ? 100 : c ? Math.round(fill * 100) : 0;
+    return `<div class="st${ok ? ' ok' : c ? ' cur' : ''}"><b>${ok ? RP.done[i] : sets[i]}</b><i><u style="width:${w}%"></u></i></div>`; };
+  const r = n - cur, lbl = r <= 3 ? `<b>${serieTxt(cur, n)}</b>` : `Serie <b>${cur + 1}</b> de ${n}`;
+  const cap = `<div class="sb-cap">${RP.phase === 'rest' ? 'Siguiente: ' : ''}${lbl}</div>`;
+  const wrap = h => `<div class="sb-row">${h}</div>${cap}`;
+  if (n <= maxS) return wrap(sets.map((_, i) => item(i)).join(''));
+  // ventana: se ven las que entran, con la serie actual y la anterior a la vista
+  const a = Math.max(0, Math.min(cur - 1, n - maxS));
+  let h = '';
+  for (let i = a; i < a + maxS; i++) h += item(i);
+  return wrap(h);
 }
 function rRender() {
   const R = RETOS[RP.key], d = RP.d, tgt = rTarget(), lastSet = RP.set === d.sets.length - 1;
   const rest = RP.phase === 'rest';
   $('#rplayer').className = 'player rplayer ' + (rest ? 'rest' : 'work');
-  $('#rp-phase').textContent = rest ? 'Descanso' : d.test ? (RP.initial ? 'Prueba inicial' : 'Prueba') : `Serie ${RP.set + 1} de ${d.sets.length}`;
+  $('#rp-phase').textContent = rest ? 'Descanso' : d.test ? (RP.initial ? 'Prueba inicial' : 'Prueba') : serieTxt(RP.set, d.sets.length);
   $('#rp-name').textContent = R.n;
-  $('#rp-sets').innerHTML = d.test ? '' : d.sets.map((n, i) => `<span class="${i < RP.set ? 'ok' : i === RP.set ? 'cur' : ''}">${i < RP.set ? RP.done[i] : n}</span>`).join('');
+  $('#rp-sets').innerHTML = d.test ? '' : setsBar(d.sets, rest ? 0 : Math.min(1, RP.count / Math.max(1, tgt)));
   let big, small;
   if (rest) { big = Math.max(0, Math.ceil((RP.restEnd - performance.now()) / 1000)); small = `segundos · luego ${tgt}`; }
   else if (d.test) { big = RP.count; small = RP.initial ? 'repeticiones' : `de ${tgt}`; }

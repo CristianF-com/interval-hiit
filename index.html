@@ -301,9 +301,6 @@ code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.92em;backgroun
 .rp-small{font-family:var(--display);text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);font-weight:700;margin-top:4px}
 .rp-meter{width:min(70vw,280px);height:10px;border-radius:9px;background:var(--line);overflow:hidden;margin-top:14px}
 .rp-meter i{display:block;height:100%;width:0;background:var(--c);transition:width .1s linear}
-#rp-sets{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
-#rp-sets span{min-width:30px;padding:3px 7px;border-radius:9px;background:var(--surface);border:1px solid var(--line);font-weight:700;font-size:13px;color:var(--muted)}
-#rp-sets span.ok{color:var(--ok)}#rp-sets span.cur{color:#111;background:var(--c);border-color:var(--c)}
 /* menú de pausa del reproductor */
 .pmenu{position:fixed;inset:0;z-index:22;background:rgba(8,9,11,.82);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);display:flex;align-items:flex-end;justify-content:center;padding:16px 16px calc(16px + env(safe-area-inset-bottom))}
 .pm-card{width:100%;max-width:520px;background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:20px 16px 16px;display:flex;flex-direction:column;gap:10px;animation:pmup .22s ease}
@@ -374,9 +371,6 @@ code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.92em;backgroun
 [data-theme=naranja] .player.work .btn:not(.ghost){background:#1c1d21;color:var(--work)}
 [data-theme=naranja] .player .rp-num{color:inherit}
 [data-theme=naranja] .player .rp-meter{background:rgba(0,0,0,.15)}
-[data-theme=naranja] #rp-sets span{background:rgba(0,0,0,.12);border-color:transparent;color:inherit}
-[data-theme=naranja] #rp-sets span.cur{background:#1c1d21;color:var(--work)}
-[data-theme=naranja] .rplayer.rest #rp-sets span.cur{background:var(--work);color:#1c1d21}
 [data-theme=naranja] .award-card{background:var(--dark);color:#fff;border-color:var(--dark)}
 [data-theme=naranja] .award-card .aw-d{color:var(--dark-muted)}
 [data-theme=naranja] .pm-card{background:var(--dark);color:#fff;border-color:var(--dark-line)}
@@ -398,9 +392,6 @@ code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.92em;backgroun
 [data-theme=naranja] .player .p-bottom .ctrl .main{background:var(--work);color:#1c1d21}
 [data-theme=naranja] .player .p-bottom .btn:not(.ghost){background:var(--work);color:#1c1d21}
 [data-theme=naranja] .player .p-bottom .btn.ghost{background:var(--dark2);color:#fff;border-color:var(--dark-line)}
-[data-theme=naranja] .player #rp-sets span{background:var(--dark2);color:var(--dark-muted)}
-[data-theme=naranja] .player #rp-sets span.ok{color:#7bd88f}
-[data-theme=naranja] .player #rp-sets span.cur{background:var(--work);color:#1c1d21}
 [data-theme=naranja] .player.work .bar{background:rgba(0,0,0,.18)}
 /* preparación y descansos: gris claro como el resto de la app (el naranja queda para el esfuerzo) */
 [data-theme=naranja] .player:not(.work){background:var(--bg);color:var(--text);--c:#e58600}
@@ -426,6 +417,20 @@ input,textarea,select{font-size:16px}
 .bk-prev .r{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--line);font-size:14px}
 .bk-prev .r:last-child{border-bottom:0}.bk-prev .r span{color:var(--muted);text-align:right}
 .banner.bk{background:var(--surface);border-color:var(--line)}
+/* series del reto: línea de progreso (hecho y actual en color, el resto apagado) */
+#rp-sets{--sa:var(--c);--sm:var(--muted);--st:var(--line);flex:1;min-width:0;display:flex;flex-direction:column;align-items:stretch;gap:6px;padding:0 6px}
+#rp-sets .sb-row{display:flex;align-items:flex-end;gap:5px}
+#rp-sets .sb-cap{text-align:center;font-size:12px;font-weight:600;letter-spacing:.04em;text-transform:uppercase;color:var(--sm)}
+#rp-sets .sb-cap b{color:var(--sa);font-size:13px}
+#rp-sets .st{flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;gap:5px}
+#rp-sets .st b{font-family:var(--display);font-weight:800;font-size:17px;line-height:1;color:var(--sm)}
+#rp-sets .st.ok b{color:inherit;opacity:.8}
+#rp-sets .st.cur b{font-size:30px;color:var(--sa)}
+#rp-sets .st.gap{flex:.45 1 0}#rp-sets .st.gap b{font-size:17px}
+#rp-sets .st i{display:block;width:100%;height:5px;border-radius:9px;background:var(--st);overflow:hidden}
+#rp-sets .st i u{display:block;height:100%;width:0;background:var(--sa);border-radius:9px;transition:width .25s}
+#rp-sets .st.ok i u{width:100%}
+[data-theme=naranja] .player #rp-sets{--sa:var(--work);--sm:var(--dark-muted);--st:var(--dark-line)}
 </style>
 </head>
 <body>
