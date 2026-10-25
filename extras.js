@@ -1,6 +1,6 @@
 'use strict';
 /* =========================================================
-   Intervalo — pulsómetro, importación de pulso, logros y copias
+   INHIIT — pulsómetro, importación de pulso, logros y copias
    (se carga después de app.js y usa sus funciones globales)
    ========================================================= */
 
@@ -210,7 +210,7 @@ $('#hr-file').onchange = async e => {
     if (abs) {
       const st = x.start || (x.at - x.secs * 1000 - 5 * 60e3), en = x.at + 2 * 60e3;
       const win = samples.filter(s => s[0] >= st - 2 * 60e3 && s[0] <= en);
-      if (win.length >= 5) use = win; else if (!confirm('Las horas del archivo no coinciden con este entrenamiento. ¿Usar el archivo completo igualmente?')) return;
+      if (win.length >= 5) use = win; else if (!(await askApp('Horas distintas', 'Las horas del archivo no coinciden con este entrenamiento. ¿Usar el archivo completo igualmente?', 'Usar el archivo'))) return;
     }
     const t0 = use[0][0];
     const sum = hrSummary(use.map(s => [Math.round((s[0] - t0) / 1000), s[1]]));
@@ -401,8 +401,8 @@ function openAward(id) {
 }
 
 /* ---------- Copias de seguridad: archivo en iCloud Drive / Google Drive ---------- */
-// Un solo archivo con nombre fijo («intervalo-copia.json»): al guardarlo en la misma carpeta de la nube reemplaza al anterior.
-const BK_NAME = 'intervalo-copia.json';
+// Un solo archivo con nombre fijo («inhiit-copia.json»): al guardarlo en la misma carpeta de la nube reemplaza al anterior.
+const BK_NAME = 'inhiit-copia.json';
 const BK_FREQ = { cada: 'Después de cada entrenamiento', semana: 'Una vez por semana', nunca: 'No recordar' };
 const bkFreq = () => LS.get('bkFreq', 'semana');
 const bkLast = () => LS.get('bkLast', 0);
@@ -416,7 +416,7 @@ async function deliverJSON(obj, fname, onDone) {
   const text = JSON.stringify(obj, null, 1);
   const file = new File([text], fname, { type: 'application/json' });
   const ok = () => { if (onDone) onDone(); };
-  try { if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: 'Copia de Intervalo' }); ok(); return; } } catch (e) { if (e && e.name === 'AbortError') return; }
+  try { if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: 'Copia de INHIIT' }); ok(); return; } } catch (e) { if (e && e.name === 'AbortError') return; }
   try {
     const a = document.createElement('a'); a.href = URL.createObjectURL(file); a.download = fname;
     document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 3000); ok();
@@ -510,14 +510,14 @@ function openBackup() {
     $('#bk-save').onclick = saveCloud;
     $('#bk-file').onclick = pickBackup;
     bindSeg('bk-f', 'v', x => { LS.set('bkFreq', x); renderBkRemind(); });
-    $('#bk-me').onclick = () => deliverJSON({ app: 'intervalo', v: 4, exportedAt: Date.now(), profile: PROFILE, data: profileData(PROFILE.id) }, `intervalo-${slugName}-${stamp}.json`);
+    $('#bk-me').onclick = () => deliverJSON({ app: 'intervalo', v: 4, exportedAt: Date.now(), profile: PROFILE, data: profileData(PROFILE.id) }, `inhiit-${slugName}-${stamp}.json`);
     $('#bk-copy').onclick = () => copyText(JSON.stringify(backupAll()));
     $('#bk-paste').onclick = () => { try { readBackup(JSON.parse($('#bk-text').value.trim())); } catch (e) { toast('Ese texto no es una copia válida'); } };
   });
 }
 $('#import-file').onchange = async e => {
   const f = e.target.files[0]; e.target.value = ''; if (!f) return;
-  try { readBackup(JSON.parse(await f.text())); } catch (err) { toast('Ese archivo no es una copia de Intervalo'); }
+  try { readBackup(JSON.parse(await f.text())); } catch (err) { toast('Ese archivo no es una copia de INHIIT'); }
 };
 // recordatorio en el inicio y al terminar un entrenamiento
 function renderBkRemind() {

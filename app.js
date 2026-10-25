@@ -1,6 +1,6 @@
 'use strict';
 /* =========================================================
-   Intervalo HIIT — coach, planes, perfiles y reproductor
+   INHIIT — coach, planes, perfiles y reproductor
    ========================================================= */
 
 /* ---------- Utilidades ---------- */
@@ -31,6 +31,8 @@ const PS = {
   del: k => LS.del(`p.${PROFILE.id}.${k}`)
 };
 const COLORS = ['#ff5a36', '#35d0bf', '#ffc23d', '#9d8cff', '#7bd88f', '#ff7eb6', '#5fb3ff'];
+// el color de cada perfil es un tono de la paleta del tema activo (cambia con el tema)
+const avStyle = p => { const i = Math.max(0, COLORS.indexOf(p.color)); return `background:var(--av${i});color:var(--avt${i})`; };
 const profiles = () => LS.get('profiles', []);
 const saveProfiles = p => LS.set('profiles', p);
 // Pedir al navegador que no borre los datos por falta de espacio
@@ -146,7 +148,7 @@ function deleteProfile(id) {
   saveProfiles(profiles().filter(p => p.id !== id));
 }
 function renderWho() {
-  $('#who').innerHTML = `<span class="av" style="background:${PROFILE.color}">${esc(PROFILE.name[0].toUpperCase())}</span><span>${esc(PROFILE.name)}</span>`;
+  $('#who').innerHTML = `<span class="av" style="${avStyle(PROFILE)}">${esc(PROFILE.name[0].toUpperCase())}</span><span>${esc(PROFILE.name)}</span>`;
 }
 function variantSeg(id, cur, opts = ['f', 'm']) {
   return `<div class="seg" id="${id}">${opts.map(v => `<button data-v="${v}" aria-pressed="${cur === v}">${VARIANTS[v]}</button>`).join('')}</div>`;
@@ -184,7 +186,7 @@ function showOnboarding() {
 }
 
 /* ---------- Tema de colores ---------- */
-const THEMES = { oscuro: { n: 'Intervalo (oscuro)', meta: '#0e0f12', sw: ['#0e0f12', '#17191e', '#ff5a36', '#35d0bf'] },
+const THEMES = { oscuro: { n: 'INHIIT (oscuro)', meta: '#0e0f12', sw: ['#0e0f12', '#17191e', '#ff5a36', '#35d0bf'] },
   naranja: { n: 'Naranja clásico', meta: '#2b2c31', sw: ['#2b2c31', '#d5d8dd', '#ff9500', '#eceef1'] } };
 function applyTheme() {
   const t = THEMES[S.theme] ? S.theme : 'oscuro';
@@ -209,6 +211,14 @@ function sheet(html, onMount) {
   onMount && onMount(root);
 }
 const closeSheet = () => { $('#sheet-root').innerHTML = ''; };
+// confirmación con el estilo de la app (en lugar del cuadro del navegador)
+function askApp(title, msg, ok, danger) {
+  return new Promise(res => sheet(`<h3>${esc(title)}</h3><p class="sub">${esc(msg)}</p><div style="height:18px"></div>
+    <button class="btn ${danger ? 'danger' : ''}" id="ask-ok">${esc(ok)}</button><div class="gap"></div><button class="btn ghost" id="ask-no">Volver</button>`, () => {
+    $('#ask-ok').onclick = () => { closeSheet(); res(true); };
+    $('#ask-no').onclick = () => { closeSheet(); res(false); };
+  }));
+}
 
 function openProfiles() {
   const list = profiles();
@@ -217,7 +227,7 @@ function openProfiles() {
     <p class="sub">Cada perfil guarda su plan, progreso e historial por separado.</p>
     <div class="gap"></div>
     <div class="block">${list.map(p => `
-      <button class="prof" data-id="${p.id}"><span class="av lg" style="background:${p.color}">${esc(p.name[0].toUpperCase())}</span>
+      <button class="prof" data-id="${p.id}"><span class="av lg" style="${avStyle(p)}">${esc(p.name[0].toUpperCase())}</span>
         <span class="t"><b>${esc(p.name)}</b><small>Planes: ${VARIANTS[p.variant]}${LS.get(`p.${p.id}.plan`, null) ? ' · ' + esc(FAM[LS.get(`p.${p.id}.plan`).fam]?.n || '') : ''}</small></span>
         ${p.id === PROFILE.id ? '<span class="ck"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span>' : ''}
       </button>`).join('')}</div>
@@ -259,8 +269,8 @@ function profileForm(p) {
     } else { const n = createProfile(name, v); closeSheet(); switchProfile(n.id); toast('Perfil creado: ' + n.name); }
   };
   const del = $('#pf-del');
-  if (del) del.onclick = () => {
-    if (!confirm(`¿Eliminar el perfil "${p.name}" con todo su progreso? No se puede deshacer.`)) return;
+  if (del) del.onclick = async () => {
+    if (!(await askApp('Eliminar perfil', `Se borrará el perfil «${p.name}» con todo su progreso, historial y logros. No se puede deshacer.`, 'Eliminar perfil', true))) return;
     deleteProfile(p.id); closeSheet(); switchProfile(profiles()[0].id); toast('Perfil eliminado');
   };
 }
@@ -268,7 +278,7 @@ function exportProfile() {
   const data = {}; PROFILE_KEYS.forEach(k => { const v = PS.get(k, null); if (v != null) data[k] = v; });
   const blob = new Blob([JSON.stringify({ app: 'intervalo', v: 2, exportedAt: Date.now(), profile: PROFILE, data }, null, 1)], { type: 'application/json' });
   const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-  a.download = `intervalo-${PROFILE.name.toLowerCase().replace(/[^a-z0-9]+/gi, '-')}-${new Date().toISOString().slice(0, 10)}.json`;
+  a.download = `inhiit-${PROFILE.name.toLowerCase().replace(/[^a-z0-9]+/gi, '-')}-${new Date().toISOString().slice(0, 10)}.json`;
   document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
 }
 $('#import-file').onchange = async e => {
@@ -278,7 +288,7 @@ $('#import-file').onchange = async e => {
     if (j.app !== 'intervalo' || !j.profile || !j.data) throw 0;
     const exists = profiles().find(p => p.id === j.profile.id);
     let id;
-    if (exists && confirm(`Ya existe el perfil "${exists.name}". ¿Reemplazar sus datos con la copia?`)) {
+    if (exists && await askApp('Perfil existente', `Ya existe el perfil «${exists.name}». ¿Reemplazar sus datos con la copia?`, 'Reemplazar')) {
       id = exists.id; PROFILE_KEYS.forEach(k => LS.del(`p.${id}.${k}`));
       Object.entries(j.data).forEach(([k, v]) => { if (PROFILE_KEYS.includes(k)) LS.set(`p.${id}.${k}`, v); });
     } else {
@@ -303,7 +313,7 @@ function renderInstallBlock() {
   const el = $('#pf-install'); if (!el) return;
   if (isStandalone()) { el.innerHTML = ''; return; }
   let h = '<h2>Instalar</h2>';
-  if (installEvt) h += '<button class="btn small" id="pf-inst">Instalar Intervalo en este dispositivo</button>';
+  if (installEvt) h += '<button class="btn small" id="pf-inst">Instalar INHIIT en este dispositivo</button>';
   else if (isIOS()) h += '<p class="note">En iPhone/iPad: abre en Safari, toca Compartir y luego «Añadir a pantalla de inicio».</p>';
   else if (location.protocol === 'file:') h += '<p class="note">Para instalarla, la app tiene que abrirse desde una dirección web (https o localhost), no como archivo. Mira el LEEME.</p>';
   else h += '<p class="note">Si tu navegador lo permite, usa el menú ⋮ → «Instalar app» o «Añadir a pantalla de inicio».</p>';
@@ -532,7 +542,7 @@ function openSmartSettings() {
     $('#ss-down').onclick = () => nudge(-0.5);
     $('#ss-up').onclick = () => nudge(0.5);
     $('#ss-save').onclick = () => { const s2 = getSmart(); s2.maxDur = cap; s2.next = genSmart(s2); setSmart(s2); closeSheet(); renderSmart(); toast('Guardado'); };
-    $('#ss-reset').onclick = () => { if (!confirm('¿Reiniciar el entrenador inteligente? Se borran la prueba y la intensidad (el historial se mantiene).')) return; PS.del('smart'); closeSheet(); renderSmart(); };
+    $('#ss-reset').onclick = async () => { if (!(await askApp('Reiniciar entrenador', 'Se borran la prueba de capacidad y la intensidad. Tu historial se mantiene.', 'Reiniciar', true))) return; PS.del('smart'); closeSheet(); renderSmart(); };
   });
 }
 function openTestSetup() {
@@ -826,9 +836,9 @@ function openPlanSetup(key) {
       bindSeg('ps-q', 'q', q => { level = +q; render(); });
       bindSeg('ps-lv', 'l', l => { level = +l; render(); });
       bindSeg('ps-days', 'd', d => { days = +d; });
-      $('#ps-go').onclick = () => {
+      $('#ps-go').onclick = async () => {
         const cur = getPlan();
-        if (cur && !confirm(`Ya sigues "${FAM[cur.fam].n}". ¿Cambiar de plan? Se perderá su progreso.`)) return;
+        if (cur && !(await askApp('Cambiar de plan', `Ya sigues «${FAM[cur.fam].n}». Si cambias, se perderá su progreso.`, 'Cambiar de plan', true))) return;
         setPlan({ fam: key, file: variantFile(f, variant), variant, level, days, week: 1, startedAt: Date.now(), done: {}, log: [{ at: Date.now(), week: 1, level }] });
         viewWeek = 1; showCatalog = false; closeSheet(); show('plans'); toast('Plan iniciado. ¡A por la semana 1!');
       };
@@ -860,8 +870,8 @@ function openPlanSettings() {
       if (p.weekdays && p.weekdays.length !== days) delete p.weekdays; // vuelve al reparto por defecto
       p.level = level; p.days = days; setPlan(p); closeSheet(); renderPlans(); toast('Plan actualizado');
     };
-    $('#st-quit').onclick = () => {
-      if (!confirm('¿Abandonar el plan? Se borrará su progreso (tu historial de entrenamientos se mantiene).')) return;
+    $('#st-quit').onclick = async () => {
+      if (!(await askApp('Abandonar el plan', 'Se borrará el progreso del plan. Tu historial de entrenamientos se mantiene.', 'Abandonar', true))) return;
       setPlan(null); viewWeek = null; closeSheet(); renderPlans();
     };
   });
@@ -913,7 +923,7 @@ function renderLib() {
   const q = norm($('#lib-q').value.trim());
   const ids = Object.keys(CATALOG).filter(id => id !== 'pause').sort((a, b) => CATALOG[a].n.localeCompare(CATALOG[b].n, 'es'));
   const list = q ? ids.filter(id => norm(CATALOG[id].n + ' ' + id).includes(q)) : ids;
-  $('#lib-sub').innerHTML = `${ids.length} ejercicios. Para usar tu propio vídeo, pon un <code>.mp4</code> o <code>.gif</code> en la carpeta <code>media/</code> con el código que aparece en cada uno (p. ej. <code>squats.mp4</code>) o con su nombre sin acentos (<code>sentadilla.gif</code>).`;
+  $('#lib-sub').innerHTML = `${ids.length} ejercicios.`;
   $('#lib-list').innerHTML = list.map(id => {
     const e = ex(id), names = Anim.fileNames(id, e.n);
     return `<button class="lib-card" data-id="${esc(id)}"><div class="mini"></div><b>${esc(e.n)}</b>
@@ -982,7 +992,7 @@ function renderResume() {
     <button class="icon-btn" id="rs-x" aria-label="Descartar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     <button class="btn" id="rs-go">Reanudar</button></div>`;
   $('#rs-go').onclick = () => startWorkout(s.w, s);
-  $('#rs-x').onclick = () => { if (confirm('¿Descartar el entrenamiento a medias?')) { PS.del('session'); renderResume(); } };
+  $('#rs-x').onclick = async () => { if (await askApp('Descartar entrenamiento', 'Se descartará el entrenamiento a medias.', 'Descartar', true)) { PS.del('session'); renderResume(); } };
 }
 
 /* =========================================================
@@ -1361,3 +1371,17 @@ $('#d-mark').onclick = () => { if (markPlanDay(lastDone.w, lastDone.secs)) { toa
   const id = LS.get('active', list[0].id);
   switchProfile(list.find(p => p.id === id) ? id : list[0].id);
 })();
+
+/* ---------- Teclado: se cierra con «Listo/Buscar» o tocando fuera del campo ---------- */
+const isField = el => el && (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA' || el.tagName === 'SELECT' || el.isContentEditable);
+document.addEventListener('focusin', e => {
+  const el = e.target;
+  if (el.tagName === 'INPUT' && !el.hasAttribute('enterkeyhint')) el.setAttribute('enterkeyhint', el.type === 'search' ? 'search' : 'done');
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && e.target.tagName === 'INPUT') { e.preventDefault(); e.target.blur(); }
+});
+document.addEventListener('pointerdown', e => {
+  const a = document.activeElement;
+  if (isField(a) && !isField(e.target) && !e.target.closest('label')) a.blur();
+}, true);

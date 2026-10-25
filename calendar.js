@@ -70,7 +70,7 @@ function renderCal() {
   for (let i = 0; i < lead; i++) cells += '<span class="cd blank"></span>';
   for (let d = 1; d <= nd; d++) {
     const t = new Date(y, mo, d).getTime(), k = dkey(t), its = ag[k] || [];
-    const dots = [...new Set(its.map(x => x.type === 'done' ? (x.x.full ? 'ok' : 'part') : x.type))].map(c => `<i class="dt ${c}"></i>`).join('');
+    const dots = [...new Set(its.map(x => x.type === 'done' ? (x.x.full ? 'ok' : 'part') : x.type))].map(c => `<i class="dt ${c === 'reto' ? 'rt' : c}"></i>`).join('');
     cells += `<button class="cd ${k === today ? 'today' : ''} ${k === calSel ? 'sel' : ''} ${t < dayStart(now) ? 'past' : ''}" data-k="${k}"><b>${d}</b><span class="dots">${dots}</span></button>`;
   }
   const mname = m.toLocaleDateString('es', { month: 'long', year: 'numeric' });
@@ -79,11 +79,11 @@ function renderCal() {
   for (let i = 0; i < 14; i++) { const t = addDays(now, i), k = dkey(t); (ag[k] || []).filter(x => x.type !== 'done').forEach(x => up.push({ t, k, x })); }
   const p = getPlan(), sm = getSmart();
   el.innerHTML = `<p class="hero">Calendario</p>
-    <p class="sub">${p || (sm && sm.I) ? 'Tus próximos entrenamientos y los que ya hiciste.' : 'Empieza un plan o el entrenador inteligente para ver aquí tus próximos entrenamientos.'}</p>
+    <p class="sub">${p || (sm && sm.I) || Object.keys(getRetos()).length ? 'Tus próximos entrenamientos y los que ya hiciste.' : 'Empieza un plan, un reto o el entrenador inteligente para ver aquí tus próximos entrenamientos.'}</p>
     <div class="cal-h"><button class="icon-btn" id="cal-prev" aria-label="Mes anterior"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></button>
       <b>${mname}</b><button class="icon-btn" id="cal-next" aria-label="Mes siguiente"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 5l7 7-7 7"/></svg></button></div>
     <div class="cal">${WD.map(w => `<span class="cw">${w}</span>`).join('')}${cells}</div>
-    <div class="legend"><span><i class="dt plan"></i>Plan</span><span><i class="dt smart"></i>Entrenador</span><span><i class="dt reto"></i>Retos</span><span><i class="dt ok"></i>Hecho</span><span><i class="dt part"></i>Incompleto</span></div>
+    <div class="legend"><span><i class="dt plan"></i>Plan</span><span><i class="dt smart"></i>Entrenador</span><span><i class="dt rt"></i>Retos</span><span><i class="dt ok"></i>Hecho</span><span><i class="dt part"></i>Incompleto</span></div>
     <div id="cal-day"></div>
     <h2>Próximos 14 días</h2>
     ${up.length ? `<div class="block">${up.map(u => agendaRow(u.x, u.t)).join('')}</div>` : '<div class="empty">Nada programado en los próximos días.</div>'}
@@ -120,7 +120,7 @@ function itemSub(x) {
 function agendaRow(x, t) {
   const cls = x.type === 'done' ? (x.x.full ? 'ok' : 'part') : x.type;
   const when = t != null ? `<span class="ag-d"><b>${new Date(t).getDate()}</b>${WD[wdOf(t)]}</span>` : '';
-  return `<button class="ag" data-open='${JSON.stringify({ ...x, x: undefined, t })}'>${when}<i class="dt ${cls}"></i><span class="t"><b>${esc(itemTitle(x))}</b><small>${itemSub(x)}</small></span>
+  return `<button class="ag" data-open='${JSON.stringify({ ...x, x: undefined, t })}'>${when}<i class="dt ${cls === 'reto' ? 'rt' : cls}"></i><span class="t"><b>${esc(itemTitle(x))}</b><small>${itemSub(x)}</small></span>
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button>`;
 }
 function renderCalDay(ag) {

@@ -8,8 +8,8 @@
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Intervalo">
-<title>Intervalo HIIT</title>
+<meta name="apple-mobile-web-app-title" content="INHIIT">
+<title>INHIIT</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -35,6 +35,8 @@ header.top h1{font-family:var(--display);font-size:28px;letter-spacing:.5px;marg
 .who{display:flex;align-items:center;gap:8px;padding:5px 12px 5px 5px;border-radius:99px;background:var(--surface);border:1px solid var(--line);font-weight:600;font-size:14px;max-width:46vw}
 .who span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .av{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:14px;color:#111;flex:none}
+:root{--av0:#ff5a36;--av1:#35d0bf;--av2:#ffc23d;--av3:#9d8cff;--av4:#7bd88f;--av5:#ff7eb6;--av6:#5fb3ff;--avt0:#111;--avt1:#111;--avt2:#111;--avt3:#111;--avt4:#111;--avt5:#111;--avt6:#111}
+[data-theme=naranja]{--av0:#ff9500;--av1:#2b2c31;--av2:#ffb347;--av3:#14a39a;--av4:#c96a00;--av5:#5d636d;--av6:#ffd08a;--avt0:#1c1d21;--avt1:#fff;--avt2:#1c1d21;--avt3:#fff;--avt4:#fff;--avt5:#fff;--avt6:#1c1d21}
 .av.lg{width:40px;height:40px;font-size:18px}
 h2{font-family:var(--display);text-transform:uppercase;letter-spacing:.6px;font-size:15px;color:var(--muted);margin:26px 0 10px;font-weight:700}
 .hero{font-family:var(--display);font-size:40px;line-height:1;text-transform:uppercase;margin:14px 0 4px}
@@ -290,7 +292,7 @@ code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.92em;backgroun
 .rday.cur{background:color-mix(in srgb,var(--work) 10%,transparent)}
 .rday.cur .dn{background:var(--work);color:#111}
 .rday .t{flex:1;min-width:0}.rday .t b{display:block;overflow-wrap:anywhere}.rday .t small{color:var(--muted)}
-.dt.reto{background:var(--reto)}
+.dt.rt{background:var(--reto)}
 .rplayer{z-index:21}
 .rp-tap{cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:manipulation}
 .rp-anim{width:min(42vw,170px);aspect-ratio:1;border-radius:50%;background:var(--surface);overflow:hidden;display:grid;place-items:center;margin:4px 0 6px}
@@ -431,7 +433,7 @@ input,textarea,select{font-size:16px}
 <div class="app" id="app">
   <header class="top">
     <div class="logo"><svg width="22" height="22" viewBox="0 0 64 64"><path d="M6 34h12l6-14 9 26 7-18 4 6h14" fill="none" stroke="#0e0f12" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-    <h1>Intervalo</h1>
+    <h1>INHIIT</h1>
     <button class="icon-btn hidden" id="install-top" aria-label="Instalar app"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg></button>
     <button class="who" id="who"></button>
   </header>
