@@ -1,7 +1,7 @@
 /* Service worker de Intervalo: estrategia «primero la caché».
    La app (HTML, JS, iconos) se sirve siempre desde el almacenamiento del teléfono,
    al instante y sin internet; si hay red, se actualiza en segundo plano para la próxima vez. */
-const VERSION = 'intervalo-v32';
+const VERSION = 'intervalo-v35';
 const SHELL = [
   './', './index.html', './app.js', './anim.js', './extras.js', './voice.js', './calendar.js', './retos_data.js', './retos.js', './data.js', './manifest.webmanifest',
   './icons/icon-192.png', './icons/icon-512.png', './icons/maskable-512.png', './icons/apple-touch-icon.png'

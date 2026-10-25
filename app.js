@@ -23,7 +23,7 @@ const LS = {
   del(k) { try { localStorage.removeItem(NS + k); } catch (e) {} },
   keys() { try { return Object.keys(localStorage).filter(k => k.startsWith(NS)).map(k => k.slice(NS.length)); } catch (e) { return []; } }
 };
-const PROFILE_KEYS = ['settings', 'favs', 'history', 'plan', 'plansDone', 'session', 'smart', 'awards'];
+const PROFILE_KEYS = ['settings', 'favs', 'history', 'plan', 'plansDone', 'session', 'smart', 'awards', 'retos'];
 let PROFILE = null;
 const PS = {
   get: (k, d) => LS.get(`p.${PROFILE.id}.${k}`, d),
@@ -167,9 +167,12 @@ function showOnboarding() {
     <p class="note">Los planes tienen versión femenina y masculina con pequeñas diferencias de ejercicios. Puedes cambiarla luego.</p>
     ${legacy ? '<p class="note">Se pasarán a este perfil los entrenamientos que ya tenías guardados.</p>' : ''}
     <div style="height:24px"></div>
-    <button class="btn" id="ob-go">Crear perfil</button>`;
+    <button class="btn" id="ob-go">Crear perfil</button>
+    <div class="gap"></div>
+    <button class="btn ghost" id="ob-restore">☁ Ya tengo una copia: restaurar<small>Desde iCloud Drive, Google Drive o Archivos</small></button>`;
   bindSeg('ob-var', 'v', x => v = x);
   $('#onboard').classList.remove('hidden');
+  $('#ob-restore').onclick = () => $('#import-file').click();
   $('#ob-go').onclick = () => {
     const name = $('#ob-name').value.trim();
     if (!name) { $('#ob-name').focus(); toast('Escribe un nombre'); return; }
@@ -193,8 +196,16 @@ function applyTheme() {
 /* ---------- Hojas modales ---------- */
 function sheet(html, onMount) {
   const root = $('#sheet-root');
-  root.innerHTML = `<div class="scrim" id="scrim"><div class="sheet" role="dialog"><div class="grab"></div>${html}</div></div>`;
+  root.innerHTML = `<div class="scrim" id="scrim"><div class="sheet" role="dialog"><div class="sh-bar" id="sh-bar"><div class="grab"></div>
+    <button class="icon-btn sh-x" id="sh-x" aria-label="Cerrar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>${html}</div></div>`;
   $('#scrim').onclick = e => { if (e.target.id === 'scrim') closeSheet(); };
+  // la barra superior cierra: tocándola o deslizándola hacia abajo
+  const bar = $('#sh-bar'), sh = root.querySelector('.sheet');
+  bar.onclick = closeSheet;
+  let y0 = null, dy = 0;
+  bar.addEventListener('touchstart', e => { y0 = e.touches[0].clientY; dy = 0; sh.style.transition = 'none'; }, { passive: true });
+  bar.addEventListener('touchmove', e => { if (y0 == null) return; dy = Math.max(0, e.touches[0].clientY - y0); sh.style.transform = `translateY(${dy}px)`; }, { passive: true });
+  bar.addEventListener('touchend', () => { if (y0 == null) return; y0 = null; sh.style.transition = 'transform .18s'; if (dy > 70) closeSheet(); else sh.style.transform = ''; });
   onMount && onMount(root);
 }
 const closeSheet = () => { $('#sheet-root').innerHTML = ''; };
@@ -216,9 +227,9 @@ function openProfiles() {
     <div class="theme-pick" id="pf-theme">${Object.entries(THEMES).map(([k, t]) => `<button data-t="${k}" aria-pressed="${(S.theme || 'oscuro') === k}"><span class="sw4">${t.sw.map(c => `<i style="background:${c}"></i>`).join('')}</span>${t.n}</button>`).join('')}</div>
     <h2>Voz y pulso</h2>
     <div class="row"><button class="btn ghost small" id="pf-voice">Voz del entrenador</button><button class="btn ghost small" id="pf-hr">Pulsómetro y zonas</button></div>
-    <h2>Copia de seguridad</h2>
-    <button class="btn ghost small" id="pf-backup">Exportar o importar (perfil, historial, plan y logros)</button>
-    <p class="note">Los datos viven solo en este navegador. Exporta una copia si vas a borrar datos o cambiar de navegador o de móvil.</p>
+    <h2>Copia en la nube</h2>
+    <button class="btn ghost small" id="pf-backup">☁ Guardar o restaurar (iCloud Drive / Google Drive)</button>
+    <p class="note">${LS.get('bkLast', 0) ? 'Última copia: ' + dateStr(LS.get('bkLast', 0)) + '. ' : ''}Los datos viven en este teléfono; con la copia en la nube los recuperas si cambias de móvil o se borra el navegador.</p>
     <div id="pf-install"></div>`, () => {
     document.querySelectorAll('.prof').forEach(b => b.onclick = () => { closeSheet(); if (b.dataset.id !== PROFILE.id) { switchProfile(b.dataset.id); toast('Perfil: ' + PROFILE.name); } });
     $('#pf-add').onclick = () => profileForm(null);

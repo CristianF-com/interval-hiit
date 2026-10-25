@@ -400,28 +400,73 @@ function openAward(id) {
     <button class="btn ghost" onclick="closeSheet()">Cerrar</button>`);
 }
 
-/* ---------- Copias de seguridad completas (todos los perfiles) ---------- */
-async function deliverJSON(obj, fname) {
-  const text = JSON.stringify(obj);
+/* ---------- Copias de seguridad: archivo en iCloud Drive / Google Drive ---------- */
+// Un solo archivo con nombre fijo («intervalo-copia.json»): al guardarlo en la misma carpeta de la nube reemplaza al anterior.
+const BK_NAME = 'intervalo-copia.json';
+const BK_FREQ = { cada: 'Después de cada entrenamiento', semana: 'Una vez por semana', nunca: 'No recordar' };
+const bkFreq = () => LS.get('bkFreq', 'semana');
+const bkLast = () => LS.get('bkLast', 0);
+function bkDue() {
+  const f = bkFreq(); if (f === 'nunca' || !PROFILE) return false;
+  const last = bkLast(), lastW = Math.max(0, ...profiles().map(p => ((LS.get(`p.${p.id}.history`, []) || [])[0] || {}).at || 0));
+  if (!lastW || lastW <= last) return false;           // nada nuevo desde la última copia
+  return f === 'cada' || Date.now() - last > 7 * 864e5;
+}
+async function deliverJSON(obj, fname, onDone) {
+  const text = JSON.stringify(obj, null, 1);
   const file = new File([text], fname, { type: 'application/json' });
-  try { if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: 'Copia de Intervalo' }); return; } } catch (e) { if (e && e.name === 'AbortError') return; }
+  const ok = () => { if (onDone) onDone(); };
+  try { if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: 'Copia de Intervalo' }); ok(); return; } } catch (e) { if (e && e.name === 'AbortError') return; }
   try {
     const a = document.createElement('a'); a.href = URL.createObjectURL(file); a.download = fname;
-    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 3000); ok();
   } catch (e) { copyText(text); }
 }
 async function copyText(text) {
   try { await navigator.clipboard.writeText(text); toast('Copia copiada al portapapeles'); }
   catch (e) { sheet(`<h3>Copia en texto</h3><p class="sub">Selecciona todo y cópialo.</p><textarea class="paste" readonly>${esc(text)}</textarea>`); }
 }
-function profileData(id) { const d = {}; PROFILE_KEYS.forEach(k => { const v = LS.get(`p.${id}.${k}`, null); if (v != null) d[k] = v; }); return d; }
-function backupAll() { return { app: 'intervalo', v: 3, all: true, exportedAt: Date.now(), active: PROFILE && PROFILE.id, profiles: profiles().map(p => ({ profile: p, data: profileData(p.id) })) }; }
-function importBackup(j) {
+function profileData(id) { const d = {}; PROFILE_KEYS.forEach(k => { const v = LS.get(`p.${id}.${k}`, null); if (v != null && k !== 'session') d[k] = v; }); return d; }
+// resumen legible que va dentro del archivo (se puede abrir y leer con cualquier visor de texto)
+function bkResumen(list) {
+  return list.map(({ profile, data }) => {
+    const h = (data && data.history) || [], g = Object.keys((data && data.awards) || {}).length;
+    return `${profile.name}: ${h.length} entrenamiento${h.length === 1 ? '' : 's'}${h[0] ? ', el último el ' + dateStr(h[0].at) : ''}${g ? ', ' + g + ' logros' : ''}`;
+  });
+}
+function backupAll() {
+  const profs = profiles().map(p => ({ profile: p, data: profileData(p.id) }));
+  return { app: 'intervalo', v: 4, all: true, exportedAt: Date.now(), guardado: new Date().toLocaleString('es'), resumen: bkResumen(profs), active: PROFILE && PROFILE.id, profiles: profs };
+}
+function saveCloud() {
+  deliverJSON(backupAll(), BK_NAME, () => { LS.set('bkLast', Date.now()); renderBkRemind(); const d = $('#d-bk'); if (d) d.innerHTML = ''; toast('Copia lista'); });
+}
+// lee la copia y muestra qué contiene antes de restaurar
+function readBackup(j) {
   if (!j || j.app !== 'intervalo') throw new Error('formato');
   const list = j.all ? j.profiles : [{ profile: j.profile, data: j.data }];
-  if (!list || !list.length) throw new Error('vacío');
-  const clash = list.filter(x => profiles().some(p => p.id === x.profile.id));
-  const replace = clash.length ? confirm(`${clash.length === 1 ? 'Ya existe el perfil "' + clash[0].profile.name + '"' : 'Ya existen ' + clash.length + ' de estos perfiles'} en este navegador.\n\nAceptar: reemplazar sus datos con la copia.\nCancelar: importarlos como perfiles nuevos.`) : false;
+  if (!list || !list.length || !list[0].profile) throw new Error('vacío');
+  const rows = list.map(({ profile, data }) => {
+    const d = data || {}, h = d.history || [], g = Object.keys(d.awards || {}).length, here = profiles().some(p => p.id === profile.id);
+    const extra = [d.plan ? 'plan en curso' : '', d.smart && d.smart.test ? 'entrenador inteligente' : '', d.retos && Object.keys(d.retos).length ? Object.keys(d.retos).length + (Object.keys(d.retos).length === 1 ? ' reto' : ' retos') : ''].filter(Boolean).join(' · ');
+    return `<div class="r"><b>${esc(profile.name)}${here ? ' <small style="display:inline;color:var(--muted);font-weight:500">(ya está aquí)</small>' : ''}</b><span>${h.length} entrenamiento${h.length === 1 ? '' : 's'}${h[0] ? '<br>último: ' + dateStr(h[0].at) : ''}${g ? '<br>' + g + ' logros' : ''}${extra ? '<br>' + extra : ''}</span></div>`;
+  }).join('');
+  const clash = list.filter(x => profiles().some(p => p.id === x.profile.id)).length;
+  sheet(`<h3>Restaurar copia</h3>
+    <p class="sub">Copia guardada el <b>${j.exportedAt ? dateStr(j.exportedAt) + ' a las ' + new Date(j.exportedAt).toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' }) : '—'}</b>. Contiene:</p>
+    <div class="bk-prev">${rows}</div>
+    ${clash ? `<p class="note">${clash === 1 ? 'Uno de estos perfiles ya existe' : clash + ' de estos perfiles ya existen'} en este teléfono.</p>
+      <button class="btn" id="rb-rep">Reemplazar con la copia<small>Lo de este teléfono se cambia por lo de la copia</small></button><div class="gap"></div>
+      <button class="btn ghost" id="rb-new">Agregar como perfiles nuevos<small>Se conservan los dos</small></button>`
+    : `<button class="btn" id="rb-new">Restaurar</button>`}
+    <div class="gap"></div><button class="btn ghost" id="rb-no">Cancelar</button>`, () => {
+    const r = $('#rb-rep'); if (r) r.onclick = () => importBackup(j, true);
+    $('#rb-new').onclick = () => importBackup(j, false);
+    $('#rb-no').onclick = closeSheet;
+  });
+}
+function importBackup(j, replace) {
+  const list = j.all ? j.profiles : [{ profile: j.profile, data: j.data }];
   let lastId = null;
   list.forEach(({ profile, data }) => {
     const ex0 = profiles().find(p => p.id === profile.id);
@@ -437,33 +482,60 @@ function importBackup(j) {
     } else lastId = createProfile(profile.name + ' (copia)', profile.variant || 'f', data).id;
   });
   const want = j.all && j.active && profiles().some(p => p.id === j.active) ? j.active : lastId;
-  closeSheet(); switchProfile(want);
-  toast(list.length > 1 ? `${list.length} perfiles importados` : 'Copia importada');
+  LS.set('bkLast', Date.now());
+  closeSheet();
+  const ob = $('#onboard'); if (ob) ob.classList.add('hidden');
+  switchProfile(want);
+  toast(list.length > 1 ? `${list.length} perfiles restaurados` : 'Copia restaurada');
 }
+function pickBackup() { $('#import-file').click(); }
 function openBackup() {
+  const last = bkLast(), f = bkFreq();
   const stamp = new Date().toISOString().slice(0, 10), slugName = PROFILE.name.toLowerCase().replace(/[^a-z0-9]+/gi, '-');
-  sheet(`<h3>Copia de seguridad</h3>
-    <p class="sub">Incluye ajustes, historial (con pulso), guardados, plan y progreso, entrenador inteligente, próxima sesión y logros. Sirve para pasar todo a otro navegador o móvil.</p>
-    <h2>Exportar</h2>
-    <div class="row"><button class="btn small" id="bk-me">Este perfil</button><button class="btn small" id="bk-all">Todos los perfiles</button></div>
-    <div class="gap"></div><button class="btn ghost small" id="bk-copy">Copiar todo como texto</button>
-    <h2>Importar</h2>
-    <button class="btn ghost small" id="bk-file">Desde un archivo .json</button>
+  sheet(`<h3>Copia en la nube</h3>
+    <p class="sub">Guarda todos los perfiles (historial, pulso, planes, retos, entrenador y logros) en un archivo en <b>iCloud Drive</b> o <b>Google Drive</b>. En un teléfono nuevo, lo restauras desde ahí.</p>
+    <div class="bk-card"><div class="t">${last ? 'Última copia: ' + dateStr(last) : 'Todavía no guardaste ninguna copia'}</div>
+      <small>Archivo: ${BK_NAME}</small></div>
+    <button class="btn" id="bk-save">☁ Guardar copia en la nube</button>
+    <p class="note">Se abre Compartir: elige <b>Guardar en Archivos → iCloud Drive</b> (iPhone) o <b>Drive</b> (Android). Guárdala siempre en la misma carpeta y, si pregunta, elige <b>Reemplazar</b>.</p>
+    <button class="btn ghost" id="bk-file">Restaurar desde la nube</button>
+    <p class="note">Elige el archivo ${BK_NAME} en iCloud Drive o Drive. Antes de restaurar te muestro qué contiene.</p>
+    <h2>Recordatorio</h2>
+    <div class="seg" id="bk-f">${Object.entries(BK_FREQ).map(([k, n]) => `<button data-v="${k}" aria-pressed="${f === k}">${n}</button>`).join('')}</div>
+    <h2>Otras opciones</h2>
+    <div class="row"><button class="btn ghost small" id="bk-me">Solo este perfil</button><button class="btn ghost small" id="bk-copy">Copiar como texto</button></div>
     <div class="gap"></div>
     <textarea class="paste" id="bk-text" placeholder="…o pega aquí el texto de una copia"></textarea>
-    <div class="gap"></div><button class="btn ghost small" id="bk-paste">Importar el texto pegado</button>
-    <p class="note">En iPhone, «Exportar» abre el menú Compartir: elige «Guardar en Archivos». Para importar en otro navegador (por ejemplo Bluefy), usa «Desde un archivo» o pega el texto.</p>`, () => {
-    $('#bk-me').onclick = () => deliverJSON({ app: 'intervalo', v: 3, exportedAt: Date.now(), profile: PROFILE, data: profileData(PROFILE.id) }, `intervalo-${slugName}-${stamp}.json`);
-    $('#bk-all').onclick = () => deliverJSON(backupAll(), `intervalo-todo-${stamp}.json`);
+    <div class="gap"></div><button class="btn ghost small" id="bk-paste">Leer el texto pegado</button>`, () => {
+    $('#bk-save').onclick = saveCloud;
+    $('#bk-file').onclick = pickBackup;
+    bindSeg('bk-f', 'v', x => { LS.set('bkFreq', x); renderBkRemind(); });
+    $('#bk-me').onclick = () => deliverJSON({ app: 'intervalo', v: 4, exportedAt: Date.now(), profile: PROFILE, data: profileData(PROFILE.id) }, `intervalo-${slugName}-${stamp}.json`);
     $('#bk-copy').onclick = () => copyText(JSON.stringify(backupAll()));
-    $('#bk-file').onclick = () => $('#import-file').click();
-    $('#bk-paste').onclick = () => { try { importBackup(JSON.parse($('#bk-text').value.trim())); } catch (e) { toast('Ese texto no es una copia válida'); } };
+    $('#bk-paste').onclick = () => { try { readBackup(JSON.parse($('#bk-text').value.trim())); } catch (e) { toast('Ese texto no es una copia válida'); } };
   });
 }
-// el selector de archivo de copias usa el importador nuevo (perfil suelto o todos)
 $('#import-file').onchange = async e => {
   const f = e.target.files[0]; e.target.value = ''; if (!f) return;
-  try { importBackup(JSON.parse(await f.text())); } catch (err) { toast('Ese archivo no es una copia válida'); }
+  try { readBackup(JSON.parse(await f.text())); } catch (err) { toast('Ese archivo no es una copia de Intervalo'); }
+};
+// recordatorio en el inicio y al terminar un entrenamiento
+function renderBkRemind() {
+  const el = $('#bk-remind'); if (!el) return;
+  if (!bkDue()) { el.innerHTML = ''; return; }
+  const last = bkLast();
+  el.innerHTML = `<div class="banner bk"><div class="t"><b>☁ Guarda tu progreso en la nube</b><small>${last ? 'Última copia: ' + dateStr(last) : 'Aún no tienes ninguna copia'}</small></div>
+    <button class="btn small" id="bkr-go">Guardar</button></div>`;
+  $('#bkr-go').onclick = saveCloud;
+}
+const _renderResume = renderResume;
+renderResume = function () { _renderResume(); try { renderBkRemind(); } catch (e) {} };
+const _finish = finish;
+finish = function (...a) {
+  _finish(...a);
+  const d = $('#d-bk'); if (!d) return;
+  d.innerHTML = bkDue() && bkFreq() === 'cada' ? `<button class="btn ghost" id="dbk-go">☁ Guardar copia en la nube</button><div class="gap"></div>` : '';
+  const b = $('#dbk-go'); if (b) b.onclick = saveCloud;
 };
 
 // al cargar: estado del botón de pulso y logros ya conseguidos (sin avisos)

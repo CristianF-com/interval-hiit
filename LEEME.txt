@@ -126,3 +126,13 @@ SIN CONEXIÓN Y CIERRES DEL TELÉFONO
   En Perfil se ve si el «Modo sin conexión» está activo.
 - Si el sistema cierra la app en pleno entrenamiento o reto, al volver a abrirla (antes de 30 min)
   se retoma en pausa donde quedó.
+
+COPIA EN LA NUBE (iCloud Drive / Google Drive)
+- Perfil → «Guardar o restaurar» → «Guardar copia en la nube». Se abre Compartir:
+  iPhone: «Guardar en Archivos» → iCloud Drive. Android: «Drive».
+  El archivo se llama siempre intervalo-copia.json: guárdalo en la misma carpeta y elige «Reemplazar».
+- Incluye todos los perfiles: historial, pulso, planes, retos, entrenador inteligente y logros.
+- Restaurar: en un teléfono nuevo, la primera pantalla tiene «Ya tengo una copia: restaurar».
+  Antes de restaurar la app muestra qué contiene la copia (perfiles, entrenamientos, fecha).
+- Recordatorio: después de cada entrenamiento, una vez por semana (por defecto) o nunca.
+- El archivo es texto legible: se puede abrir con cualquier visor y arriba tiene un resumen.
