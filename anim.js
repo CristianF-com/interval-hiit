@@ -254,7 +254,7 @@ const Anim = (() => {
     bridge_march: () => k([BRIDGE_UP, m(BRIDGE_UP, { tR: 160, sR: 90 }), BRIDGE_UP, m(BRIDGE_UP, { tL: 160, sL: 90 })], 2400, { anchor: 'sh' }),
     crab: () => k([CRAB_DN, CRAB_UP], 2000, { anchor: 'handL' }),
     crab_single: () => k([m(CRAB_DN, { tR: 120, sR: 120 }), m(CRAB_UP, { tR: 100, sR: 100 })], 2000, { anchor: 'handL' }),
-    reverse_plank: () => k([m(CRAB_DN, { tL: 92, sL: 92, tR: 94, sR: 94, t: -160 }), m(CRAB_DN, { t: -72, tL: 74, sL: 74, tR: 76, sR: 76, uL: -4, fL: -2, uR: 0, fR: 2 })], 2400, { anchor: 'handL' }),
+    reverse_plank: () => k([m(CRAB_DN, { tL: 92, sL: 92, tR: 94, sR: 94, t: -160 }), m(CRAB_DN, { t: -114, hd: 8, tL: 66, sL: 66, tR: 67, sR: 67, pL: 125, pR: 126, uL: -2, fL: 0, uR: 2, fR: 4 })], 2400, { anchor: 'handL' }),
     dip: () => k([DIP_UP, DIP_DN], 1800, { props: ['bench'], anchor: 'handL', anchorY: 'handL' }),
     quad: () => k([QUAD, m(QUAD, { t: 107 })], 3000, { anchor: 'handR' }),
     bird_dog: () => k([QUAD, m(QUAD, { anc: 'kneeR', supL: 'R', uR: 90, fR: 90, tL: -88, sL: -88, pL: -88 }), QUAD, m(QUAD, { supL: 'L', uL: 90, fL: 90, tR: -88, sR: -88, pR: -88 })], 3200, { anchor: 'kneeL' }),
@@ -333,7 +333,8 @@ const Anim = (() => {
     side_plank_oblique_crunch: 'side_plank_crunch', side_star_plank: 'side_star',
     crunches: 'crunch', sit_ups: 'situp', table_top_crunches: 'table_crunch', bicycle_crunches: 'bicycle', straight_leg_bicycle_crunches: 'bicycle_straight',
     leg_raises: 'leg_raise', reverse_crunches: 'reverse_crunch', scissor_kicks: 'scissors', knee_tuck_crunches: 'tuck_crunch',
-    v_ups: 'vup', wide_legged_v_ups: 'vup_wide', single_leg_v_up: 'vup_single', russian_twist_easy: ['twist_front', {}], russian_twist_hard: ['twist_front', { hard: 1 }],
+    v_ups: 'vup', wide_legged_v_ups: 'vup_wide', single_leg_v_up: 'vup_single', russian_twist_easy: { combo: ['russian_twist_easy__a', 'russian_twist_easy__b'], labels: ['De lado', 'De frente'] }, russian_twist_hard: { combo: ['russian_twist_hard__a', 'russian_twist_hard__b'], labels: ['De lado', 'De frente'] },
+    russian_twist_easy__a: ['twist_side', {}], russian_twist_easy__b: ['twist_front', {}], russian_twist_hard__a: ['twist_side', { hard: 1 }], russian_twist_hard__b: ['twist_front', { hard: 1 }],
     windshield_wipers: 'wipers_front', beetle: 'deadbug', star_toe_touch: 'toe_touch', superman: 'superman', prone_x: 'top_x', superman_pull: 'superman_pull',
     wall_lateral_pull_downs: ['wall_pull', {}],
     bridge: 'bridge', single_leg_bridge: 'bridge_single', crab_bridge: 'crab', sl_crab_bridge: 'crab_single', reverse_plank: 'reverse_plank', triceps_dip: 'dip',
@@ -427,9 +428,14 @@ const Anim = (() => {
   T.circles_fwd = () => k(circ(1), 1400, { open: true, trail: ['handR'] });
   T.circles_back = () => k(circ(-1), 1400, { open: true, trail: ['handR'] });
   // giro ruso de frente: manos de un lado a otro
-  const RT = { v: 'f', t: 180, hd: 0, kT: 0.86, tL: -40, sL: 30, tR: 40, sR: -30, kLL: 0.55, kLR: 0.55, pL: -90, pR: 90 };
-  T.twist_front = o => { const b = o.hard ? m(RT, { tL: -136, sL: -10, tR: 136, sR: 10, kSL: 0.42, kSR: 0.42 }) : RT;
-    return k([m(b, { t: 168, uL: -40, fL: -80, uR: -10, fR: -70, kAL: 0.8 }), m(b, { t: 192, uL: 10, fL: 70, uR: 40, fR: 80, kAR: 0.8 })], o.hard ? 1100 : 1300, { anchor: 'hip', anchorY: 'hip', trail: ['handR'] }); };
+  // giro ruso de frente (desde los pies): rodillas arriba, manos juntas que van a un lado y al otro de la cadera
+  const RT = { v: 'f', t: 180, hd: 0, kT: 0.78, tL: -152, sL: -8, tR: 152, sR: 8, kLL: 0.55, kLR: 0.55, kSL: 1.12, kSR: 1.12, pL: -90, pR: 90 };
+  T.twist_front = o => { const b = o.hard ? m(RT, { kSL: 0.6, kSR: 0.6, tL: -156, tR: 156 }) : RT;
+    const L = m(b, { t: 172, uL: -45, fL: 5, uR: -38, fR: -38 });
+    return k([L, mirF(L)], o.hard ? 1100 : 1300, { anchor: 'hip', anchorY: 'hip', trail: ['handR'], armsFront: true }); };
+  // giro ruso de lado: sentado en V con el tronco atrás; las manos juntas van hacia un lado y al otro
+  T.twist_side = o => { const b = o.hard ? { v: 's', t: -140, hd: -12, tL: 125, sL: 65, tR: 128, sR: 68, pL: 150, pR: 152 } : { v: 's', t: -140, hd: -12, tL: 140, sL: 15, tR: 143, sR: 17, pL: 100, pR: 102 };
+    return k([m(b, { uL: 62, fL: 82, uR: 66, fR: 86 }), m(b, { uL: 48, fL: 66, uR: 52, fR: 70, kAL: 0.8, kAR: 0.8 })], o.hard ? 1100 : 1300); };
   // hidrante visto desde atrás: la rodilla se abre hacia el lado
   const QR = { v: 'f', t: 180, hd: 0, kT: 0.12, uL: -10, fL: -6, uR: 10, fR: 6, tL: -12, sL: 0, tR: 12, sR: 0, kSL: 0.25, kSR: 0.25, pL: -90, pR: 90 };
   T.hydrant_rear = () => k([QR, m(QR, { tR: 78, sR: 4, kSR: 0.95 })], 1500, { anchor: 'hip', anchorY: 'hip' });
@@ -440,7 +446,7 @@ const Anim = (() => {
   T.cross_front = () => k([CF, m(CF, { tR: 236, sR: 208 }), CF, m(CF, { tL: 124, sL: 152 })], 3600, { anchor: 'hip', anchorY: 'hip', armsBack: true, legsFront: true });
   // golpes cruzados de frente
   const GF = m(F0, { uL: -28, fL: 150, uR: 28, fR: -150, tL: -14, sL: -8, tR: 14, sR: 8 });
-  T.punch_cross_front = () => k([GF, m(GF, { t: 174, uR: -78, fR: -84, kAR: 0.85 }), GF, m(GF, { t: 186, uL: 78, fL: 84, kAL: 0.85 })], 1100);
+  T.punch_cross_front = () => k([GF, m(GF, { t: 174, uR: -78, fR: -84, kAR: 0.85 }), GF, m(GF, { t: 186, uL: 78, fL: 84, kAL: 0.85 })], 1100, { armsFront: true });
   // apertura de cadera de frente: la rodilla sube y se abre (con trayectoria)
   T.hip_open_front = () => k([F0, m(F0, { tR: 160, sR: 10, kLR: 0.5 }), m(F0, { tR: 96, sR: 8, kLR: 0.95 }), F0], 2600, { anchor: 'ankleL', trail: ['kneeR'] });
 
@@ -530,7 +536,7 @@ const Anim = (() => {
       if (p.ancPrev && ki > 0) { const q = keys[ki - 1], Jq = fk(q); p.ox = Jq[p.ancPrev][0] + q.ox - J[p.ancPrev][0]; }
       p.oy = tpl.anchorY ? ay0 - J[tpl.anchorY][1] : -lowest(J) - (p.air || 0);
     });
-    const anim = { id, v: keys[0].v, keys, ms: tpl.ms, props: tpl.props || [], open: !!tpl.open, ground: tpl.ground !== false, anchorY: tpl.anchorY, badge: tpl.badge, hands: tpl.hands != null ? !!tpl.hands : !!keys[0].sup && /^(hand|elbow)/.test(anchor), armsBack: !!tpl.armsBack, legsFront: !!tpl.legsFront, farShade: !!tpl.farShade, noFix: !!tpl.noFix };
+    const anim = { id, v: keys[0].v, keys, ms: tpl.ms, props: tpl.props || [], open: !!tpl.open, ground: tpl.ground !== false, anchorY: tpl.anchorY, badge: tpl.badge, hands: tpl.hands != null ? !!tpl.hands : !!keys[0].sup && /^(hand|elbow)/.test(anchor), armsBack: !!tpl.armsBack, legsFront: !!tpl.legsFront, armsFront: !!tpl.armsFront, farShade: !!tpl.farShade, noFix: !!tpl.noFix };
     // encuadre: recorre el ciclo y calcula la caja que ocupa
     let x0 = 1e9, x1 = -1e9, y0 = 1e9;
     for (let i = 0; i < 48; i++) {
@@ -844,7 +850,7 @@ const Anim = (() => {
     svg.setAttribute('viewBox', a.vb.join(' '));
     svg.setAttribute('class', 'fig');
     svg.setAttribute('aria-hidden', 'true');
-    let html = a.ground ? `<line x1="${a.vb[0] + 4}" y1="2" x2="${a.vb[0] + a.vb[2] - 4}" y2="2" stroke="#2a2e37" stroke-width="3" stroke-linecap="round"/><ellipse class="sh" cy="3" ry="4.5" fill="#000" fill-opacity=".35"/>` : '';
+    let html = a.ground ? `<line x1="${a.vb[0] + 4}" y1="2" x2="${a.vb[0] + a.vb[2] - 4}" y2="2" stroke="#2a2e37" stroke-width="3" stroke-linecap="round"/>` : '';
     a.trails.forEach(pts => {
       const d = 'M' + pts.map(q => q[0].toFixed(1) + ' ' + q[1].toFixed(1)).join('L');
       const i = Math.floor(pts.length * 0.3), q0 = pts[i], q1 = pts[i + 2], ang = Math.atan2(q1[1] - q0[1], q1[0] - q0[0]) * 180 / Math.PI;
@@ -900,12 +906,19 @@ const Anim = (() => {
       let o = '';
       if (side) {
         const hem = mixPt(Hp, S, 0.2), ar = arch;
-        o += `<path d="${capsule(Hp, mixPt(Hp, S, 0.32), 9.4, 9.3)}" fill="${C.shorts}"/>`;
         if (Math.abs(ar) > 0.3) {
-          // espalda curvada (gato-vaca): el tronco pasa por un punto medio desplazado
-          const mid = pt(mixPt(Hp, S, 0.55), ar);
-          o += poly([pt(hem, 9.5), pt(mid, 9.3), pt(mid, -9.3), pt(hem, -9.5)]) + `<path d="${capsule(mid, S, 9.3, 9.2)}" fill="${C.shirt}"/>`;
-        } else o += poly([pt(hem, 9.5), pt(S, 9.2), pt(S, -9.2), pt(hem, -9.5)]) + `<circle cx="${f1(S[0])}" cy="${f1(S[1])}" r="9.2" fill="${C.shirt}"/>`;
+          // espalda curvada (gato-vaca): todo el tronco (pantalón y remera) sigue una curva de la cadera a los hombros
+          const mid = pt(mixPt(Hp, S, 0.5), ar), Cc = [2 * mid[0] - (Hp[0] + S[0]) / 2, 2 * mid[1] - (Hp[1] + S[1]) / 2];
+          const B = u => [(1 - u) * (1 - u) * Hp[0] + 2 * u * (1 - u) * Cc[0] + u * u * S[0], (1 - u) * (1 - u) * Hp[1] + 2 * u * (1 - u) * Cc[1] + u * u * S[1]];
+          const Nn = u => { const d = [2 * (1 - u) * (Cc[0] - Hp[0]) + 2 * u * (S[0] - Cc[0]), 2 * (1 - u) * (Cc[1] - Hp[1]) + 2 * u * (S[1] - Cc[1])], l = Math.hypot(d[0], d[1]) || 1; return [-d[1] / l, d[0] / l]; };
+          const band = (u0, u1, w0, w1, col) => { const a = [], b = []; for (let i = 0; i <= 8; i++) { const u = u0 + (u1 - u0) * i / 8, w = w0 + (w1 - w0) * i / 8, c = B(u), n = Nn(u); a.push([c[0] + n[0] * w, c[1] + n[1] * w]); b.unshift([c[0] - n[0] * w, c[1] - n[1] * w]); }
+            return `<path d="M${a.concat(b).map(q => f1(q[0]) + ' ' + f1(q[1])).join('L')}Z" fill="${col}"/>`; };
+          o += `<circle cx="${f1(Hp[0])}" cy="${f1(Hp[1])}" r="9.4" fill="${C.shorts}"/>` + band(0, 0.34, 9.4, 9.3, C.shorts);
+          o += band(0.2, 1, 9.5, 9.2, C.shirt) + `<circle cx="${f1(S[0])}" cy="${f1(S[1])}" r="9.2" fill="${C.shirt}"/>`;
+        } else {
+          o += `<path d="${capsule(Hp, mixPt(Hp, S, 0.32), 9.4, 9.3)}" fill="${C.shorts}"/>`;
+          o += poly([pt(hem, 9.5), pt(S, 9.2), pt(S, -9.2), pt(hem, -9.5)]) + `<circle cx="${f1(S[0])}" cy="${f1(S[1])}" r="9.2" fill="${C.shirt}"/>`;
+        }
       } else {
         const hw = Math.hypot(J.hipL[0] - Hp[0], J.hipL[1] - Hp[1]), sw = Math.hypot(J.shL[0] - S[0], J.shL[1] - S[1]);
         const hem = mixPt(Hp, S, Math.min(0.5, 6.5 / L));
@@ -917,8 +930,9 @@ const Anim = (() => {
     const arm = x => /^arm/.test(x[0]);
     if (a.armsBack) PARTS.filter(arm).forEach(pt => paint(pt, false));
     const legP = x => /^(leg|foot)/.test(x[0]);
-    PARTS.filter(x => x[5] === 'far' && !(a.armsBack && arm(x)) && !(a.legsFront && legP(x))).forEach(pt => paint(pt, side || a.farShade));
+    PARTS.filter(x => x[5] === 'far' && !((a.armsBack || a.armsFront) && arm(x)) && !(a.legsFront && legP(x))).forEach(pt => paint(pt, side || a.farShade));
     PARTS.filter(x => x[5] === 'mid').forEach(pt => paint(pt, false));
+    if (a.armsFront) PARTS.filter(x => x[5] === 'far' && arm(x)).forEach(pt => paint(pt, false));
     // cabeza: pelo y cara hacia donde mira
     const H = J.head, nk = J.neck, hv = [H[0] - nk[0], H[1] - nk[1]], hl = Math.hypot(hv[0], hv[1]) || 1, up = [hv[0] / hl, hv[1] / hl];
     html += `<circle cx="${f1(H[0])}" cy="${f1(H[1])}" r="11" fill="${C.skin}"/>`;
