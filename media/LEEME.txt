@@ -1,0 +1,3 @@
+Pon aquí tus vídeos (.mp4) o GIF con el nombre del ejercicio.
+Ejemplos: squats.mp4, push_ups.gif, sentadilla.mp4
+La lista de nombres está en la app: Coach → "Ver todos los ejercicios".

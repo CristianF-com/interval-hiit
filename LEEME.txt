@@ -1,0 +1,128 @@
+INTERVALO HIIT — cómo usarla
+============================
+
+Contenido de la carpeta
+  index.html, app.js, data.js   la app
+  sw.js, manifest.webmanifest   lo necesario para instalarla y usarla sin conexión
+  anim.js                       animaciones de los ejercicios
+  icons/                        iconos de la app
+  media/                        (opcional) tus propios vídeos o GIF
+
+1) Usarla sin instalar
+   Abre index.html en el navegador. Funciona todo, pero no se puede
+   "instalar" como app (el navegador no lo permite con archivos abiertos así).
+
+2) Instalarla en el ordenador (Chrome / Edge)
+   En esta carpeta, ejecuta:   python3 -m http.server 8000
+   Abre http://localhost:8000 y pulsa el icono de instalar en la barra de
+   direcciones (o el botón de descarga que aparece arriba en la app).
+
+3) Instalarla en el móvil Android
+   El móvil exige una dirección https (o localhost en el propio teléfono).
+   Opciones:
+   a) Sube la carpeta a un alojamiento estático gratuito con https
+      (GitHub Pages, Netlify Drop, Cloudflare Pages...). Ábrela en Chrome
+      y elige ⋮ → "Instalar app".
+   b) Usa en el móvil una app de servidor web local (p. ej. "Simple HTTP
+      Server"), apúntala a esta carpeta y abre http://localhost:PUERTO en
+      Chrome. Luego ⋮ → "Instalar app".
+   Tras la primera carga funciona sin conexión.
+
+   iPhone: ábrela en Safari → Compartir → "Añadir a pantalla de inicio".
+
+Datos y perfiles
+   - Cada perfil guarda por separado: ajustes, plan elegido, progreso,
+     historial, guardados y el entrenamiento a medias.
+   - Todo se guarda en el navegador de ese dispositivo (localStorage).
+     Si borras los datos del sitio o cambias de dirección (otro puerto u
+     otro dominio), empezarás de cero. Usa "Exportar perfil" (toca tu nombre
+     arriba a la derecha) para hacer copias e "Importar" para recuperarlas.
+   - Si cierras la app en mitad de un entrenamiento, al volver aparece
+     "Entrenamiento a medias → Reanudar".
+
+Vídeos o GIF propios (carpeta media/)
+   Cada ejercicio tiene una animación dibujada. Si pones en la carpeta
+   media/ un archivo .mp4 o .gif con el nombre del ejercicio, la app usa
+   ese archivo en su lugar (en el entrenamiento, la vista previa y la
+   biblioteca). Si el archivo falla, vuelve a la animación dibujada.
+
+   Nombres válidos (en este orden de preferencia):
+     - el código del ejercicio:  media/squats.mp4, media/push_ups.gif
+     - el nombre en español sin acentos, en minúsculas y con guiones bajos:
+       media/sentadilla.mp4, media/flexiones_abiertas.gif
+   El código de cada ejercicio aparece en Coach → "Ver todos los
+   ejercicios", y los que ya usan tu archivo se marcan con ✓.
+   Para ejercicios por lado se puede usar el código general (side_lunges)
+   o uno por lado (side_lunges_l / side_lunges_r).
+
+   Detalles:
+     - Con un servidor que muestre el listado de la carpeta (por ejemplo
+       python3 -m http.server) la app lo lee de una vez. Si tu alojamiento
+       no lo muestra, crea media/index.json con la lista de archivos:
+       ["squats.mp4", "sentadilla.gif"]
+     - MP4: usa vídeo H.264 (lo normal). Los GIF se guardan para usarse
+       sin conexión; los MP4 se cargan del servidor cada vez.
+
+ENTRENADOR INTELIGENTE
+- En la pestaña Coach, «Hacer la prueba»: 1 minuto de sentadillas, flexiones
+  (normales o con rodillas) y abdominales. En cada descanso anotas cuántas hiciste.
+- Con esos resultados calcula una intensidad de 1 a 10 y el nivel de cada zona
+  (piernas, tren superior, core) y prepara la próxima sesión.
+- Las sesiones van alternando cuerpo completo, piernas y core, y tren superior y core,
+  una cada dos días. Al terminar te pregunta Fácil / Bien / Difícil y ajusta la siguiente.
+- Si pasas más de una semana sin entrenar, baja un poco la intensidad.
+- Conviene repetir la prueba cada 4 semanas (el coach te lo recuerda).
+
+PULSÓMETRO (banda o reloj)
+- En vivo: botón ♥ arriba en la pantalla de entrenamiento (o Perfil → Pulso).
+  Funciona en Chrome/Edge (Android y PC). En iPhone, usa el navegador gratuito
+  «Bluefy» (App Store): Safari no permite conectar dispositivos Bluetooth.
+- Con una Polar H9 (u otra banda con Bluetooth) la app guarda pulso medio,
+  máximo, tiempo en cada zona, gráfica y calorías aproximadas (si cargas edad y peso).
+- Sin Bluetooth: graba la sesión con la app de Polar, exporta el archivo TCX o CSV
+  desde flow.polar.com y en Historial toca la sesión → «Añadir pulso desde archivo».
+  La banda se conecta a una sola app a la vez.
+
+PUBLICAR LA APP CON HTTPS (necesario para usarla desde Bluefy en el iPhone)
+- Lo más simple: entra en https://app.netlify.com/drop y arrastra la carpeta
+  «intervalo». Te da una dirección https://….netlify.app para abrir desde el móvil.
+- Alternativa: GitHub Pages (sube la carpeta a un repositorio y activa Pages).
+- Tus datos no se suben a ningún lado: quedan en el navegador del móvil.
+
+COPIAS DE SEGURIDAD
+- Perfil → «Exportar o importar»: copia de este perfil o de todos (ajustes,
+  historial con pulso, guardados, plan, entrenador inteligente, próxima sesión y logros).
+- En iPhone «Exportar» abre Compartir → «Guardar en Archivos». También puedes
+  copiarla como texto y pegarla en el otro navegador.
+
+LOGROS
+- Medallas por constancia, cantidad de sesiones, repeticiones acumuladas
+  (sentadillas, flexiones, abdominales, burpees), minutos, planes, pulso y más.
+  Aparecen en pantalla al conseguirlos y se ven en Historial.
+
+VOZ DEL ENTRENADOR
+- Perfil → «Voz del entrenador»: Dora (latina), Alex (latino) o la voz del teléfono.
+- Dora y Alex son audios grabados que van en la carpeta voz/ (se guardan en el
+  móvil a medida que se usan; «Guardar la voz en este dispositivo» los baja todos).
+- Si falta algún audio (por ejemplo, sin conexión), esa frase la dice la voz del teléfono.
+- Los audios se regeneran con build/gen_voz.py (modelo Kokoro).
+
+RETOS DE REPETICIONES (Planes → Retos de repeticiones)
+- Abdominales, sentadillas, flexiones y dominadas con el programa original de 3 etapas
+  (cada etapa termina con una prueba). Los días de descanso siguen el programa.
+- Rango a elegir: 0–100, 100–200, 200–300… (en dominadas 0–30, 30–60…; en sentadillas 0–150…).
+  O «prueba inicial»: haces todas las que puedas y la app elige rango y etapa.
+- Conteo: abdominales con el móvil sobre el pecho; sentadillas con el móvil en el bolsillo
+  (o en la mano); dominadas con el móvil en el bolsillo; flexiones tocando la pantalla con la
+  nariz o la barbilla. Siempre se puede contar tocando la pantalla y corregir con «−1».
+- Los sensores solo funcionan con la app abierta por https (publicada) y, en iPhone,
+  después de aceptar el permiso de «movimiento y orientación».
+
+SIN CONEXIÓN Y CIERRES DEL TELÉFONO
+- La app usa un service worker «primero la caché»: después de abrirla una vez con internet,
+  se abre desde el teléfono al instante, sin red y sin pedir recargar la página.
+- IMPORTANTE: el teléfono solo activa esto si la app se abre por https (Netlify Drop o GitHub Pages).
+  Abierta por http desde la PC (http://192.168...) NO funciona sin conexión.
+  En Perfil se ve si el «Modo sin conexión» está activo.
+- Si el sistema cierra la app en pleno entrenamiento o reto, al volver a abrirla (antes de 30 min)
+  se retoma en pausa donde quedó.
