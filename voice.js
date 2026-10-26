@@ -43,13 +43,10 @@ function vplan(text, idx) {
   const out = [];
   for (let i = 0; i < toks.length;) {
     if (toks[i].gap != null) { out.push({ gap: toks[i].gap }); i++; continue; }
+    // el tramo grabado más largo gana, aunque cruce signos de puntuación: las frases enteras
+    // («Ahora: Sentadillas.», «Descanso de 30 segundos.») suenan más naturales que palabras pegadas
     let found = null;
-    for (let j = Math.min(toks.length, i + 14); j > i; j--) {
-      const seg = toks.slice(i, j); if (seg.some(t => t.gap != null)) continue;
-      const id = idx[seg.map(t => t.w).join(' ')]; if (id) { found = { id, n: j - i }; break; }
-    }
-    // frases grabadas enteras con puntuación dentro (p. ej. «Hola, soy tu entrenadora. ¡Vamos a entrenar!»)
-    if (!found) for (let j = Math.min(toks.length, i + 20); j > i + 1; j--) {
+    for (let j = Math.min(toks.length, i + 24); j > i; j--) {
       const seg = toks.slice(i, j); if (seg[seg.length - 1].gap != null) continue;
       const id = idx[seg.filter(t => t.gap == null).map(t => t.w).join(' ')]; if (id) { found = { id, n: j - i }; break; }
     }
@@ -92,7 +89,12 @@ function vPreload(tl) {
   loadIdx().then(idx => {
     if (!idx) return;
     const texts = ['Terminaste. Comienza. Siguiente: Prepárate. Primero: Descanso de segundos repeticiones. Mitad. Cambia de lado. Ronda de Ronda completada.', '1 2 3'];
-    tl.forEach(s => { if (s.ex) texts.push(ex(s.ex).n); if (s.reps) texts.push(String(s.reps)); if (s.dur) texts.push(String(s.dur)); });
+    tl.forEach(s => {
+      const id = s.ex || s.next;
+      if (id) { const n = ex(id).n; texts.push(n, `Ahora: ${n}.`, `Siguiente: ${n}.`, `Primero: ${n}.`); }
+      if (s.reps) texts.push(String(s.reps), `${s.reps} repeticiones.`);
+      if (s.dur) texts.push(String(s.dur), `${s.dur} segundos.`, `${s.dur} segundos, por lado.`, `Descanso de ${s.dur} segundos.`);
+    });
     texts.forEach(t => { const p = vplan(t, idx); if (p) p.forEach(x => { if (x.id) getBuf(v, x.id).catch(() => {}); }); });
   });
 }
@@ -115,7 +117,7 @@ function openVoiceSettings() {
     <div class="seg" id="vs-v">${Object.entries(VOICES).map(([k, n]) => `<button data-v="${k}" aria-pressed="${v === k}">${n}</button>`).join('')}</div>
     <div class="gap"></div><button class="btn ghost small" id="vs-try">▶ Probar</button>
     <h2>Sin conexión</h2>
-    <p class="note" id="vs-st">Los audios se descargan a medida que se usan. Para tenerlos todos sin internet, guárdalos ahora (unos 4 MB).</p>
+    <p class="note" id="vs-st">Los audios se descargan a medida que se usan. Para tenerlos todos sin internet, guárdalos ahora (unos 13 MB).</p>
     <button class="btn ghost small" id="vs-dl">Guardar la voz en este dispositivo</button>
     <p class="note">Sonido actual en el entrenamiento: ${SOUND_MODES[S.sound]} (se cambia con el altavoz del reproductor).</p>
     <div style="height:16px"></div><button class="btn" id="vs-ok">Listo</button>`, () => {

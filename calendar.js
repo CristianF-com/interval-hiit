@@ -43,7 +43,7 @@ function buildAgenda() {
   const retos = typeof getRetos === 'function' ? getRetos() : {};
   Object.entries(retos).forEach(([key, s]) => {
     const days = retoDays(key, s.k, s.stage); let t = Math.max(today, dayStart(s.nextAt || Date.now()));
-    for (let i = s.day; i < days.length && t <= addDays(today, HORIZON); i++) { push(t, { type: 'reto', key, i, first: i === s.day }); t = addDays(t, days[i].next); }
+    for (let i = s.day; i < days.length && t <= addDays(today, HORIZON); i++) { push(t, { type: 'reto', key, i, first: i === s.day }); t = addDays(t, days[i].gap); }
   });
   // entrenador inteligente: la próxima sesión y luego una cada dos días
   const sm = getSmart();
@@ -79,11 +79,11 @@ function renderCal() {
   for (let i = 0; i < 14; i++) { const t = addDays(now, i), k = dkey(t); (ag[k] || []).filter(x => x.type !== 'done').forEach(x => up.push({ t, k, x })); }
   const p = getPlan(), sm = getSmart();
   el.innerHTML = `<p class="hero">Calendario</p>
-    <p class="sub">${p || (sm && sm.I) || Object.keys(getRetos()).length ? 'Tus próximos entrenamientos y los que ya hiciste.' : 'Empieza un plan, un reto o el entrenador inteligente para ver aquí tus próximos entrenamientos.'}</p>
+    <p class="sub">${p || (sm && sm.I) || Object.keys(getRetos()).length || (typeof getDumb === 'function' && getDumb()) ? 'Tus próximos entrenamientos y los que ya hiciste.' : 'Empieza un plan, un reto o el entrenador inteligente para ver aquí tus próximos entrenamientos.'}</p>
     <div class="cal-h"><button class="icon-btn" id="cal-prev" aria-label="Mes anterior"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></button>
       <b>${mname}</b><button class="icon-btn" id="cal-next" aria-label="Mes siguiente"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 5l7 7-7 7"/></svg></button></div>
     <div class="cal">${WD.map(w => `<span class="cw">${w}</span>`).join('')}${cells}</div>
-    <div class="legend"><span><i class="dt plan"></i>Plan</span><span><i class="dt smart"></i>Entrenador</span><span><i class="dt rt"></i>Retos</span><span><i class="dt ok"></i>Hecho</span><span><i class="dt part"></i>Incompleto</span></div>
+    <div class="legend"><span><i class="dt plan"></i>Plan</span><span><i class="dt smart"></i>Entrenador</span><span><i class="dt rt"></i>Retos</span>${typeof getDumb === 'function' && getDumb() ? '<span><i class="dt db"></i>Mancuernas</span>' : ''}<span><i class="dt ok"></i>Hecho</span><span><i class="dt part"></i>Incompleto</span></div>
     <div id="cal-day"></div>
     <h2>Próximos 14 días</h2>
     ${up.length ? `<div class="block">${up.map(u => agendaRow(u.x, u.t)).join('')}</div>` : '<div class="empty">Nada programado en los próximos días.</div>'}

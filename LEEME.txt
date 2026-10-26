@@ -108,7 +108,7 @@ VOZ DEL ENTRENADOR
 - Los audios se regeneran con build/gen_voz.py (modelo Kokoro).
 
 RETOS DE REPETICIONES (Planes → Retos de repeticiones)
-- Abdominales, sentadillas, flexiones y dominadas con el programa original de 3 etapas
+- Abdominales, sentadillas, flexiones y dominadas con un programa de 3 etapas
   (cada etapa termina con una prueba). Los días de descanso siguen el programa.
 - Rango a elegir: 0–100, 100–200, 200–300… (en dominadas 0–30, 30–60…; en sentadillas 0–150…).
   O «prueba inicial»: haces todas las que puedas y la app elige rango y etapa.

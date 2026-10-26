@@ -413,6 +413,22 @@ const Anim = (() => {
   // talones con puntas hacia fuera (de frente)
   const CO = m(F0, { tL: -12, sL: -8, tR: 12, sR: 8, pL: -100, pR: 100, uL: -40, fL: -10, uR: 40, fR: 10 });
   T.calf_out = () => k([CO, m(CO, { pL: -14, pR: 14 })], 1400);
+  /* ---------- mancuernas (db: 'two' una en cada mano, 'one' una sujeta con las dos manos) ---------- */
+  const AD = { uL: 2, fL: 2, uR: 4, fR: 4 };
+  const DBH = m(S0, { t: 112, hd: -14, tL: 24, sL: -12, tR: 26, sR: -10, ...AD }); // inclinado para el remo
+  T.db_goblet = () => k([m(S0, { uL: 18, fL: 168, uR: 22, fR: 172 }), m(SQ, { uL: 30, fL: 176, uR: 34, fR: 180 })], 2600, { db: 'one', anchor: 'ankleL' });
+  T.db_rdl = () => k([m(S0, AD), m(S0, { t: 96, hd: -14, tL: 14, sL: 0, tR: 16, sR: 2, ...AD })], 2800, { db: 'two', anchor: 'ankleL' });
+  T.db_lunge = () => k([m(S0, AD), m(LUNGE, AD)], 2600, { db: 'two' });
+  T.db_row = () => k([DBH, m(DBH, { uL: -92, fL: -2, uR: -88, fR: 2 })], 2400, { db: 'two', anchor: 'ankleL' });
+  T.db_floor_press = () => k([m(LIE_K, { uL: 106, fL: 180, uR: 110, fR: 184 }), m(LIE_K, { uL: 178, fL: 178, uR: 182, fR: 182 })], 2400, { db: 'two', anchor: 'sh' });
+  T.db_shoulder = () => k([m(S0, { uL: 28, fL: 172, uR: 32, fR: 176 }), m(S0, { uL: 176, fL: 178, uR: 180, fR: 182 })], 2400, { db: 'two' });
+  T.db_curl = () => k([m(S0, AD), m(S0, { uL: 8, fL: 150, uR: 12, fR: 154 })], 2200, { db: 'two' });
+  T.db_lateral = () => k([m(F0, { uL: -12, fL: -14, uR: 12, fR: 14 }), m(F0, { uL: -86, fL: -92, uR: 86, fR: 92 })], 2400, { db: 'two' });
+  T.db_triceps = () => k([m(S0, { uL: 172, fL: 312, uR: 176, fR: 316 }), m(S0, { uL: 172, fL: 178, uR: 176, fR: 182 })], 2400, { db: 'one' });
+  T.db_thruster = () => k([m(SQ, { uL: 30, fL: 172, uR: 34, fR: 176 }), m(S0, { uL: 176, fL: 178, uR: 180, fR: 182 })], 2400, { db: 'two' });
+  T.db_calf = () => k([m(S0, AD), m(S0, { ...AD, pL: 40, pR: 40 })], 1600, { db: 'two' });
+  Object.assign(MAP, { db_goblet_squat: 'db_goblet', db_rdl: 'db_rdl', db_lunge: 'db_lunge', db_row: 'db_row', db_floor_press: 'db_floor_press', db_shoulder_press: 'db_shoulder',
+    db_curl: 'db_curl', db_lateral_raise: 'db_lateral', db_triceps_ext: 'db_triceps', db_thruster: 'db_thruster', db_calf_raise: 'db_calf' });
   T.quick_feet_deep = () => k([air(m(SQ, { tR: 90, sR: -10 }), 4), air(m(SQ, { tL: 90, sL: -10 }), 4)], 320);
   // burpee para principiantes: pies atrás de uno en uno
   const BSTEP = { v: 's', t: 111, hd: -12, uL: 0, fL: 0, uR: 2, fR: 2, tL: 89, sL: -28, pL: 90, tR: -73, sR: -73, pR: 8 };
@@ -536,7 +552,7 @@ const Anim = (() => {
       if (p.ancPrev && ki > 0) { const q = keys[ki - 1], Jq = fk(q); p.ox = Jq[p.ancPrev][0] + q.ox - J[p.ancPrev][0]; }
       p.oy = tpl.anchorY ? ay0 - J[tpl.anchorY][1] : -lowest(J) - (p.air || 0);
     });
-    const anim = { id, v: keys[0].v, keys, ms: tpl.ms, props: tpl.props || [], open: !!tpl.open, ground: tpl.ground !== false, anchorY: tpl.anchorY, badge: tpl.badge, hands: tpl.hands != null ? !!tpl.hands : !!keys[0].sup && /^(hand|elbow)/.test(anchor), armsBack: !!tpl.armsBack, legsFront: !!tpl.legsFront, armsFront: !!tpl.armsFront, farShade: !!tpl.farShade, noFix: !!tpl.noFix };
+    const anim = { id, v: keys[0].v, keys, ms: tpl.ms, props: tpl.props || [], open: !!tpl.open, ground: tpl.ground !== false, anchorY: tpl.anchorY, badge: tpl.badge, hands: tpl.hands != null ? !!tpl.hands : !!keys[0].sup && /^(hand|elbow)/.test(anchor), armsBack: !!tpl.armsBack, db: tpl.db || null, legsFront: !!tpl.legsFront, armsFront: !!tpl.armsFront, farShade: !!tpl.farShade, noFix: !!tpl.noFix };
     // encuadre: recorre el ciclo y calcula la caja que ocupa
     let x0 = 1e9, x1 = -1e9, y0 = 1e9;
     for (let i = 0; i < 48; i++) {
@@ -668,7 +684,7 @@ const Anim = (() => {
     const base = Math.atan2(dy, dx);
     const c1 = [root[0] + Math.cos(base + a) * L1, root[1] + Math.sin(base + a) * L1];
     const c2 = [root[0] + Math.cos(base - a) * L1, root[1] + Math.sin(base - a) * L1];
-    // mismo lado de flexión que la postura original (evita que el codo/rodilla salte de lado)
+    // mismo lado de flexión que la postura de partida (evita que el codo/rodilla salte de lado)
     const side = (q, e2) => Math.sign((q[0] - root[0]) * (e2[1] - root[1]) - (q[1] - root[1]) * (e2[0] - root[0]));
     const cross = (mid[0] - root[0]) * (end[1] - root[1]) - (mid[1] - root[1]) * (end[0] - root[0]);
     // si la articulación está casi recta el lado es ambiguo: se usa el lado preferido (rodilla delante, codo detrás…)
@@ -885,6 +901,11 @@ const Anim = (() => {
           html += `<path d="${capsule(P, Q, r1, r2)}" fill="${far ? C.skinFar : C.skin}"/>`;
           html += `<path d="${capsule(P, mixPt(P, Q, 0.42), r1 + 0.3, r1 + 0.1)}" fill="${far ? C.shirtFar : C.shirt}"/>`;
         } else html += `<path d="${capsule(P, Q, r1, r2)}" fill="${far ? C.skinFar : C.skin}"/><circle cx="${f1(Q[0])}" cy="${f1(Q[1])}" r="3.8" fill="${far ? C.skinFar : C.skin}"/>`;
+        // mancuerna: de lado y de frente se ve el disco (el eje apunta hacia la cámara)
+        if (a.db && q.startsWith('hand') && (a.db === 'two' || g === 'armR')) {
+          const r = a.db === 'one' ? 7.2 : 6.2, c = a.db === 'one' ? mixPt(J.handL, J.handR, 0.5) : Q;
+          html += `<circle cx="${f1(c[0])}" cy="${f1(c[1])}" r="${r}" fill="${far ? '#3d424c' : '#555c69'}" stroke="#262a31" stroke-width="1.6"/><circle cx="${f1(c[0])}" cy="${f1(c[1])}" r="${(r * 0.38).toFixed(1)}" fill="#262a31"/>`;
+        }
       } else if (/^leg/.test(g)) {
         html += `<path d="${capsule(P, Q, r1, r2)}" fill="${far ? C.skinFar : C.skin}"/>`;
         if (p.startsWith('hip')) html += `<path d="${capsule(P, mixPt(P, Q, 0.6), r1 + 0.7, r2 + 1.2)}" fill="${far ? C.shortsFar : C.shorts}"/>`;

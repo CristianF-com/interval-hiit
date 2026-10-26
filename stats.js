@@ -88,7 +88,7 @@ function statsHTML() {
     const total = e.reps ? `${fmtN(e.reps)} rep${e.tsecs ? `<small>+ ${fmtT(e.tsecs)}</small>` : ''}` : fmtT(e.tsecs);
     return `<tr><td>${esc(ex(e.id).n)}<small>${e.sets} ${e.sets === 1 ? 'serie' : 'series'}</small></td><td>${total}</td><td>${fmtN(e.kcal)}</td><td>${best}</td></tr>`; }).join('')}</tbody></table></div>`;
   if (rows.length > 8) h += `<button class="btn ghost small" id="st-all">${statsAll ? 'Ver menos' : `Ver los ${rows.length} ejercicios`}</button>`;
-  h += `<p class="note">Calorías estimadas con ${S.weight ? 'tu peso (' + S.weight + ' kg)' : '70 kg: pon tu peso en Perfil → Pulsómetro'}; si hay pulso registrado se usa ese cálculo. La mejor marca es la serie con más repeticiones (y su tiempo, cuando quedó medido).</p>`;
+  h += `<p class="note">Calorías estimadas con ${S.weight ? 'tu peso (' + S.weight + ' kg)' : '70 kg: carga tu peso en Perfil → Editar actual'}; si hay pulso registrado se usa ese cálculo. La mejor marca es la serie con más repeticiones (y su tiempo, cuando quedó medido).</p>`;
   // retos
   if (st.retos.length) h += `<h3 class="st-h">Retos</h3><div class="tbl"><table class="st-t"><thead><tr><th>Reto</th><th>Más seguidas</th><th>Tiempo</th><th>Total</th></tr></thead><tbody>${st.retos.map(r => `<tr><td>${esc(r.n)}<small>${r.st ? `rango ${rangeLbl(r.key, r.st.k)} · etapa ${r.st.stage}` : r.sessions + ' sesiones'}</small></td><td>${r.best ? r.best.n : '—'}</td><td>${r.best && r.best.t ? fmtT(r.best.t) : '—'}</td><td>${fmtN(r.total)}</td></tr>`).join('')}</tbody></table></div>`;
   // otros datos

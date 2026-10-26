@@ -23,7 +23,7 @@ const LS = {
   del(k) { try { localStorage.removeItem(NS + k); } catch (e) {} },
   keys() { try { return Object.keys(localStorage).filter(k => k.startsWith(NS)).map(k => k.slice(NS.length)); } catch (e) { return []; } }
 };
-const PROFILE_KEYS = ['settings', 'favs', 'history', 'plan', 'plansDone', 'session', 'smart', 'awards', 'retos'];
+const PROFILE_KEYS = ['settings', 'favs', 'history', 'plan', 'plansDone', 'session', 'smart', 'awards', 'retos', 'dumb'];
 let PROFILE = null;
 const PS = {
   get: (k, d) => LS.get(`p.${PROFILE.id}.${k}`, d),
@@ -253,20 +253,32 @@ function openProfiles() {
 }
 function profileForm(p) {
   let v = p ? p.variant : 'f';
+  const ps = p ? (p.id === PROFILE.id ? S : { ...DEFAULTS, ...LS.get(`p.${p.id}.settings`, {}) }) : {};
   $('#pf-form').innerHTML = `
     <h2>${p ? 'Editar perfil' : 'Nuevo perfil'}</h2>
     <div class="field"><input id="pf-name" maxlength="24" placeholder="Nombre" value="${p ? esc(p.name) : ''}"></div>
-    <div class="gap"></div>${variantSeg('pf-var', v)}<div class="gap"></div>
+    <div class="gap"></div>${variantSeg('pf-var', v)}
+    <h2>Datos personales</h2>
+    <div class="adv" style="grid-template-columns:1fr 1fr 1fr;padding:0">
+      <label>Edad<input type="number" inputmode="numeric" min="10" max="99" id="pf-age" value="${ps.age || ''}" placeholder="—"></label>
+      <label>Peso (kg)<input type="number" inputmode="decimal" min="25" max="250" step="0.1" id="pf-kg" value="${ps.weight || ''}" placeholder="—"></label>
+      <label>Altura (cm)<input type="number" inputmode="numeric" min="100" max="230" id="pf-cm" value="${ps.height || ''}" placeholder="—"></label>
+    </div>
+    <p class="note">Se usan para calcular las calorías, tus zonas de pulso y los pesos sugeridos con mancuernas.</p>
+    <div class="gap"></div>
     <button class="btn small" id="pf-save">${p ? 'Guardar' : 'Crear y cambiar'}</button>
     ${p && profiles().length > 1 ? '<div class="gap"></div><button class="btn danger" id="pf-del">Eliminar este perfil y sus datos</button>' : ''}`;
   bindSeg('pf-var', 'v', x => v = x);
-  $('#pf-name').focus();
   $('#pf-save').onclick = () => {
     const name = $('#pf-name').value.trim(); if (!name) { toast('Escribe un nombre'); return; }
+    const num = (sel, lo, hi) => { const x = parseFloat(String($(sel).value).replace(',', '.')); return isFinite(x) && x >= lo && x <= hi ? Math.round(x * 10) / 10 : null; };
+    const pd = { age: num('#pf-age', 10, 99), weight: num('#pf-kg', 25, 250), height: num('#pf-cm', 100, 230) };
+    const putPD = id => { if (id === PROFILE.id) { Object.assign(S, pd); save(); } else { const st = LS.get(`p.${id}.settings`, {}); LS.set(`p.${id}.settings`, { ...st, ...pd }); } };
     if (p) {
+      putPD(p.id);
       const list = profiles(); const q = list.find(x => x.id === p.id); q.name = name.slice(0, 24); q.variant = v; saveProfiles(list);
       PROFILE = q; renderWho(); closeSheet(); show(currentView); toast('Perfil actualizado');
-    } else { const n = createProfile(name, v); closeSheet(); switchProfile(n.id); toast('Perfil creado: ' + n.name); }
+    } else { const n = createProfile(name, v); putPD(n.id); closeSheet(); switchProfile(n.id); toast('Perfil creado: ' + n.name); }
   };
   const del = $('#pf-del');
   if (del) del.onclick = async () => {
@@ -414,6 +426,7 @@ function title(w) {
   if (w.kind === 'plan') return w.title;
   if (w.kind === 'test') return 'Prueba de capacidad';
   if (w.kind === 'reto') return w.title;
+  if (w.kind === 'db') return w.title || 'Mancuernas';
   if (w.smart) return `Sesión ${w.smartN} · ${FOCUS[w.focus].n}`;
   return w.parts.includes('all') ? 'Cuerpo completo' : w.parts.map(k => PARTS[k]).join(' + ');
 }
@@ -596,6 +609,16 @@ function buildTimeline(w) {
     w.tests.forEach((tt, i) => {
       t.push({ k: 'work', ex: tt.ex, dur: 60, sec: 'Prueba', i, N: w.tests.length, test: tt.key });
       if (i < w.tests.length - 1) t.push({ k: 'rest', dur: 45, label: 'Anota tus repeticiones', ask: tt.key });
+    });
+  } else if (w.kind === 'db') {
+    // mancuernas: series seguidas de cada ejercicio con su descanso
+    const N = w.items.length;
+    w.items.forEach((it, i) => {
+      for (let k = 0; k < it.sets; k++) {
+        t.push({ k: 'work', ex: it.id, dur: 0, reps: it.reps, kg: it.kg, sec: 'Ronda', i, N, set: k, S: it.sets, metaTxt: `Ejercicio <b>${i + 1}/${N}</b> · Serie <b>${k + 1}/${it.sets}</b>` });
+        if (k < it.sets - 1) t.push({ k: 'rest', dur: it.rest, label: 'Descanso' });
+      }
+      if (i < N - 1) t.push({ k: 'rest', dur: w.restEx || 90, label: 'Descanso' });
     });
   } else if (w.kind === 'plan') {
     const R = w.rounds.length;
@@ -978,6 +1001,7 @@ $('#hist-list').onclick = e => {
   const w = clone(PS.get('history', [])[+r.dataset.rep].w);
   if (w.kind === 'test') { openTestSetup(); return; }
   if (w.kind === 'reto') { openReto(w.reto); return; }
+  if (w.kind === 'db') { openDbStart(); return; }
   if (w.kind === 'plan') { w.warm = []; w.cool = []; }
   openPreview(w, 'hist');
 };
@@ -1092,7 +1116,7 @@ function logClose() {
   const o = P.logOpen; P.logOpen = null; if (!o) return;
   const s = P.tl[o.i]; if (!s) return;
   const ms = Math.round(P.activeMs - o.at); if (ms < 1500) return;
-  (P.log = P.log || []).push([s.ex, s.reps || 0, s.dur || 0, ms]);
+  (P.log = P.log || []).push(s.kg != null ? [s.ex, s.reps || 0, s.dur || 0, ms, s.kg] : [s.ex, s.reps || 0, s.dur || 0, ms]);
 }
 function step(i, silent, reason) {
   logClose();
@@ -1150,6 +1174,7 @@ const EASIER = {
   v_ups: 'single_leg_v_up', single_leg_v_up: 'crunches', wide_legged_v_ups: 'v_ups', sit_ups: 'crunches', straight_leg_bicycle_crunches: 'bicycle_crunches',
   russian_twist_hard: 'russian_twist_easy', knee_tuck_crunches: 'reverse_crunches', leg_raises: 'reverse_crunches', sl_crab_bridge: 'crab_bridge', single_leg_bridge: 'bridge', marching_wall_sit: 'wall_sit'
 };
+const fmtKg = k => (Math.round(k * 10) / 10).toLocaleString('es');
 const easierOf = id => { const b = (id || '').replace(/_(l|r)$/, ''); const e = EASIER[b]; return e && CATALOG[e] ? e : null; };
 // cambia el ejercicio por su versión más fácil en lo que queda del entrenamiento (y en la sesión guardada)
 function makeEasier() {
@@ -1165,13 +1190,15 @@ function render() {
   const s = cur(); if (!s) return;
   $('#player').className = 'player ' + s.k;
   let phase, name, cue = '', meta;
-  if (s.k === 'work') { const e = ex(s.ex); phase = s.sec === 'Ronda' ? '¡Dale!' : s.sec; name = e.n; cue = e.d; }
+  if (s.k === 'work') { const e = ex(s.ex); phase = s.kg != null ? `${fmtKg(s.kg)} kg · serie ${s.set + 1} de ${s.S}` : s.sec === 'Ronda' ? '¡Dale!' : s.sec; name = e.n; cue = e.d; }
   else { phase = (s.k === 'prep' ? 'Prepárate' : s.label) + (s.next ? ' · siguiente' : ''); name = s.next ? ex(s.next).n : ''; cue = s.next ? ex(s.next).d : ''; }
   $('#p-phase').textContent = phase; $('#p-name').textContent = name; $('#p-cue').textContent = cue;
   const eid = s.k === 'work' ? s.ex : s.next, easy = !s.ask && easierOf(eid);
   $('#p-easy').classList.toggle('hidden', !easy);
   if (easy) $('#p-easy').innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg> Más fácil: ${esc(ex(easy).n)}`;
   meta = s.r != null ? `Ronda <b>${s.r + 1}/${s.R}</b>${s.k === 'work' ? ` · Ejercicio <b>${s.i + 1}/${s.N}</b>` : ''}` : (s.sec ? `${s.sec} <b>${s.i + 1}/${s.N}</b>` : '&nbsp;');
+  if (s.metaTxt) meta = s.metaTxt;
+  else if (s.k !== 'work' && s.next && P.w.kind === 'db') { const nx = P.tl.slice(P.i + 1).find(x => x.k === 'work'); if (nx) meta = nx.metaTxt; }
   $('#p-meta').innerHTML = meta;
   $('#p-next').innerHTML = s.k === 'work' ? `<span>Siguiente</span><b>${s.next ? esc(ex(s.next).n) : '¡Último!'}</b>` : `<span>Restante aprox.</span><b id="p-left"></b>`;
   $('#p-ring').classList.toggle('reps', !!s.reps);
@@ -1243,7 +1270,7 @@ function openMenu() {
   if (!P.running) return;
   const wasPaused = P.paused; if (!wasPaused) togglePause();
   P.menuResume = !wasPaused;
-  const w = P.w, prog = isProgrammed(w), canChange = w.kind !== 'test';
+  const w = P.w, prog = isProgrammed(w), canChange = w.kind !== 'test' && w.kind !== 'db';
   const tot = total(P.tl), before = P.tl.slice(0, P.i).reduce((a, x) => a + stepDur(x), 0);
   const lvl = w.kind === 'plan' ? 'Nivel ' + PLAN_LEVELS[w.level] : w.smart ? 'Intensidad ' + (getSmart() ? getSmart().I.toFixed(1) : w.I) : w.kind === 'test' ? 'Prueba de capacidad' : LEVELS[w.level - 1];
   $('#p-menu').innerHTML = `<div class="pm-card">

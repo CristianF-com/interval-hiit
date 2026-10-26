@@ -1,23 +1,23 @@
 'use strict';
 /* =========================================================
    Retos de repeticiones (abdominales, sentadillas, flexiones, dominadas)
-   - Programa original: 3 etapas por rango; el último día de cada etapa es una prueba.
+   - Programa: 3 etapas por rango; el último día de cada etapa es una prueba.
    - Rangos: 0–meta, meta–2×meta, … (se elige al empezar).
    - Conteo: sensores de movimiento del móvil o tocando la pantalla.
    ========================================================= */
 const RETOS = {
   situps: { n: 'Abdominales', one: 'abdominal', ex: 'sit_ups', goal: 100, tests: [20, 60, 100], rep: 'ab',
-    modes: { original: 'Móvil sobre el pecho (sensor, como la app original)', toque: 'Tocando la pantalla' }, mode: 'original',
-    how: { original: 'Túmbate con las rodillas flexionadas y sujeta el móvil plano contra el pecho, con la pantalla hacia arriba (puede ir atravesado o a lo largo). La app mide cuánto se inclina la pantalla: cada vez que te incorporas 18° o más, cuenta una.', toque: 'Toca la pantalla en cada repetición.' } },
+    modes: { original: 'Móvil sobre el pecho (sensor)', toque: 'Tocando la pantalla' }, mode: 'original',
+    how: { original: 'Túmbate con las rodillas flexionadas y sujeta el móvil plano contra el pecho, con la pantalla hacia arriba (puede ir atravesado o a lo largo). La app mide cuánto se inclina la pantalla: cuenta una cada vez que te incorporas y vuelves a bajar.', toque: 'Toca la pantalla en cada repetición.' } },
   squats: { n: 'Sentadillas', one: 'sentadilla', ex: 'squats', goal: 150, tests: [20, 100, 150], rep: 'sq',
-    modes: { original: 'Móvil en la mano o en el bolsillo (sensor, como la app original)', muslo: 'Móvil en el bolsillo del pantalón, por el ángulo del muslo (sensor)', toque: 'Tocando la pantalla' }, mode: 'original',
-    how: { original: 'Sujeta el móvil contra el pecho o guárdalo en un bolsillo. Como en la app original, detecta la bajada (menos peso) y la frenada abajo: cuenta al llegar abajo.', muslo: 'Móvil en el bolsillo delantero del pantalón, vertical. Cuenta al volver a subir, cuando el muslo pasa de horizontal a vertical.', toque: 'Toca la pantalla en cada repetición.' } },
+    modes: { original: 'Móvil en la mano o en el bolsillo (sensor)', muslo: 'Móvil en el bolsillo del pantalón, por el ángulo del muslo (sensor)', toque: 'Tocando la pantalla' }, mode: 'original',
+    how: { original: 'Sujeta el móvil contra el pecho o guárdalo en un bolsillo. Detecta la bajada y la frenada abajo: cuenta al llegar abajo.', muslo: 'Móvil en el bolsillo delantero del pantalón, vertical. Cuenta al volver a subir, cuando el muslo pasa de horizontal a vertical.', toque: 'Toca la pantalla en cada repetición.' } },
   pushups: { n: 'Flexiones', one: 'flexión', ex: 'push_ups', goal: 100, tests: [20, 50, 100], rep: 'pu',
-    modes: { toque: 'Tocando la pantalla con la nariz o la barbilla (como la app original)' }, mode: 'toque',
-    how: { toque: 'Deja el móvil en el suelo bajo tu cara y tócalo con la nariz o la barbilla en cada bajada. La app original usaba el sensor de proximidad, que el navegador no permite leer; el toque cumple la misma función.' } },
+    modes: { toque: 'Tocando la pantalla con la nariz o la barbilla' }, mode: 'toque',
+    how: { toque: 'Deja el móvil en el suelo bajo tu cara y tócalo con la nariz o la barbilla en cada bajada.' } },
   pullups: { n: 'Dominadas', one: 'dominada', ex: 'pull_ups', goal: 30, tests: [10, 20, 30], rep: 'dm',
-    modes: { original: 'Móvil en el bolsillo (sensor, como la app original)', toque: 'Tocando la pantalla al bajar' }, mode: 'original',
-    how: { original: 'Guarda el móvil en un bolsillo ajustado o en una banda de brazo. Como en la app original, detecta la bajada y la frenada abajo: cuenta al terminar cada dominada.', toque: 'Deja el móvil cerca y tócalo al bajar de cada dominada.' } },
+    modes: { original: 'Móvil en el bolsillo (sensor)', toque: 'Tocando la pantalla al bajar' }, mode: 'original',
+    how: { original: 'Guarda el móvil en un bolsillo ajustado o en una banda de brazo. Detecta la bajada y la frenada abajo: cuenta al terminar cada dominada.', toque: 'Deja el móvil cerca y tócalo al bajar de cada dominada.' } },
 };
 const RANGES = 10;
 const getRetos = () => PS.get('retos', {}) || {};
@@ -38,8 +38,8 @@ function migrateRetos() {
   if (ch) setRetos(all);
 }
 const rangeLbl = (key, k) => `${k * RETOS[key].goal}–${(k + 1) * RETOS[key].goal}`;
-// días de una etapa en un rango: el rango 0 es el programa original; los demás se escalan
-// para que cada prueba sea (inicio del rango + prueba original)
+// días de una etapa en un rango: el rango 0 es el programa base; los demás se escalan
+// para que cada prueba sea (inicio del rango + prueba base)
 function retoDays(key, k, stage) {
   const R = RETOS[key], src = RETOS_DATA[key][stage - 1], t = R.tests[stage - 1];
   const f = (k * R.goal + t) / t;
@@ -67,7 +67,7 @@ function openRetoSetup(key, change) {
   const R = RETOS[key], cur = getRetos()[key];
   let k = cur ? cur.k : 0, stage = cur ? cur.stage : 1, mode = cur && R.modes[cur.mode] ? cur.mode : R.mode, sens = cur && cur.sens ? cur.sens : 3;
   const render = () => sheet(`<h3>${R.n}</h3>
-    <p class="sub">Programa original de 3 etapas con pruebas a las ${R.tests.join(', ')} repeticiones${R.goal !== R.tests[2] ? '' : ''}. Elige desde dónde empiezas.</p>
+    <p class="sub">Programa de 3 etapas con pruebas a las ${R.tests.join(', ')} repeticiones${R.goal !== R.tests[2] ? '' : ''}. Elige desde dónde empiezas.</p>
     <h2>Rango</h2>
     <div class="seg wrap" id="rs-k">${Array.from({ length: RANGES }, (_, i) => `<button data-k="${i}" aria-pressed="${k === i}">${rangeLbl(key, i)}</button>`).join('')}</div>
     <h2>Etapa inicial</h2>
@@ -123,7 +123,7 @@ function openRetoDetail(key) {
 
 /* ---------- Detección de repeticiones con los sensores ---------- */
 // Devuelve un detector: feed(evento devicemotion) → true cuando hay una repetición nueva
-// Detectores basados en los de las apps originales (Runtastic … PRO):
+// Detectores de repeticiones por sensores:
 // - Abdominales: inclinación del móvil sobre el pecho; cuenta cada subida de 18° o más
 //   (tras haber bajado otros 18°), como su detector de orientación.
 // - Sentadillas y dominadas: magnitud de la aceleración; una fase «más liviana» (< g − 0,6 m/s²)
@@ -172,7 +172,7 @@ function makeDetector(key, mode, sens) {
       return false;
     }, level: () => sig, hint: 'Baja hasta que se llene la barra' };
   }
-  // sentadillas y dominadas «como la app original»
+  // sentadillas y dominadas: bajada y frenada
   let x = 0, y = 0, z = true, prevT = 0;
   const LOW_START = -0.6 * k, LOW = -0.2, PH1 = 225 * k, PH2 = 450 * k;
   return { feed(e) {

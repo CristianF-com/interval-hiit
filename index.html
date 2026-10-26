@@ -123,6 +123,7 @@ nav.tabs button[aria-current=true] svg{color:var(--work)}
 .tag{font-size:12px;font-weight:600;padding:4px 9px;border-radius:99px;background:var(--surface2);color:var(--muted)}
 .now{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px;margin:14px 0}
 .now .wk{font-family:var(--display);font-size:15px;color:var(--work);font-weight:700;text-transform:uppercase;letter-spacing:.6px}
+.dbr{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}.dbr:last-child{border-bottom:0}.dbr .t{flex:1;min-width:0}.dbr .t b{display:block;font-size:15px}.dbr .t small{color:var(--muted);font-size:13px}.dbr .warn{font-style:normal;color:var(--work)}.dbr .ask{display:flex;align-items:center;gap:6px}.dbr .ask button{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--surface2);color:inherit;font-size:20px}.dbr .kg{min-width:44px;text-align:center;font-family:var(--display);font-size:22px}.dbr .kg small{font-size:11px;margin-left:2px;color:var(--muted)}
 .now b.name{display:block;font-family:var(--display);font-size:30px;text-transform:uppercase;line-height:1;margin:4px 0 10px}
 .pbar{height:8px;border-radius:9px;background:var(--line);overflow:hidden}
 .pbar i{display:block;height:100%;background:var(--work);border-radius:9px}
@@ -292,7 +293,7 @@ code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.92em;backgroun
 .rday.cur{background:color-mix(in srgb,var(--work) 10%,transparent)}
 .rday.cur .dn{background:var(--work);color:#111}
 .rday .t{flex:1;min-width:0}.rday .t b{display:block;overflow-wrap:anywhere}.rday .t small{color:var(--muted)}
-.dt.rt{background:var(--reto)}
+.dt.rt{background:var(--reto)}.dt.db{background:#a78bfa}
 .rplayer{z-index:21}
 .rp-tap{cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:manipulation}
 .rp-anim{width:min(42vw,170px);aspect-ratio:1;border-radius:50%;background:var(--surface);overflow:hidden;display:grid;place-items:center;margin:4px 0 6px}
@@ -490,6 +491,7 @@ input,textarea,select{font-size:16px}
   <section id="v-coach">
     <p class="hero">Tu coach <em>HIIT</em></p>
     <div id="smart"></div>
+    <div id="dumb"></div>
     <h2 style="margin-top:30px">O arma uno a medida</h2>
     <p class="sub">Elige tiempo, zonas y nivel. El coach arma el circuito.</p>
     <h2>Duración</h2>
@@ -671,6 +673,7 @@ input,textarea,select{font-size:16px}
 <script src="calendar.js"></script>
 <script src="retos_data.js"></script>
 <script src="retos.js"></script>
+<script src="dumbbells.js"></script>
 <script src="stats.js"></script>
 </body>
 </html>
