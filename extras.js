@@ -351,7 +351,7 @@ const AWARDS = [
   ['dm100', '🧗', '100 dominadas', 'Sumaste 100 dominadas.', 2, c => c.dm >= 100, c => [c.dm, 100]],
   ['dm500', '🧗', '500 dominadas', 'Sumaste 500 dominadas.', 3, c => c.dm >= 500, c => [c.dm, 500]],
 ];
-const AWARD_TIER = ['', '#c98a54', '#c3ccd6', '#f5c542'];
+const AWARD_TIER = ['', '#d08b52', '#a9b4c2', '#f2b632'];
 let awardQueue = [];
 function checkAwards(show) {
   if (!PROFILE) return [];
@@ -365,7 +365,7 @@ function checkAwards(show) {
   return fresh;
 }
 function medalSVG(a, on, size = 64) {
-  const col = on ? AWARD_TIER[a[4]] : '#3a3f4a';
+  const col = AWARD_TIER[a[4]] || '#888';
   return `<span class="medal ${on ? 'on' : ''}" style="--mc:${col};width:${size}px;height:${size}px"><span class="ic" style="font-size:${size * 0.44}px">${on ? a[1] : '🔒'}</span></span>`;
 }
 function nextAward() {

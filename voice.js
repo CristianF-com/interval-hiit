@@ -13,7 +13,7 @@ const vbuf = new Map();
 const voiceOf = () => (S.voiceSrc && VOICES[S.voiceSrc]) ? S.voiceSrc : 'dora';
 function audioCtx() {
   if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)();
-  if (AC.state === 'suspended') AC.resume();
+  if (AC.state !== 'running') AC.resume().catch(() => {}); // iOS: «suspended» o «interrupted» (tras un aviso del sistema)
   return AC;
 }
 function getBuf(voice, id) {
@@ -96,8 +96,15 @@ function vPreload(tl) {
     texts.forEach(t => { const p = vplan(t, idx); if (p) p.forEach(x => { if (x.id) getBuf(v, x.id).catch(() => {}); }); });
   });
 }
+// el audio en iPhone solo arranca dentro de un toque: cualquier toque lo reactiva si quedó suspendido
+// (por ejemplo después de pedir permiso a los sensores o de una llamada)
+document.addEventListener('pointerdown', () => { try { if (!AC || AC.state !== 'running') audioCtx(); } catch (e) {} }, true);
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && AC && AC.state !== 'running') AC.resume().catch(() => {}); });
+// iPhone: con la sesión de audio «transient» los pitidos y la voz suenan aunque el interruptor de silencio esté activado
+// y bajan un poco la música que estés escuchando en lugar de cortarla
+function audioSession(on) { try { if (navigator.audioSession) navigator.audioSession.type = on ? 'transient' : 'auto'; } catch (e) {} }
 const _startWorkout = startWorkout;
-startWorkout = function (w, resume) { _startWorkout(w, resume); try { vPreload(P.tl); } catch (e) {} };
+startWorkout = function (w, resume) { audioSession(true); try { audioCtx(); } catch (e) {} _startWorkout(w, resume); try { vPreload(P.tl); } catch (e) {} };
 
 /* ---------- Ajustes de voz (en Perfil) ---------- */
 function openVoiceSettings() {

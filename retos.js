@@ -22,6 +22,21 @@ const RETOS = {
 const RANGES = 10;
 const getRetos = () => PS.get('retos', {}) || {};
 const setRetos = v => PS.set('retos', v);
+// arreglo de los retos ya empezados: antes el siguiente día se ponía sin el día de descanso
+function migrateRetos() {
+  if (!PROFILE) return;
+  const all = getRetos(); let ch = false;
+  for (const [key, s] of Object.entries(all)) {
+    if (!s || s.v >= 2) continue;
+    s.v = 2; ch = true;
+    const last = (s.log || []).filter(l => !l.partial && !l.test).slice(-1)[0];
+    if (!last || !RETOS_DATA[key]) continue;
+    const d = retoDays(key, last.k, last.stage)[last.day]; if (!d) continue;
+    const want = addDays(last.at, d.gap);
+    if ((s.nextAt || 0) < want) s.nextAt = want;
+  }
+  if (ch) setRetos(all);
+}
 const rangeLbl = (key, k) => `${k * RETOS[key].goal}–${(k + 1) * RETOS[key].goal}`;
 // días de una etapa en un rango: el rango 0 es el programa original; los demás se escalan
 // para que cada prueba sea (inicio del rango + prueba original)
@@ -30,7 +45,7 @@ function retoDays(key, k, stage) {
   const f = (k * R.goal + t) / t;
   return src.map(([sets, pauses, next], i) => {
     const test = i === src.length - 1;
-    return { sets: test ? [k * R.goal + t] : sets.map(v => Math.max(1, Math.round(v * f))), pauses, next, test };
+    return { sets: test ? [k * R.goal + t] : sets.map(v => Math.max(1, Math.round(v * f))), pauses, next, gap: next + 1, test };
   });
 }
 const dayTotal = d => d.sets.reduce((a, b) => a + b, 0);
@@ -88,7 +103,7 @@ function openRetoDetail(key) {
   let t = Math.max(dayStart(Date.now()), dayStart(s.nextAt || Date.now()));
   const rows = days.map((d, i) => {
     let when = '';
-    if (i >= s.day) { when = i === s.day ? (due ? 'hoy' : whenStr(t)) : whenStr(t); t = addDays(t, d.next); }
+    if (i >= s.day) { when = i === s.day ? (due ? 'hoy' : whenStr(t)) : whenStr(t); t = addDays(t, d.gap); }
     const done = i < s.day;
     return `<div class="rday ${done ? 'is-done' : ''} ${i === s.day ? 'cur' : ''}"><span class="dn">${done ? '✓' : i + 1}</span>
       <span class="t"><b>${d.test ? 'Prueba: ' + d.sets[0] + ' seguidas' : d.sets.join(' · ')}</b><small>${d.test ? 'Todas las que puedas' : dayTotal(d) + ' en total · descansos de ' + [...new Set(d.pauses)].join('/') + ' s'}${when ? ' · ' + when : ''}</small></span></div>`;
@@ -120,33 +135,27 @@ function makeDetector(key, mode, sens) {
   const G = 9.80665;
   let sig = 0, last = 0;
   if (key === 'situps' && mode === 'original') {
-    // ángulo respecto a plano (0° tumbado, 90° vertical) con la gravedad suavizada
-    let g = null, B = null, A = 0, Z = 0, down = false, armed = false, first = true, lastCount = 0;
-    const STEP = 18 * k;
+    // inclinación del tronco con signo (0° tumbado, 90° sentado, >90° inclinado hacia las rodillas).
+    // Antes se usaba el valor absoluto: al pasar la vertical el ángulo «bajaba» y volvía a subir → contaba dos veces.
+    let g = null, s = 0, base = null, up = false, lastT = 0;
+    const HI = 32 * k, LO = 12;
     return { feed(e) {
       const a = e.accelerationIncludingGravity; if (!a || a.x == null) return false;
-      g = g ? { x: g.x * 0.75 + a.x * 0.25, y: g.y * 0.75 + a.y * 0.25, z: g.z * 0.75 + a.z * 0.25 } : { x: a.x, y: a.y, z: a.z };
-      const n = Math.hypot(g.x, g.y, g.z) || 1, ang = Math.acos(Math.min(1, Math.abs(g.z) / n)) * 180 / Math.PI;
-      sig = Math.min(1, ang / 70);
-      if (B == null) { B = ang; return false; }
-      const d = ang - B;
-      if (Math.abs(d) < 2) return false;          // cambios pequeños se ignoran (como el original)
-      B = ang;
-      if (Math.abs(d) > 30) return false;          // saltos bruscos: ruido
-      let hit = false;
-      if (d > 0) {                                  // subiendo
-        if (down) { A = 0; down = false; }
-        A += d;
-        if (!armed && A >= STEP && (first || Z >= STEP)) {
-          const t = performance.now();
-          if (t - lastCount >= 300) { lastCount = t; hit = true; armed = true; first = false; }
-        }
-      } else {                                      // bajando
-        if (!down) { Z = 0; down = true; }
-        Z += -d;
-        if (Z >= STEP) armed = false;
-      }
-      return hit;
+      const t = performance.now(), dt = lastT ? Math.min(0.2, (t - lastT) / 1000) : 0; lastT = t;
+      // los golpes y tirones (aceleración muy distinta de la gravedad) no mueven el ángulo
+      const mag = Math.hypot(a.x, a.y, a.z);
+      if (Math.abs(mag - G) > 3.5) return false;
+      g = g ? { x: g.x * 0.8 + a.x * 0.2, y: g.y * 0.8 + a.y * 0.2, z: g.z * 0.8 + a.z * 0.2 } : { x: a.x, y: a.y, z: a.z };
+      const n = Math.hypot(g.x, g.y, g.z) || 1;
+      if (!s) s = g.z >= 0 ? 1 : -1;               // pantalla hacia arriba o hacia el pecho: se decide al empezar
+      const ang = Math.acos(Math.max(-1, Math.min(1, s * g.z / n))) * 180 / Math.PI;
+      // referencia «tumbado»: baja al instante, sube despacio (2°/s) por si el móvil se mueve en el pecho
+      base = base == null ? ang : Math.min(ang, base + 2 * dt);
+      const rel = ang - base;
+      sig = Math.max(0, Math.min(1, rel / HI));
+      if (!up && rel > HI && t - last > 600) { up = true; last = t; return true; }
+      if (up && rel < LO) up = false;
+      return false;
     }, level: () => sig, hint: 'Incorpórate hasta que se llene la barra' };
   }
   if (key === 'squats' && mode === 'muslo') {
@@ -196,13 +205,16 @@ async function motionPermission() {
 const RP = { key: null, s: null, d: null, set: 0, count: 0, extra: 0, done: [], phase: 'idle', restEnd: 0, timer: null, det: null, t0: 0, initial: false, mode: 'toque', sensOn: false };
 const sensorMode = (key, mode) => mode !== 'toque';
 async function startReto(key, opts = {}) {
+  // audio antes de pedir permiso a los sensores: después de ese aviso ya no cuenta como toque y el iPhone lo deja mudo
+  try { if (typeof audioSession === 'function') audioSession(true); audioCtx(); beep(660, 60, .1); } catch (e) {}
+  if (S.sound !== 'voz') toast(S.sound === 'silencio' ? 'Sonido desactivado: actívalo con el altavoz en un entrenamiento' : 'Voz desactivada: solo pitidos');
   const R = RETOS[key], s = getRetos()[key];
   let mode = opts.mode || (s ? s.mode : R.mode);
   if (!R.modes[mode]) mode = R.mode; // modos de la versión anterior
   let d;
   if (opts.initial || !s) d = { sets: [0], pauses: [], next: 1, test: true, initial: true };
   else d = retoDays(key, s.k, s.stage)[s.day];
-  Object.assign(RP, { key, s, d, set: 0, count: 0, extra: 0, done: [], phase: 'work', restEnd: 0, initial: !!opts.initial || !s, mode, sens: opts.sens || (s && s.sens) || 3, t0: Date.now(), active: 0, lastTick: performance.now(), paused: false });
+  Object.assign(RP, { key, s, d, set: 0, count: 0, extra: 0, done: [], times: [], setT0: 0, phase: 'work', restEnd: 0, initial: !!opts.initial || !s, mode, sens: opts.sens || (s && s.sens) || 3, t0: Date.now(), active: 0, lastTick: performance.now(), paused: false });
   // sensores (en iPhone hace falta permiso, pedido aquí con el toque del usuario)
   RP.sensOn = false;
   if (sensorMode(key, mode)) {
@@ -237,7 +249,7 @@ function rCount(n) {
   rSave();
 }
 function rEndSet() {
-  RP.done[RP.set] = RP.count;
+  RP.done[RP.set] = RP.count; RP.times[RP.set] = Math.round((RP.active - (RP.setT0 || 0)) / 100) / 10;
   const lastSet = RP.set === RP.d.sets.length - 1;
   if (lastSet || RP.d.test) { rFinish(); return; }
   const p = RP.d.pauses[RP.set] || RP.d.pauses[0] || 60;
@@ -253,7 +265,7 @@ function rTick() {
   if (RP.phase === 'rest') {
     const rem = Math.ceil((RP.restEnd - t) / 1000);
     if (rem !== RP.lastSec) { RP.lastSec = rem; if (rem <= 3 && rem >= 1) { beep(740, 100, .15); say(String(rem)); } }
-    if (t >= RP.restEnd) { RP.phase = 'work'; beep(1046, 300, .2); say(`¡Comienza! ${serieTxt(RP.set, RP.d.sets.length)}: ${rTarget()} repeticiones.`); rRender(); return; }
+    if (t >= RP.restEnd) { RP.phase = 'work'; RP.setT0 = RP.active; beep(1046, 300, .2); say(`¡Comienza! ${serieTxt(RP.set, RP.d.sets.length)}: ${rTarget()} repeticiones.`); rRender(); return; }
     const el = $('#rp-num'); if (el) el.textContent = Math.max(0, rem);
   }
 }
@@ -264,7 +276,7 @@ function setsBar(sets, fill) {
   const n = sets.length, cur = RP.set, el = $('#rp-sets');
   const maxS = Math.max(4, Math.floor(((el && el.clientWidth) || 240) / 40));
   const item = i => { const ok = i < cur, c = i === cur, w = ok ? 100 : c ? Math.round(fill * 100) : 0;
-    return `<div class="st${ok ? ' ok' : c ? ' cur' : ''}"><b>${ok ? RP.done[i] : sets[i]}</b><i><u style="width:${w}%"></u></i></div>`; };
+    return `<div class="st${ok ? ' ok' : c ? ' cur' : ''}"><b>${ok && RP.done[i] != null ? RP.done[i] : sets[i]}</b><i><u style="width:${w}%"></u></i></div>`; };
   const r = n - cur, lbl = r <= 3 ? `<b>${serieTxt(cur, n)}</b>` : `Serie <b>${cur + 1}</b> de ${n}`;
   const cap = `<div class="sb-cap">${RP.phase === 'rest' ? 'Siguiente: ' : ''}${lbl}</div>`;
   const wrap = h => `<div class="sb-row">${h}</div>${cap}`;
@@ -298,7 +310,7 @@ function rFinish(partial) {
   if (RP.initial) partial = false; // la prueba inicial vale aunque se corte antes
   window.removeEventListener('devicemotion', onMotion); clearInterval(RP.timer); wake(false); PS.del('rsession');
   const R = RETOS[RP.key], d = RP.d, all = getRetos(), key = RP.key;
-  if (RP.phase === 'work' && RP.done[RP.set] == null) RP.done[RP.set] = RP.count;
+  if (RP.phase === 'work' && RP.done[RP.set] == null) { RP.done[RP.set] = RP.count; RP.times[RP.set] = Math.round((RP.active - (RP.setT0 || 0)) / 100) / 10; }
   const reps = RP.done.filter(x => x != null);
   const total = reps.reduce((a, b) => a + b, 0), secs = Math.round(RP.active / 1000) || Math.round((Date.now() - RP.t0) / 1000);
   $('#rplayer').classList.add('hidden'); document.body.style.overflow = '';
@@ -330,7 +342,7 @@ function rFinish(partial) {
       } else { s.day = Math.max(0, s.day - 3); msg = `Hiciste ${total} de ${target}. Repite las últimas sesiones y vuelve a intentarlo.`; }
       s.nextAt = addDays(Date.now(), 2);
     } else {
-      s.nextAt = addDays(Date.now(), d.next);
+      s.nextAt = addDays(Date.now(), d.gap);
       s.day = Math.min(days.length - 1, s.day + 1);
       msg = `Próximo entrenamiento: ${whenStr(s.nextAt)}${days[s.day].test ? ' (prueba)' : ''}.`;
     }
@@ -339,7 +351,7 @@ function rFinish(partial) {
   // historial y logros
   const h = PS.get('history', []);
   const rp = { sq: 0, pu: 0, ab: 0, bu: 0, pl: 0, dm: 0 }; rp[R.rep] = total;
-  h.unshift({ at: Date.now(), start: RP.t0, secs, full: !partial, w: { kind: 'reto', reto: key, title: `${R.n} · ${RP.initial ? 'prueba inicial' : d.test ? 'prueba' : 'día ' + ((s.log.slice(-1)[0] || {}).day + 1)}`, sets: reps, rounds: [] }, reps: rp });
+  h.unshift({ at: Date.now(), start: RP.t0, secs, full: !partial, w: { kind: 'reto', reto: key, title: `${R.n} · ${RP.initial ? 'prueba inicial' : d.test ? 'prueba' : 'día ' + ((s.log.slice(-1)[0] || {}).day + 1)}`, sets: reps, times: (RP.times || []).slice(0, reps.length), rounds: [] }, reps: rp });
   PS.set('history', h.slice(0, 400));
   beep(784, 150, .25); setTimeout(() => beep(1046, 350, .3), 170);
   if (!partial) say(`¡Terminaste! ${total} ${R.n.toLowerCase()}. Buen trabajo.`);
@@ -352,7 +364,13 @@ function rFinish(partial) {
   setTimeout(() => checkAwards(true), 800);
 }
 // controles del reproductor del reto
-$('#rp-tap').onclick = e => { if (e.target.closest('button')) return; if (RP.phase === 'work') rCount(1); };
+// toque en cualquier parte de la pantalla (también en horizontal y con las repeticiones extra), salvo en los botones
+// se cuenta al apoyar el dedo (sin esperar al «click», que en el móvil se pierde con toques rápidos)
+$('#rplayer').addEventListener('pointerdown', e => {
+  if (e.target.closest('button,.p-top,#sheet-root') || e.button > 0) return;
+  try { audioCtx(); } catch (e2) {}
+  if (RP.phase === 'work' && !RP.paused) { e.preventDefault(); rCount(1); }
+});
 $('#rp-minus').onclick = () => rCount(-1);
 $('#rp-done').onclick = () => {
   if (RP.phase === 'rest') { RP.restEnd = performance.now(); return; }
@@ -362,7 +380,31 @@ $('#rp-done').onclick = () => {
 $('#rp-pause').onclick = async () => {
   // al reanudar tras un cierre de la app, los sensores se vuelven a pedir con este toque
   if (RP.paused && !RP.sensOn && RP.wantSens && await motionPermission()) { RP.det = makeDetector(RP.key, RP.mode, RP.sens); window.addEventListener('devicemotion', onMotion); RP.sensOn = true; }
-  RP.paused = !RP.paused; if (!RP.paused && RP.phase === 'rest') RP.restEnd += 0; say(RP.paused ? 'Pausa' : 'Seguimos'); rRender(); };
+  if (RP.paused) rResume(); else rPause();
+};
+function rPause() {
+  RP.paused = true; RP.pausedAt = performance.now(); say('Pausa'); rRender();
+  const sensor = RP.sensOn || RP.wantSens;
+  sheet(`<h3>Pausa</h3>
+    <p class="sub">${RETOS[RP.key].n} · ${RP.d.test ? 'prueba' : serieTxt(RP.set, RP.d.sets.length).toLowerCase()}</p>
+    ${sensor ? `<h2>Sensibilidad del sensor</h2>
+      <div class="seg" id="rpz-s">${[1, 2, 3, 4, 5].map(v => `<button data-v="${v}" aria-pressed="${RP.sens === v}">${v}</button>`).join('')}</div>
+      <p class="note">1 = cuenta solo movimientos amplios · 5 = cuenta movimientos más cortos. Si cuenta de más, bájala; si no cuenta, súbela.</p>`
+    : `<p class="note">Modo toque: toca cualquier parte de la pantalla en cada repetición.</p>`}
+    <div style="height:14px"></div><button class="btn" id="rpz-go">▶ Seguir</button>`, () => {
+    if (sensor) bindSeg('rpz-s', 'v', v => {
+      RP.sens = +v; if (RP.sensOn) RP.det = makeDetector(RP.key, RP.mode, RP.sens);
+      const all = getRetos(); if (all[RP.key]) { all[RP.key].sens = RP.sens; setRetos(all); }
+      toast('Sensibilidad ' + v);
+    });
+    $('#rpz-go').onclick = () => { closeSheet(); rResume(); };
+  });
+}
+function rResume() {
+  if (!RP.paused) return;
+  if (RP.phase === 'rest' && RP.pausedAt) RP.restEnd += performance.now() - RP.pausedAt; // el descanso no corre en pausa
+  RP.paused = false; RP.pausedAt = 0; RP.lastTick = performance.now(); say('Seguimos'); rRender();
+}
 $('#rp-close').onclick = () => {
   RP.paused = true; rRender();
   const any = RP.done.length || RP.count;
@@ -385,12 +427,12 @@ function rSave() {
   if (!RP.key || RP.phase === 'idle') return;
   RP.lastSave = performance.now();
   PS.set('rsession', { key: RP.key, d: RP.d, set: RP.set, count: RP.count, done: RP.done, phase: RP.phase, restLeft: RP.phase === 'rest' ? Math.max(0, RP.restEnd - performance.now()) : 0,
-    initial: RP.initial, mode: RP.mode, sens: RP.sens, t0: RP.t0, active: RP.active, sensWanted: sensorMode(RP.key, RP.mode), savedAt: Date.now() });
+    initial: RP.initial, mode: RP.mode, sens: RP.sens, t0: RP.t0, active: RP.active, times: RP.times, setT0: RP.setT0, sensWanted: sensorMode(RP.key, RP.mode), savedAt: Date.now() });
 }
 function resumeReto(x) {
   const R = RETOS[x.key]; if (!R) { PS.del('rsession'); return false; }
   Object.assign(RP, { key: x.key, s: getRetos()[x.key], d: x.d, set: x.set, count: x.count, extra: 0, done: x.done || [], phase: x.phase === 'rest' ? 'rest' : 'work',
-    restEnd: performance.now() + (x.restLeft || 0), initial: !!x.initial, mode: x.mode, sens: x.sens || 3, t0: x.t0, active: x.active || 0, lastTick: performance.now(), paused: true,
+    restEnd: performance.now() + (x.restLeft || 0), initial: !!x.initial, mode: x.mode, sens: x.sens || 3, t0: x.t0, active: x.active || 0, times: x.times || [], setT0: x.setT0 || 0, lastTick: performance.now(), paused: true,
     sensOn: false, det: null, wantSens: !!x.sensWanted });
   if (!RP.initial && !RP.s) { PS.del('rsession'); return false; }
   $('#rplayer').classList.remove('hidden'); document.body.style.overflow = 'hidden'; wake(true);
@@ -400,3 +442,7 @@ function resumeReto(x) {
 }
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') rSave(); });
 window.addEventListener('pagehide', rSave);
+
+migrateRetos();
+const _swR = switchProfile;
+switchProfile = function (id) { _swR(id); try { migrateRetos(); } catch (e) {} };

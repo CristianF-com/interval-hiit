@@ -1003,7 +1003,7 @@ function beep(f = 880, ms = 140, vol = .25) {
   if (S.sound === 'silencio') return;
   try {
     if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)();
-    if (AC.state === 'suspended') AC.resume();
+    if (AC.state !== 'running') AC.resume().catch(() => {});
     const o = AC.createOscillator(), g = AC.createGain(); o.type = 'sine'; o.frequency.value = f;
     g.gain.setValueAtTime(vol, AC.currentTime); g.gain.exponentialRampToValueAtTime(.001, AC.currentTime + ms / 1000);
     o.connect(g).connect(AC.destination); o.start(); o.stop(AC.currentTime + ms / 1000 + .02);
@@ -1071,6 +1071,7 @@ function startWorkout(w, resume) {
   P.startedAt = resume ? resume.startedAt : Date.now();
   P.activeMs = resume ? resume.activeMs : 0;
   P.hr = resume && resume.hr ? resume.hr : []; P.pauses = resume ? resume.pauses || 0 : 0;
+  P.log = resume && resume.log ? resume.log : []; P.logOpen = null;
   if (typeof hrUI === 'function') hrUI();
   P.last = performance.now(); P.lastSave = 0;
   beep(660, 60, .12); // desbloquea el audio en iOS
@@ -1085,8 +1086,18 @@ function startWorkout(w, resume) {
   clearInterval(P.timer); P.timer = setInterval(tick, 100);
   saveSession();
 }
+// registro de cada ejercicio hecho: [id, repeticiones, segundos previstos, ms reales]
+$('#p-easy').onclick = e => { e.stopPropagation(); makeEasier(); };
+function logClose() {
+  const o = P.logOpen; P.logOpen = null; if (!o) return;
+  const s = P.tl[o.i]; if (!s) return;
+  const ms = Math.round(P.activeMs - o.at); if (ms < 1500) return;
+  (P.log = P.log || []).push([s.ex, s.reps || 0, s.dur || 0, ms]);
+}
 function step(i, silent, reason) {
+  logClose();
   P.i = i;
+  if (P.tl[i] && P.tl[i].k === 'work' && !P.tl[i].soft) P.logOpen = { i, at: P.activeMs };
   if (i >= P.tl.length) { finish(true, reason); return; }
   const s = cur();
   P.stepMs = 0; P.remain = s.reps ? 0 : s.dur * 1000; P.endAt = performance.now() + P.remain; P.lastSec = null; P.half = false;
@@ -1120,7 +1131,35 @@ function tick() {
 function saveSession() {
   if (!P.running) return;
   P.lastSave = performance.now();
-  PS.set('session', { w: P.w, i: P.i, remain: P.remain, stepMs: P.stepMs, activeMs: P.activeMs, startedAt: P.startedAt, savedAt: Date.now(), hr: P.hr, pauses: P.pauses });
+  PS.set('session', { w: P.w, i: P.i, remain: P.remain, stepMs: P.stepMs, activeMs: P.activeMs, startedAt: P.startedAt, savedAt: Date.now(), hr: P.hr, pauses: P.pauses, log: P.log });
+}
+// versión más fácil de cada ejercicio (se puede cambiar en pleno entrenamiento)
+const EASIER = {
+  push_ups: 'knee_push_ups', wide_push_ups: 'wide_knee_push_ups', narrow_push_ups: 'narrow_knee_push_ups', stagger_push_ups: 'knee_stagger_push_ups',
+  side_to_side_push_ups: 'knee_side_to_side_push_ups', push_up_shoulder_taps: 'knee_push_up_shoulder_taps', push_up_side_planks: 'knee_push_up_side_planks',
+  up_down_push_ups: 'knee_up_down_push_ups', up_downs: 'knee_up_downs', commander_push_ups: 'up_downs', narrow_to_wide_push_ups: 'knee_plyo_push_ups',
+  knee_plyo_push_ups: 'knee_push_ups', limb_raise_push_ups: 'push_ups', alligator_push_ups: 'push_ups', push_up_jacks: 'push_ups', pike_push_ups: 'plank_to_down_dog',
+  knee_push_ups: 'inclined_wall_push_ups', wide_knee_push_ups: 'inclined_wall_push_ups', narrow_knee_push_ups: 'inclined_wall_push_ups',
+  high_side_plank: 'mod_high_side_plank', low_side_plank: 'mod_low_side_plank', low_side_plank_leg_lifts: 'mod_low_side_plank_lifts', side_star_plank: 'high_side_plank',
+  jump_squats: 'squats', '180_jump_squats': 'jump_squats', forward_jump_squats: 'jump_squats', butt_kicker_jump_squats: 'jump_squats', plie_jump_squats: 'plie_squats',
+  squat_jacks: 'squats', squat_stars: 'jump_squats', squat_to_high_knee_jumps: 'squat_to_high_knee', frog_squats: 'squats',
+  jump_lunges: 'backward_lunges', lunge_high_knee_jumps: 'lunge_to_high_knee', scissor_switch: 'backward_lunges', pendulum_lunges: 'backward_lunges', walking_lunges: 'backward_lunges',
+  '6_count_burpees': '4_count_burpees', flat_out_burpees: '4_count_burpees', flat_out_burpee_tuck_jumps: 'flat_out_burpees', ultimate_burpees: '6_count_burpees', '4_count_burpees': 'beginner_burpees',
+  jumping_jacks: 'mod_jumping_jacks', star_jacks: 'jumping_jacks', clap_jacks: 'jumping_jacks', tuck_jumps: 'jump_squats', high_knees: 'walking_high_knees', wide_high_knees: 'walking_high_knees',
+  rockstars: 'jump_squats', inchworm_tuck_jumps: 'inchworms', high_plank_jumping_jacks: 'high_plank_jacks', high_plank_jacks: 'high_plank',
+  v_ups: 'single_leg_v_up', single_leg_v_up: 'crunches', wide_legged_v_ups: 'v_ups', sit_ups: 'crunches', straight_leg_bicycle_crunches: 'bicycle_crunches',
+  russian_twist_hard: 'russian_twist_easy', knee_tuck_crunches: 'reverse_crunches', leg_raises: 'reverse_crunches', sl_crab_bridge: 'crab_bridge', single_leg_bridge: 'bridge', marching_wall_sit: 'wall_sit'
+};
+const easierOf = id => { const b = (id || '').replace(/_(l|r)$/, ''); const e = EASIER[b]; return e && CATALOG[e] ? e : null; };
+// cambia el ejercicio por su versión más fácil en lo que queda del entrenamiento (y en la sesión guardada)
+function makeEasier() {
+  const s = cur(); if (!s) return;
+  const id = s.k === 'work' ? s.ex : s.next, easy = easierOf(id); if (!easy) return;
+  const swap = o => JSON.parse(JSON.stringify(o).split(`"${id}"`).join(`"${easy}"`));
+  P.tl = P.tl.map((st, i) => i < P.i ? st : swap(st));
+  P.w = swap(P.w);
+  P.animId = null; render(); saveSession();
+  toast('Cambiado a ' + ex(easy).n); say(ex(easy).n);
 }
 function render() {
   const s = cur(); if (!s) return;
@@ -1129,6 +1168,9 @@ function render() {
   if (s.k === 'work') { const e = ex(s.ex); phase = s.sec === 'Ronda' ? '¡Dale!' : s.sec; name = e.n; cue = e.d; }
   else { phase = (s.k === 'prep' ? 'Prepárate' : s.label) + (s.next ? ' · siguiente' : ''); name = s.next ? ex(s.next).n : ''; cue = s.next ? ex(s.next).d : ''; }
   $('#p-phase').textContent = phase; $('#p-name').textContent = name; $('#p-cue').textContent = cue;
+  const eid = s.k === 'work' ? s.ex : s.next, easy = !s.ask && easierOf(eid);
+  $('#p-easy').classList.toggle('hidden', !easy);
+  if (easy) $('#p-easy').innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg> Más fácil: ${esc(ex(easy).n)}`;
   meta = s.r != null ? `Ronda <b>${s.r + 1}/${s.R}</b>${s.k === 'work' ? ` · Ejercicio <b>${s.i + 1}/${s.N}</b>` : ''}` : (s.sec ? `${s.sec} <b>${s.i + 1}/${s.N}</b>` : '&nbsp;');
   $('#p-meta').innerHTML = meta;
   $('#p-next').innerHTML = s.k === 'work' ? `<span>Siguiente</span><b>${s.next ? esc(ex(s.next).n) : '¡Último!'}</b>` : `<span>Restante aprox.</span><b id="p-left"></b>`;
@@ -1275,7 +1317,9 @@ function finish(full, reason) {
   $('#player').classList.add('hidden');
   renderResume();
   if (secs < 20 && !full) { document.body.style.overflow = ''; return; }
+  logClose();
   const entry = { at: Date.now(), start: P.startedAt, secs, full, w: P.w, pauses: P.pauses || 0 };
+  if (P.log && P.log.length) entry.log = P.log;
   if (P.w.kind !== 'test') entry.reps = repsOf(entry, full ? undefined : P.i);
   const hrs = P.hr && P.hr.length ? hrSummary(P.hr) : null; if (hrs) { hrs.src = 'banda'; entry.hr = hrs; }
   const h = PS.get('history', []); h.unshift(entry); PS.set('history', h.slice(0, 400));
