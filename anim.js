@@ -428,7 +428,7 @@ const Anim = (() => {
   T.db_thruster = () => k([m(SQ, { uL: 30, fL: 172, uR: 34, fR: 176 }), m(S0, { uL: 176, fL: 178, uR: 180, fR: 182 })], 2400, { db: 'two' });
   T.db_calf = () => k([m(S0, AD), m(S0, { ...AD, pL: 40, pR: 40 })], 1600, { db: 'two' });
   Object.assign(MAP, { db_goblet_squat: 'db_goblet', db_rdl: 'db_rdl', db_lunge: 'db_lunge', db_row: 'db_row', db_floor_press: 'db_floor_press', db_shoulder_press: 'db_shoulder',
-    db_curl: 'db_curl', db_lateral_raise: 'db_lateral', db_triceps_ext: 'db_triceps', db_thruster: 'db_thruster', db_calf_raise: 'db_calf' });
+    db_curl: 'db_curl', db_hammer_curl: 'db_curl', db_lateral_raise: 'db_lateral', db_triceps_ext: 'db_triceps', db_thruster: 'db_thruster', db_calf_raise: 'db_calf' });
   T.quick_feet_deep = () => k([air(m(SQ, { tR: 90, sR: -10 }), 4), air(m(SQ, { tL: 90, sL: -10 }), 4)], 320);
   // burpee para principiantes: pies atrás de uno en uno
   const BSTEP = { v: 's', t: 111, hd: -12, uL: 0, fL: 0, uR: 2, fR: 2, tL: 89, sL: -28, pL: 90, tR: -73, sR: -73, pR: 8 };

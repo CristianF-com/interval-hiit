@@ -397,6 +397,11 @@ function pickExercises(n, o, avoid = new Set()) {
   const order = shuffle(o.parts), out = [], used = new Set();
   for (let i = 0; i < n; i++) {
     const t = order[i % order.length], prev = out[out.length - 1];
+    if (o.db && i % 2 === 0 && typeof DB_POOL !== 'undefined') {
+      const dc = DB_POOL.filter(e => e.lv <= o.level && !used.has(e.id) && !avoid.has(e.id));
+      const dp = dc.filter(e => e.p.includes(t)), pick = dp.length ? dp : dc.filter(e => [...e.p].some(p => o.parts.includes(p)));
+      if (pick.length) { const e = rnd(pick); out.push(e); used.add(e.id); continue; }
+    }
     let c = pool.filter(e => e.p.includes(t) && !used.has(e.id) && !avoid.has(e.id));
     if (!c.length) c = pool.filter(e => !used.has(e.id) && !avoid.has(e.id));
     if (!c.length) c = pool.filter(e => !used.has(e.id));
@@ -415,11 +420,11 @@ function chooseSkeleton() {
   return rnd(c);
 }
 function generate() {
-  const o = { parts: activeParts(), level: S.level, noJump: S.noJump };
+  const o = { parts: activeParts(), level: S.level, noJump: S.noJump, db: !!S.useDb };
   const sk = chooseSkeleton(), rounds = [];
   if (S.vary) { const seen = new Set(); for (let r = 0; r < sk.R; r++) { const ids = pickExercises(sk.n, o, seen); ids.forEach(i => seen.add(i)); rounds.push(ids); } }
   else { const ids = pickExercises(sk.n, o); for (let r = 0; r < sk.R; r++) rounds.push(ids); }
-  return { kind: 'coach', created: Date.now(), sk, level: S.level, parts: S.parts.slice(), noJump: S.noJump, vary: S.vary, rounds,
+  return { kind: 'coach', created: Date.now(), sk, level: S.level, parts: S.parts.slice(), noJump: S.noJump, vary: S.vary, rounds, db: !!S.useDb,
     warm: S.warmup ? shuffle(WARM).slice(0, 5) : [], cool: S.cooldown ? shuffle(COOL).slice(0, 5) : [] };
 }
 function title(w) {
@@ -427,8 +432,8 @@ function title(w) {
   if (w.kind === 'test') return 'Prueba de capacidad';
   if (w.kind === 'reto') return w.title;
   if (w.kind === 'db') return w.title || 'Mancuernas';
-  if (w.smart) return `Sesión ${w.smartN} · ${FOCUS[w.focus].n}`;
-  return w.parts.includes('all') ? 'Cuerpo completo' : w.parts.map(k => PARTS[k]).join(' + ');
+  if (w.smart) return `Sesión ${w.smartN} · ${FOCUS[w.focus].n}${w.db ? ' · mancuernas' : ''}`;
+  return (w.parts.includes('all') ? 'Cuerpo completo' : w.parts.map(k => PARTS[k]).join(' + ')) + (w.db ? ' · mancuernas' : '');
 }
 
 /* =========================================================
@@ -480,11 +485,11 @@ function genSmart(sm) {
   // más intensidad dentro del mismo tiempo = menos descanso
   const c = SKELETONS.filter(k => k.dur === dur).sort((a, b) => (b.r / b.w) - (a.r / a.w));
   const band = (I - 1) / 8, sk = c[Math.min(c.length - 1, Math.round(band * (c.length - 1)))];
-  const o = { parts: FOCUS[focus].parts, level, noJump: S.noJump, zoneMax: zoneMaxOf(sm) };
+  const o = { parts: FOCUS[focus].parts, level, noJump: S.noJump, zoneMax: zoneMaxOf(sm), db: !!sm.db };
   let ids = pickExercises(sk.n, o);
   if (ids.length < sk.n) ids = pickExercises(sk.n, { ...o, zoneMax: null });
   const rounds = []; for (let r = 0; r < sk.R; r++) rounds.push(ids);
-  return { kind: 'coach', smart: true, smartN: n, focus, I: +I.toFixed(1), created: Date.now(), sk, level, parts: FOCUS[focus].parts.slice(), noJump: S.noJump, vary: false, rounds,
+  return { kind: 'coach', smart: true, smartN: n, focus, I: +I.toFixed(1), created: Date.now(), sk, level, parts: FOCUS[focus].parts.slice(), noJump: S.noJump, vary: false, rounds, db: !!sm.db,
     warm: S.warmup ? shuffle(WARM).slice(0, 5) : [], cool: S.cooldown ? shuffle(COOL).slice(0, 5) : [] };
 }
 function smartRefresh(sm) {
@@ -540,21 +545,25 @@ function renderSmart() {
   $('#sm-set').onclick = openSmartSettings;
 }
 function openSmartSettings() {
-  const sm = getSmart(); let cap = sm.maxDur || 1800;
+  const sm = getSmart(); let cap = sm.maxDur || 1800, useDb = !!sm.db;
   const caps = DURS.filter(d => d >= 600);
   sheet(`<h3>Entrenador inteligente</h3><p class="sub">Intensidad actual ${sm.I.toFixed(1)} de 10 · ${sm.sessions || 0} sesiones hechas.</p>
     <h2>Duración máxima de cada sesión</h2>
     <div class="seg" id="ss-cap" style="grid-auto-flow:row;grid-template-columns:repeat(4,1fr)">${caps.map(d => `<button data-c="${d}" aria-pressed="${cap === d}">${d / 60} min</button>`).join('')}</div>
+    <h2>Mancuernas</h2>
+    <div class="seg" id="ss-db"><button data-v="0" aria-pressed="${!useDb}">Sin mancuernas</button><button data-v="1" aria-pressed="${useDb}">Con mancuernas</button></div>
+    <p class="note">Con mancuernas, la mitad de los ejercicios de cada circuito se hacen con mancuerna (con un peso liviano: es por tiempo, no por repeticiones).${typeof getDumb === 'function' && getDumb() ? ' Si también usas el entrenador con mancuernas, conviene dejarlo sin: la fuerza ya la trabajas ahí.' : ''}</p>
     <h2>Ajuste manual</h2>
     <div class="row"><button class="btn ghost small" id="ss-down">− Más suave</button><button class="btn ghost small" id="ss-up">+ Más intenso</button></div>
     <p class="note">Las opciones «Sin saltos», «Calentamiento» y «Estiramientos» del coach también se aplican aquí.</p>
     <div style="height:20px"></div><button class="btn" id="ss-save">Guardar</button><div class="gap"></div>
     <button class="btn danger" id="ss-reset">Reiniciar el entrenador</button>`, () => {
     bindSeg('ss-cap', 'c', c => cap = +c);
+    bindSeg('ss-db', 'v', v => useDb = v === '1');
     const nudge = d => { const s2 = getSmart(); s2.I = Math.max(1, Math.min(10, s2.I + d)); s2.log.push({ at: Date.now(), I: s2.I, why: 'manual' }); s2.next = genSmart(s2); setSmart(s2); toast(`Intensidad ${s2.I.toFixed(1)}`); };
     $('#ss-down').onclick = () => nudge(-0.5);
     $('#ss-up').onclick = () => nudge(0.5);
-    $('#ss-save').onclick = () => { const s2 = getSmart(); s2.maxDur = cap; s2.next = genSmart(s2); setSmart(s2); closeSheet(); renderSmart(); toast('Guardado'); };
+    $('#ss-save').onclick = () => { const s2 = getSmart(); s2.maxDur = cap; s2.db = useDb; s2.next = genSmart(s2); setSmart(s2); closeSheet(); renderSmart(); toast('Guardado'); };
     $('#ss-reset').onclick = async () => { if (!(await askApp('Reiniciar entrenador', 'Se borran la prueba de capacidad y la intensidad. Tu historial se mantiene.', 'Reiniciar', true))) return; PS.del('smart'); closeSheet(); renderSmart(); };
   });
 }
@@ -719,12 +728,14 @@ $('#pv-list').onclick = e => {
 let previewFrom = 'coach';
 function show(view) {
   currentView = view;
-  ['coach', 'preview', 'plans', 'cal', 'favs', 'hist', 'lib'].forEach(v => $('#v-' + v).classList.toggle('hidden', v !== view));
+  if (view === 'favs') view = 'hist';   // los guardados ahora están dentro del historial
+  currentView = view;
+  ['coach', 'preview', 'plans', 'retos', 'cal', 'hist', 'lib'].forEach(v => $('#v-' + v).classList.toggle('hidden', v !== view));
   const tab = view === 'preview' ? previewFrom : view === 'lib' ? 'coach' : view;
   document.querySelectorAll('#tabs button').forEach(b => b.setAttribute('aria-current', b.dataset.tab === tab));
   if (view === 'coach') renderSmart();
   if (view === 'plans') renderPlans();
-  if (view === 'favs') renderFavs();
+  if (view === 'retos' && typeof renderRetos === 'function') renderRetos();
   if (view === 'hist') renderHist();
   if (view === 'lib') renderLib();
   if (view === 'cal') renderCal();
@@ -809,14 +820,12 @@ function renderPlans() {
   } else {
     h += `<p class="hero">Planes</p><p class="sub">Programas de 3 a 12 semanas. El progreso se guarda en tu perfil automáticamente.</p><div style="height:16px"></div>`;
   }
-  if (typeof retosHTML === 'function') h += retosHTML();
   if (!plan || showCatalog) h += `<h2 id="cat">${plan ? 'Otros planes' : 'Elige un plan'}</h2>` + catalogHTML(plan);
   const doneList = PS.get('plansDone', []);
   if (doneList.length) h += `<h2>Planes completados</h2><div class="block">${doneList.map(d => `<div class="hist"><div class="t"><b>${esc(FAM[d.fam]?.n || d.fam)}</b><small>${dateStr(d.startedAt)} → ${dateStr(d.finishedAt)} · ${d.sessions} entrenamientos</small></div></div>`).join('')}</div>`;
   el.innerHTML = h;
 
   el.querySelectorAll('[data-fam]').forEach(b => b.onclick = () => openPlanSetup(b.dataset.fam));
-  el.querySelectorAll('[data-reto]').forEach(b => b.onclick = () => openReto(b.dataset.reto));
   if (!plan) return;
   bindSeg('weeks', 'w', w => { viewWeek = +w; renderPlans(); });
   el.querySelectorAll('[data-day]').forEach(b => b.onclick = () => openPlanDay(viewWeek, +b.dataset.day));
@@ -973,23 +982,28 @@ $('#lib-back').onclick = () => show('coach');
 /* ---------- Favoritos & historial ---------- */
 function saveFav(w) { const f = PS.get('favs', []); f.unshift({ ...clone(w), savedAt: Date.now() }); PS.set('favs', f.slice(0, 50)); toast('Guardado'); }
 const summaryLine = w => `${fmt(total(buildTimeline(w)))} min · ${LEVELS[w.level - 1]} · ${w.rounds.length} rondas`;
+let favsOpen = false;
 function renderFavs() {
-  const f = PS.get('favs', []);
-  $('#fav-list').innerHTML = f.length ? `<div class="block">${f.map((w, i) => `<div class="hist"><div class="t"><b>${esc(title(w))}</b><small>${summaryLine(w)}</small></div>
+  const f = PS.get('favs', []), el = $('#hist-favs'); if (!el) return;
+  if (!f.length) { el.innerHTML = `<h2>Guardados</h2><p class="note">Aún no guardaste ninguno. Genera uno en el coach y toca ☆ Guardar.</p>`; return; }
+  const list = favsOpen ? f : f.slice(0, 3);
+  el.innerHTML = `<h2>Guardados</h2><div class="block">${list.map((w, i) => `<div class="hist"><div class="t"><b>${esc(title(w))}</b><small>${summaryLine(w)}</small></div>
     <button class="icon-btn" data-open="${i}" aria-label="Abrir"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg></button>
-    <button class="icon-btn" data-del="${i}" aria-label="Borrar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 7h14M10 7V4h4v3M7 7l1 13h8l1-13"/></svg></button></div>`).join('')}</div>`
-    : `<div class="empty">Aún no guardaste ninguno.<br>Genera uno en el coach y toca ☆ Guardar.</div>`;
+    <button class="icon-btn" data-del="${i}" aria-label="Borrar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 7h14M10 7V4h4v3M7 7l1 13h8l1-13"/></svg></button></div>`).join('')}</div>
+    ${f.length > 3 ? `<button class="btn ghost small" id="fav-more">${favsOpen ? 'Ver menos' : 'Ver los ' + f.length}</button>` : ''}`;
 }
-$('#fav-list').onclick = e => {
+$('#hist-favs').onclick = async e => {
+  if (e.target.closest('#fav-more')) { favsOpen = !favsOpen; renderFavs(); return; }
   const f = PS.get('favs', []); const o = e.target.closest('[data-open]'), d = e.target.closest('[data-del]');
-  if (o) openPreview(clone(f[+o.dataset.open]), 'favs');
-  if (d) { f.splice(+d.dataset.del, 1); PS.set('favs', f); renderFavs(); }
+  if (o) openPreview(clone(f[+o.dataset.open]), 'hist');
+  if (d) { if (!(await askApp('Borrar guardado', title(f[+d.dataset.del]), 'Borrar', true))) return; f.splice(+d.dataset.del, 1); PS.set('favs', f); renderFavs(); }
 };
 function renderHist() {
   const h = PS.get('history', []), wk = Date.now() - 7 * 864e5, thisWeek = h.filter(x => x.at > wk);
   $('#hist-sub').textContent = h.length ? `${h.length} ${h.length === 1 ? 'sesión' : 'sesiones'} de ${PROFILE.name}` : 'Tus sesiones aparecerán aquí.';
   $('#hist-stats').innerHTML = h.length ? `<div class="stat"><b>${thisWeek.length}</b><span>esta semana</span></div><div class="stat"><b>${Math.round(thisWeek.reduce((a, x) => a + x.secs, 0) / 60)}</b><span>min semana</span></div><div class="stat"><b>${Math.round(h.reduce((a, x) => a + x.secs, 0) / 60)}</b><span>min totales</span></div>` : '';
   $('#hist-awards').innerHTML = awardsHTML();
+  renderFavs();
   $('#hist-list').innerHTML = h.length ? `<h2>Sesiones</h2><div class="block">${h.map((x, i) => `<div class="hist"><div class="t" data-det="${i}"><b>${esc(title(x.w))}</b><small>${x.w.kind === 'plan' ? esc(FAM[x.w.fam]?.n || '') + ' · ' : ''}${dateStr(x.at)} · ${fmt(x.secs)} min${x.full ? '' : ' · incompleto'}${x.fb ? ' · ' + FB[x.fb].n.toLowerCase() : ''}${x.w.kind === 'test' && x.w.results && x.w.results.sq != null ? ` · ${x.w.results.sq}/${x.w.results.pu}/${x.w.results.ab}` : ''}${x.hr ? ` · <span class="hrs">♥ ${x.hr.avg}</span>` : ''}</small></div>
     <button class="icon-btn" data-rep="${i}" aria-label="Repetir"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 2.4-5.7M4 4v4h4"/></svg></button></div>`).join('')}</div>`
     : `<div class="empty">Completa tu primer entrenamiento.</div>`;
@@ -1112,6 +1126,7 @@ function startWorkout(w, resume) {
 }
 // registro de cada ejercicio hecho: [id, repeticiones, segundos previstos, ms reales]
 $('#p-easy').onclick = e => { e.stopPropagation(); makeEasier(); };
+$('#p-swap').onclick = e => { e.stopPropagation(); const s = cur(); if (!s) return; const id = s.k === 'work' ? s.ex : s.next, to = swapOf(id); if (to) swapEx(id, to); };
 function logClose() {
   const o = P.logOpen; P.logOpen = null; if (!o) return;
   const s = P.tl[o.i]; if (!s) return;
@@ -1180,21 +1195,46 @@ const easierOf = id => { const b = (id || '').replace(/_(l|r)$/, ''); const e = 
 function makeEasier() {
   const s = cur(); if (!s) return;
   const id = s.k === 'work' ? s.ex : s.next, easy = easierOf(id); if (!easy) return;
-  const swap = o => JSON.parse(JSON.stringify(o).split(`"${id}"`).join(`"${easy}"`));
+  swapEx(id, easy);
+}
+function swapEx(id, to) {
+  const swap = o => JSON.parse(JSON.stringify(o).split(`"${id}"`).join(`"${to}"`));
   P.tl = P.tl.map((st, i) => i < P.i ? st : swap(st));
   P.w = swap(P.w);
+  // sin mancuerna no hay peso
+  if (!isDbEx(to)) { P.tl.forEach((st, i) => { if (i >= P.i && st.ex === to) st.kg = 0; }); (P.w.items || []).forEach(it => { if (it.id === to) it.kg = 0; }); }
   P.animId = null; render(); saveSession();
-  toast('Cambiado a ' + ex(easy).n); say(ex(easy).n);
+  toast('Cambiado a ' + ex(to).n); say(ex(to).n);
 }
+// mismo movimiento con o sin mancuerna
+const DB_SWAP = {
+  db_goblet_squat: 'squats', db_floor_press: 'push_ups', db_row: 'superman_pull', db_rdl: 'single_leg_deadlift', db_lunge: 'backward_lunges',
+  db_shoulder_press: 'pike_push_ups', db_curl: 'superman_pull', db_hammer_curl: 'superman_pull', db_lateral_raise: 'arm_circles_forward',
+  db_triceps_ext: 'triceps_dip', db_thruster: 'overhead_squats', db_calf_raise: 'calf_raises'
+};
+const BW_SWAP = {
+  squats: 'db_goblet_squat', plie_squats: 'db_goblet_squat', narrow_squats: 'db_goblet_squat', pulsing_squats: 'db_goblet_squat',
+  push_ups: 'db_floor_press', knee_push_ups: 'db_floor_press', wide_push_ups: 'db_floor_press', wide_knee_push_ups: 'db_floor_press', inclined_wall_push_ups: 'db_floor_press',
+  superman_pull: 'db_row', single_leg_deadlift: 'db_rdl', bridge: 'db_rdl', backward_lunges: 'db_lunge', forward_lunges: 'db_lunge', walking_lunges: 'db_lunge',
+  pike_push_ups: 'db_shoulder_press', triceps_dip: 'db_triceps_ext', narrow_push_ups: 'db_triceps_ext', narrow_knee_push_ups: 'db_triceps_ext',
+  calf_raises: 'db_calf_raise', overhead_squats: 'db_thruster', arm_circles_forward: 'db_lateral_raise', arm_circles_backward: 'db_lateral_raise'
+};
+const isDbEx = id => /^db_/.test(id || '');
+const hasDumbbells = () => !!S.useDb || (typeof getDumb === 'function' && !!getDumb()) || (P.w && (P.w.db || P.w.kind === 'db'));
+const swapOf = id => { const b = (id || '').replace(/_(l|r)$/, ''); const t = isDbEx(b) ? DB_SWAP[b] : hasDumbbells() ? BW_SWAP[b] : null; return t && CATALOG[t] ? t : null; };
 function render() {
   const s = cur(); if (!s) return;
   $('#player').className = 'player ' + s.k;
   let phase, name, cue = '', meta;
-  if (s.k === 'work') { const e = ex(s.ex); phase = s.kg != null ? `${fmtKg(s.kg)} kg · serie ${s.set + 1} de ${s.S}` : s.sec === 'Ronda' ? '¡Dale!' : s.sec; name = e.n; cue = e.d; }
+  if (s.k === 'work') { const e = ex(s.ex); phase = s.kg ? `${fmtKg(s.kg)} kg · serie ${s.set + 1} de ${s.S}` : s.sec === 'Ronda' ? '¡Dale!' : s.sec; name = e.n; cue = e.d; }
   else { phase = (s.k === 'prep' ? 'Prepárate' : s.label) + (s.next ? ' · siguiente' : ''); name = s.next ? ex(s.next).n : ''; cue = s.next ? ex(s.next).d : ''; }
   $('#p-phase').textContent = phase; $('#p-name').textContent = name; $('#p-cue').textContent = cue;
   const eid = s.k === 'work' ? s.ex : s.next, easy = !s.ask && easierOf(eid);
   $('#p-easy').classList.toggle('hidden', !easy);
+  const tgtStep = s.k === 'work' ? s : P.tl.slice(P.i + 1).find(x => x.k === 'work');
+  const sw = !s.ask && P.w.kind !== 'test' && !(tgtStep && tgtStep.soft) && swapOf(eid);
+  $('#p-swap').classList.toggle('hidden', !sw);
+  if (sw) $('#p-swap').innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 7h12l-3-3M17 17H5l3 3"/></svg> ${isDbEx(sw) ? 'Con mancuerna' : 'Sin mancuerna'}: ${esc(ex(sw).n)}`;
   if (easy) $('#p-easy').innerHTML = `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg> Más fácil: ${esc(ex(easy).n)}`;
   meta = s.r != null ? `Ronda <b>${s.r + 1}/${s.R}</b>${s.k === 'work' ? ` · Ejercicio <b>${s.i + 1}/${s.N}</b>` : ''}` : (s.sec ? `${s.sec} <b>${s.i + 1}/${s.N}</b>` : '&nbsp;');
   if (s.metaTxt) meta = s.metaTxt;

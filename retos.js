@@ -1,6 +1,6 @@
 'use strict';
 /* =========================================================
-   Retos de repeticiones (abdominales, sentadillas, flexiones, dominadas)
+   Retos de repeticiones (abdominales, sentadillas, flexiones, dominadas y 4 con mancuernas)
    - Programa: 3 etapas por rango; el último día de cada etapa es una prueba.
    - Rangos: 0–meta, meta–2×meta, … (se elige al empezar).
    - Conteo: sensores de movimiento del móvil o tocando la pantalla.
@@ -19,6 +19,23 @@ const RETOS = {
     modes: { original: 'Móvil en el bolsillo (sensor)', toque: 'Tocando la pantalla al bajar' }, mode: 'original',
     how: { original: 'Guarda el móvil en un bolsillo ajustado o en una banda de brazo. Detecta la bajada y la frenada abajo: cuenta al terminar cada dominada.', toque: 'Deja el móvil cerca y tócalo al bajar de cada dominada.' } },
 };
+// retos con mancuernas: con las manos ocupadas se cuenta al ritmo de la app o con el móvil en el brazo
+const DB_MODES = (where, extra) => ({
+  modes: { ritmo: 'Al ritmo de la app (cuenta sola)', brazo: `Móvil ${where} (sensor)`, toque: 'Tocando la pantalla' }, mode: 'ritmo',
+  how: { ritmo: 'Deja el móvil a la vista: suena un pitido por repetición y cuenta sola. Sube con el pitido y baja controlando. Si no llegas, toca «Serie hecha» y corrige con «−1».',
+    brazo: `Sujeta el móvil ${where} con un brazalete o una banda. Cuenta cada vez que vuelves a la posición inicial.${extra || ''}`,
+    toque: 'Toca la pantalla al terminar cada repetición (con el codo o los nudillos, sin soltar la mancuerna).' } });
+Object.assign(RETOS, {
+  dbtriceps: { n: 'Extensión de tríceps', one: 'extensión', ex: 'db_triceps_ext', goal: 50, tests: [15, 30, 50], rep: 'db', db: 1, tilt: 60, ...DB_MODES('en el antebrazo') },
+  dblateral: { n: 'Elevación lateral', one: 'elevación', ex: 'db_lateral_raise', goal: 50, tests: [15, 30, 50], rep: 'db', db: 1, tilt: 50, ...DB_MODES('en la parte alta del brazo', ' Sube hasta la altura del hombro.') },
+  dbpress: { n: 'Press de hombros', one: 'press', ex: 'db_shoulder_press', goal: 50, tests: [15, 30, 50], rep: 'db', db: 1, tilt: 45, ...DB_MODES('en la parte alta del brazo') },
+  dbhammer: { n: 'Curl martillo', one: 'curl', ex: 'db_hammer_curl', goal: 50, tests: [15, 30, 50], rep: 'db', db: 1, tilt: 60, ...DB_MODES('en el antebrazo') },
+});
+// programa: el de flexiones escalado a pruebas de 15, 30 y 50 (mismas etapas, descansos y días libres entre sesiones)
+['dbtriceps', 'dblateral', 'dbpress', 'dbhammer'].forEach(key => {
+  RETOS_DATA[key] = RETOS_DATA.pushups.map((st, si) => st.map(([sets, pauses, next]) => [sets.map(v => Math.max(3, Math.round(v * [0.75, 0.6, 0.5][si]))), pauses, next]));
+});
+const TEMPOS = [2, 3, 4];
 const RANGES = 10;
 const getRetos = () => PS.get('retos', {}) || {};
 const setRetos = v => PS.set('retos', v);
@@ -53,19 +70,33 @@ const dayTotal = d => d.sets.reduce((a, b) => a + b, 0);
 /* ---------- Pantalla de Planes: tarjetas de retos ---------- */
 function retosHTML() {
   const st = getRetos();
-  return `<h2>Retos de repeticiones</h2><div class="retos">${Object.entries(RETOS).map(([key, R]) => {
+  const card = ([key, R]) => {
     const s = st[key];
     if (!s) return `<button class="reto" data-reto="${key}"><b>${R.n}</b><small>De 0 a ${R.goal} y más</small><span class="tag">Empezar</span></button>`;
     const days = retoDays(key, s.k, s.stage), d = days[s.day], due = Date.now() >= (s.nextAt || 0);
     const pct = Math.round(((s.stage - 1) * 100 + s.day / days.length * 100) / 3);
-    return `<button class="reto on" data-reto="${key}"><b>${R.n}</b><small>${rangeLbl(key, s.k)} · etapa ${s.stage}/3 · día ${s.day + 1}/${days.length}</small>
+    return `<button class="reto on" data-reto="${key}"><b>${R.n}</b><small>${rangeLbl(key, s.k)}${s.kg ? ' · ' + fmtKg(s.kg) + ' kg' : ''} · etapa ${s.stage}/3 · día ${s.day + 1}/${days.length}</small>
       <span class="pbar"><i style="width:${pct}%"></i></span><span class="tag ${due ? 'due' : ''}">${due ? (d.test ? 'Hoy: prueba' : 'Hoy: ' + dayTotal(d)) : whenStr(s.nextAt)}</span></button>`;
-  }).join('')}</div>`;
+  };
+  const all = Object.entries(RETOS);
+  return `<h2>Sin equipo</h2><div class="retos">${all.filter(([, R]) => !R.db).map(card).join('')}</div>
+    <h2>Con mancuernas</h2><div class="retos">${all.filter(([, R]) => R.db).map(card).join('')}</div>`;
+}
+function renderRetos() {
+  const el = $('#v-retos'); if (!el || !PROFILE) return;
+  const st = getRetos(), act = Object.keys(st).filter(k => RETOS[k]);
+  el.innerHTML = `<p class="hero">Retos</p>
+    <p class="sub">Programas para llegar a muchas repeticiones de un ejercicio, con pruebas al final de cada etapa. ${act.length ? `Tienes ${act.length} ${act.length === 1 ? 'reto activo' : 'retos activos'}.` : 'Puedes tener varios activos a la vez.'}</p>
+    <div style="height:6px"></div>${retosHTML()}`;
+  el.querySelectorAll('[data-reto]').forEach(b => b.onclick = () => openReto(b.dataset.reto));
 }
 function openReto(key) { const s = getRetos()[key]; if (s) openRetoDetail(key); else openRetoSetup(key); }
 function openRetoSetup(key, change) {
   const R = RETOS[key], cur = getRetos()[key];
   let k = cur ? cur.k : 0, stage = cur ? cur.stage : 1, mode = cur && R.modes[cur.mode] ? cur.mode : R.mode, sens = cur && cur.sens ? cur.sens : 3;
+  let kg = cur && cur.kg ? cur.kg : 0, tempo = cur && cur.tempo ? cur.tempo : 3;
+  const dws = R.db && typeof getDumb === 'function' && getDumb() ? dbWeights(getDumb()) : [];
+  const kgNow = () => { const i = $('#rs-kg'); if (i) kg = parseFloat(String(i.value).replace(',', '.')) || 0; };
   const render = () => sheet(`<h3>${R.n}</h3>
     <p class="sub">Programa de 3 etapas con pruebas a las ${R.tests.join(', ')} repeticiones${R.goal !== R.tests[2] ? '' : ''}. Elige desde dónde empiezas.</p>
     <h2>Rango</h2>
@@ -73,26 +104,37 @@ function openRetoSetup(key, change) {
     <h2>Etapa inicial</h2>
     <div class="seg" id="rs-st">${[1, 2, 3].map(i => `<button data-s="${i}" aria-pressed="${stage === i}">${i}<br><small>hasta ${k * R.goal + R.tests[i - 1]}</small></button>`).join('')}</div>
     <p class="note">Si no sabes dónde empezar, haz la prueba inicial: tantas ${R.n.toLowerCase()} como puedas y elijo el rango y la etapa.</p>
+    ${R.db ? `<h2>Peso de la mancuerna</h2>
+    <div class="field"><input id="rs-kg" inputmode="decimal" value="${kg ? fmtKg(kg) : ''}" placeholder="kg por mancuerna"></div>
+    ${dws.length ? `<div class="chips" id="rs-kgc" style="margin-top:8px">${dws.map(w => `<button class="chip" data-w="${w}" aria-pressed="${kg === w}">${fmtKg(w)} kg</button>`).join('')}</div>` : ''}
+    <p class="note">Usa un peso con el que puedas hacer al menos ${R.tests[0]} seguidas con buena técnica. Mantén el mismo peso durante el reto.</p>` : ''}
     <h2>Cómo contar</h2>
     <div class="seg col" id="rs-m">${Object.entries(R.modes).map(([m, n]) => `<button data-m="${m}" aria-pressed="${mode === m}">${n}</button>`).join('')}</div>
     <p class="note">${esc(R.how[mode])}</p>
-    ${mode !== 'toque' ? `<h2>Sensibilidad del sensor</h2>
+    ${mode === 'ritmo' ? `<h2>Ritmo</h2>
+    <div class="seg" id="rs-tp">${TEMPOS.map(v => `<button data-v="${v}" aria-pressed="${tempo === v}">${v} s<br><small>${v === 2 ? 'rápido' : v === 3 ? 'normal' : 'lento'}</small></button>`).join('')}</div>
+    <p class="note">Segundos por repetición: subir y bajar.</p>` : ''}
+    ${mode !== 'toque' && mode !== 'ritmo' ? `<h2>Sensibilidad del sensor</h2>
     <div class="seg" id="rs-sens">${[1, 2, 3, 4, 5].map(i => `<button data-v="${i}" aria-pressed="${sens === i}">${i}</button>`).join('')}</div>
     <p class="note">Si cuenta de más, bájala; si se le escapan repeticiones, súbela. Siempre puedes tocar la pantalla o usar «−1».</p>` : ''}
     <div style="height:18px"></div>
     <button class="btn" id="rs-go">${change ? 'Guardar cambios' : 'Empezar el reto'}</button><div class="gap"></div>
     <button class="btn ghost small" id="rs-test">Hacer la prueba inicial</button>`, () => {
-    bindSeg('rs-k', 'k', v => { k = +v; render(); });
+    bindSeg('rs-k', 'k', v => { kgNow(); k = +v; render(); });
     bindSeg('rs-st', 's', v => { stage = +v; });
-    bindSeg('rs-m', 'm', v => { mode = v; render(); });
+    bindSeg('rs-m', 'm', v => { kgNow(); mode = v; render(); });
     bindSeg('rs-sens', 'v', v => { sens = +v; });
+    if ($('#rs-tp')) bindSeg('rs-tp', 'v', v => { tempo = +v; });
+    const kc = $('#rs-kgc'); if (kc) kc.onclick = e => { const b = e.target.closest('[data-w]'); if (!b) return; kg = +b.dataset.w; $('#rs-kg').value = fmtKg(kg); kc.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b)); };
     $('#rs-go').onclick = () => {
+      kgNow();
+      if (R.db && !(kg > 0 && kg <= 60)) { toast('Escribe el peso de la mancuerna'); return; }
       const all = getRetos();
-      if (change && all[key]) { const s = all[key]; if (s.k !== k || s.stage !== stage) { s.k = k; s.stage = stage; s.day = 0; } s.mode = mode; s.sens = sens; }
-      else all[key] = { k, stage, day: 0, mode, sens, startedAt: Date.now(), nextAt: Date.now(), log: [] };
-      setRetos(all); closeSheet(); renderPlans(); openRetoDetail(key);
+      if (change && all[key]) { const s = all[key]; if (s.k !== k || s.stage !== stage) { s.k = k; s.stage = stage; s.day = 0; } s.mode = mode; s.sens = sens; s.tempo = tempo; if (R.db) s.kg = kg; }
+      else all[key] = { k, stage, day: 0, mode, sens, tempo, ...(R.db ? { kg } : {}), startedAt: Date.now(), nextAt: Date.now(), log: [], v: 2 };
+      setRetos(all); closeSheet(); renderRetos(); openRetoDetail(key);
     };
-    $('#rs-test').onclick = () => { closeSheet(); startReto(key, { initial: true, mode, sens }); };
+    $('#rs-test').onclick = () => { kgNow(); if (R.db && !(kg > 0)) { toast('Escribe el peso de la mancuerna'); return; } closeSheet(); startReto(key, { initial: true, mode, sens, tempo, kg }); };
   });
   render();
 }
@@ -108,16 +150,16 @@ function openRetoDetail(key) {
     return `<div class="rday ${done ? 'is-done' : ''} ${i === s.day ? 'cur' : ''}"><span class="dn">${done ? '✓' : i + 1}</span>
       <span class="t"><b>${d.test ? 'Prueba: ' + d.sets[0] + ' seguidas' : d.sets.join(' · ')}</b><small>${d.test ? 'Todas las que puedas' : dayTotal(d) + ' en total · descansos de ' + [...new Set(d.pauses)].join('/') + ' s'}${when ? ' · ' + when : ''}</small></span></div>`;
   }).join('');
-  sheet(`<h3>${R.n}</h3><p class="sub">Rango ${rangeLbl(key, s.k)} · etapa ${s.stage} de 3 · día ${s.day + 1} de ${days.length}${s.best ? ' · tu récord: ' + s.best : ''}</p>
+  sheet(`<h3>${R.n}</h3><p class="sub">${s.kg ? fmtKg(s.kg) + ' kg · ' : ''}Rango ${rangeLbl(key, s.k)} · etapa ${s.stage} de 3 · día ${s.day + 1} de ${days.length}${s.best ? ' · tu récord: ' + s.best : ''}</p>
     <div class="gap"></div>
     <button class="btn" id="rd-go">${due ? 'Empezar' : 'Entrenar igual'} · ${days[s.day].test ? 'prueba' : dayTotal(days[s.day]) + ' ' + R.n.toLowerCase()}</button>
     ${due ? '' : `<p class="note">Próximo entrenamiento: ${whenStr(s.nextAt)}. Descansar entre sesiones es parte del programa.</p>`}
     ${last ? `<p class="note">Último: ${dateStr(last.at)} · ${last.total} ${R.n.toLowerCase()}${last.test ? (last.passed ? ' · prueba superada' : ' · prueba no superada') : ''}</p>` : ''}
     <h2>Etapa ${s.stage}</h2><div class="block">${rows}</div>
-    <div class="row"><button class="btn ghost small" id="rd-chg">Cambiar rango o modo</button><button class="btn ghost small" id="rd-quit">Abandonar</button></div>`, () => {
+    <div class="row"><button class="btn ghost small" id="rd-chg">Cambiar ${R.db ? 'peso, rango o modo' : 'rango o modo'}</button><button class="btn ghost small" id="rd-quit">Abandonar</button></div>`, () => {
     $('#rd-go').onclick = () => { closeSheet(); startReto(key); };
     $('#rd-chg').onclick = () => openRetoSetup(key, true);
-    $('#rd-quit').onclick = () => confirmApp(`¿Abandonar el reto de ${R.n.toLowerCase()}?`, 'Se borra el progreso del reto. Las sesiones hechas siguen en tu historial.', 'Abandonar', () => { const a = getRetos(); delete a[key]; setRetos(a); renderPlans(); toast('Reto abandonado'); }, true);
+    $('#rd-quit').onclick = () => confirmApp(`¿Abandonar el reto de ${R.n.toLowerCase()}?`, 'Se borra el progreso del reto. Las sesiones hechas siguen en tu historial.', 'Abandonar', () => { const a = getRetos(); delete a[key]; setRetos(a); renderRetos(); toast('Reto abandonado'); }, true);
   });
 }
 
@@ -157,6 +199,26 @@ function makeDetector(key, mode, sens) {
       if (up && rel < LO) up = false;
       return false;
     }, level: () => sig, hint: 'Incorpórate hasta que se llene la barra' };
+  }
+  if (mode === 'brazo') {
+    // giro del brazo: ángulo entre la gravedad actual y la de la posición inicial
+    // (cuenta al volver a la posición inicial después de pasar el umbral)
+    const HI = (RETOS[key].tilt || 55) * k, LO = Math.min(20, HI * 0.4);
+    let g = null, ref = null, up = false, upT = 0;
+    const ang = (p, q) => { const d = (p[0] * q[0] + p[1] * q[1] + p[2] * q[2]) / ((Math.hypot(...p) * Math.hypot(...q)) || 1); return Math.acos(Math.max(-1, Math.min(1, d))) * 180 / Math.PI; };
+    return { feed(e) {
+      const a = e.accelerationIncludingGravity; if (!a || a.x == null) return false;
+      const v = [a.x, a.y, a.z]; if (Math.abs(Math.hypot(...v) - G) > 4) return false;
+      g = g ? g.map((x, i) => x + 0.25 * (v[i] - x)) : v;
+      if (!ref) ref = g.slice();
+      const th = ang(g, ref), t = performance.now(); sig = Math.min(1, th / HI);
+      if (!up) {
+        if (th > HI) { up = true; upT = t; }
+        else if (th < LO) ref = ref.map((x, i) => x + 0.02 * (g[i] - x));   // la posición inicial se ajusta despacio
+      } else if (th < LO) { up = false; if (t - last > 500) { last = t; return true; } }
+      else if (t - upT > 8000) { ref = g.slice(); up = false; }            // quieto en otra posición: nueva referencia
+      return false;
+    }, reset() { ref = null; up = false; }, level: () => sig, hint: 'Cuenta al volver a la posición inicial' };
   }
   if (key === 'squats' && mode === 'muslo') {
     let g = null, state = 0;
@@ -203,7 +265,7 @@ async function motionPermission() {
 
 /* ---------- Reproductor del reto ---------- */
 const RP = { key: null, s: null, d: null, set: 0, count: 0, extra: 0, done: [], phase: 'idle', restEnd: 0, timer: null, det: null, t0: 0, initial: false, mode: 'toque', sensOn: false };
-const sensorMode = (key, mode) => mode !== 'toque';
+const sensorMode = (key, mode) => mode !== 'toque' && mode !== 'ritmo';
 async function startReto(key, opts = {}) {
   // audio antes de pedir permiso a los sensores: después de ese aviso ya no cuenta como toque y el iPhone lo deja mudo
   try { if (typeof audioSession === 'function') audioSession(true); audioCtx(); beep(660, 60, .1); } catch (e) {}
@@ -214,7 +276,8 @@ async function startReto(key, opts = {}) {
   let d;
   if (opts.initial || !s) d = { sets: [0], pauses: [], next: 1, test: true, initial: true };
   else d = retoDays(key, s.k, s.stage)[s.day];
-  Object.assign(RP, { key, s, d, set: 0, count: 0, extra: 0, done: [], times: [], setT0: 0, phase: 'work', restEnd: 0, initial: !!opts.initial || !s, mode, sens: opts.sens || (s && s.sens) || 3, t0: Date.now(), active: 0, lastTick: performance.now(), paused: false });
+  Object.assign(RP, { key, s, d, set: 0, count: 0, extra: 0, done: [], times: [], setT0: 0, phase: 'work', restEnd: 0, initial: !!opts.initial || !s, mode, sens: opts.sens || (s && s.sens) || 3, t0: Date.now(), active: 0, lastTick: performance.now(), paused: false,
+    tempo: opts.tempo || (s && s.tempo) || 3, kg: opts.kg || (s && s.kg) || 0, nextBeat: 0 });
   // sensores (en iPhone hace falta permiso, pedido aquí con el toque del usuario)
   RP.sensOn = false;
   if (sensorMode(key, mode)) {
@@ -229,6 +292,14 @@ async function startReto(key, opts = {}) {
   rSave();
   const tg = d.test ? (RP.initial ? 'Prueba inicial: todas las que puedas' : `Prueba: ${d.sets[0]} seguidas`) : `Serie 1 de ${d.sets.length}: ${d.sets[0]} repeticiones`;
   say(`${R.n}. ${tg}`);
+  if (RP.mode === 'ritmo') RP.nextBeat = RP.active + 3000;   // margen para agarrar las mancuernas
+}
+// modo ritmo: una repetición por pulso; en la última serie se detiene al llegar al objetivo (las extra se tocan)
+function rBeat() {
+  if (RP.mode !== 'ritmo' || RP.phase !== 'work' || RP.paused) return;
+  const lastSet = RP.set === RP.d.sets.length - 1;
+  if (!RP.d.test && lastSet && RP.count >= rTarget()) return;
+  if (RP.active >= RP.nextBeat) { RP.nextBeat = RP.active + RP.tempo * 1000; rCount(1); }
 }
 function onMotion(e) {
   if (RP.phase !== 'work' || RP.paused || !RP.det) return;
@@ -261,11 +332,11 @@ function rTick() {
   const t = performance.now(), dt = t - RP.lastTick; RP.lastTick = t;
   if (t - (RP.lastSave || 0) > 3000) rSave();
   if (RP.paused) return;
-  if (RP.phase === 'work') RP.active += dt;
+  if (RP.phase === 'work') { RP.active += dt; rBeat(); }
   if (RP.phase === 'rest') {
     const rem = Math.ceil((RP.restEnd - t) / 1000);
     if (rem !== RP.lastSec) { RP.lastSec = rem; if (rem <= 3 && rem >= 1) { beep(740, 100, .15); say(String(rem)); } }
-    if (t >= RP.restEnd) { RP.phase = 'work'; RP.setT0 = RP.active; beep(1046, 300, .2); say(`¡Comienza! ${serieTxt(RP.set, RP.d.sets.length)}: ${rTarget()} repeticiones.`); rRender(); return; }
+    if (t >= RP.restEnd) { RP.phase = 'work'; RP.setT0 = RP.active; RP.nextBeat = RP.active + RP.tempo * 1000; if (RP.det && RP.det.reset) RP.det.reset(); beep(1046, 300, .2); say(`¡Comienza! ${serieTxt(RP.set, RP.d.sets.length)}: ${rTarget()} repeticiones.`); rRender(); return; }
     const el = $('#rp-num'); if (el) el.textContent = Math.max(0, rem);
   }
 }
@@ -291,7 +362,7 @@ function rRender() {
   const R = RETOS[RP.key], d = RP.d, tgt = rTarget(), lastSet = RP.set === d.sets.length - 1;
   const rest = RP.phase === 'rest';
   $('#rplayer').className = 'player rplayer ' + (rest ? 'rest' : 'work');
-  $('#rp-phase').textContent = rest ? 'Descanso' : d.test ? (RP.initial ? 'Prueba inicial' : 'Prueba') : serieTxt(RP.set, d.sets.length);
+  $('#rp-phase').textContent = (rest ? 'Descanso' : d.test ? (RP.initial ? 'Prueba inicial' : 'Prueba') : serieTxt(RP.set, d.sets.length)) + (RP.kg ? ' · ' + fmtKg(RP.kg) + ' kg' : '');
   $('#rp-name').textContent = R.n;
   $('#rp-sets').innerHTML = d.test ? '' : setsBar(d.sets, rest ? 0 : Math.min(1, RP.count / Math.max(1, tgt)));
   let big, small;
@@ -300,7 +371,7 @@ function rRender() {
   else if (lastSet && RP.count >= tgt) { big = '+' + (RP.count - tgt); small = 'extra · sigue si puedes'; }
   else { big = tgt - RP.count; small = lastSet ? 'faltan · última serie' : 'faltan'; }
   $('#rp-num').textContent = big; $('#rp-small').textContent = small;
-  $('#rp-help').textContent = rest ? 'Recupera el aire.' : RP.sensOn ? (RP.det.hint + ' · también puedes tocar la pantalla') : (R.how.toque || 'Toca la pantalla en cada repetición.');
+  $('#rp-help').textContent = rest ? 'Recupera el aire.' : RP.mode === 'ritmo' ? (lastSet && !d.test && RP.count >= tgt ? 'Objetivo cumplido: toca la pantalla por cada extra o «Terminar».' : d.test ? 'Una por pitido. Cuando no puedas más, toca «Terminar» (y «−1» si la última no salió).' : `Una por pitido, cada ${RP.tempo} s. Si no llegas, «Serie hecha».`) : RP.sensOn ? (RP.det.hint + ' · también puedes tocar la pantalla') : (R.how.toque || 'Toca la pantalla en cada repetición.');
   $('#rp-meter').classList.toggle('hidden', !RP.sensOn || rest);
   $('#rp-done').textContent = rest ? 'Saltar descanso' : (d.test || lastSet) ? 'Terminar' : 'Serie hecha';
   $('#rp-pause').textContent = RP.paused ? '▶ Seguir' : 'Pausa';
@@ -315,13 +386,13 @@ function rFinish(partial) {
   const total = reps.reduce((a, b) => a + b, 0), secs = Math.round(RP.active / 1000) || Math.round((Date.now() - RP.t0) / 1000);
   $('#rplayer').classList.add('hidden'); document.body.style.overflow = '';
   RP.phase = 'idle';
-  if (!total) { toast('Sesión sin repeticiones: no se guarda'); renderPlans(); return; }
+  if (!total) { toast('Sesión sin repeticiones: no se guarda'); renderRetos(); return; }
   let msg = '', s = all[key];
   if (RP.initial) {
     // la prueba inicial elige rango y etapa
     const k = Math.min(RANGES - 1, Math.floor(total / R.goal)), r = total - k * R.goal;
     const stage = r < R.tests[0] ? 1 : r < R.tests[1] ? 2 : 3;
-    all[key] = { k, stage, day: 0, mode: RP.mode, sens: RP.sens, startedAt: Date.now(), nextAt: addDays(Date.now(), 1), log: [], best: total };
+    all[key] = { k, stage, day: 0, mode: RP.mode, sens: RP.sens, tempo: RP.tempo, ...(RP.kg ? { kg: RP.kg } : {}), v: 2, startedAt: Date.now(), nextAt: addDays(Date.now(), 1), log: [], best: total };
     s = all[key];
     msg = `Hiciste ${total}. Empiezas en el rango ${rangeLbl(key, k)}, etapa ${stage}, mañana.`;
   } else if (partial) {
@@ -332,7 +403,7 @@ function rFinish(partial) {
   } else {
     const days = retoDays(key, s.k, s.stage), target = d.test ? d.sets[0] : 0;
     const passed = d.test ? total >= target : null;
-    s.log = [...(s.log || []), { at: Date.now(), k: s.k, stage: s.stage, day: s.day, sets: reps, total, test: !!d.test, passed }].slice(-300);
+    s.log = [...(s.log || []), { at: Date.now(), k: s.k, stage: s.stage, day: s.day, sets: reps, total, test: !!d.test, passed, ...(RP.kg ? { kg: RP.kg } : {}) }].slice(-300);
     s.best = Math.max(s.best || 0, Math.max(...reps));
     if (d.test) {
       if (passed) {
@@ -351,7 +422,7 @@ function rFinish(partial) {
   // historial y logros
   const h = PS.get('history', []);
   const rp = { sq: 0, pu: 0, ab: 0, bu: 0, pl: 0, dm: 0 }; rp[R.rep] = total;
-  h.unshift({ at: Date.now(), start: RP.t0, secs, full: !partial, w: { kind: 'reto', reto: key, title: `${R.n} · ${RP.initial ? 'prueba inicial' : d.test ? 'prueba' : 'día ' + ((s.log.slice(-1)[0] || {}).day + 1)}`, sets: reps, times: (RP.times || []).slice(0, reps.length), rounds: [] }, reps: rp });
+  h.unshift({ at: Date.now(), start: RP.t0, secs, full: !partial, w: { kind: 'reto', reto: key, ...(RP.kg ? { kg: RP.kg } : {}), title: `${R.n}${RP.kg ? ' ' + fmtKg(RP.kg) + ' kg' : ''} · ${RP.initial ? 'prueba inicial' : d.test ? 'prueba' : 'día ' + ((s.log.slice(-1)[0] || {}).day + 1)}`, sets: reps, times: (RP.times || []).slice(0, reps.length), rounds: [] }, reps: rp });
   PS.set('history', h.slice(0, 400));
   beep(784, 150, .25); setTimeout(() => beep(1046, 350, .3), 170);
   if (!partial) say(`¡Terminaste! ${total} ${R.n.toLowerCase()}. Buen trabajo.`);
@@ -359,8 +430,8 @@ function rFinish(partial) {
     <h3 style="text-align:center">${total} ${R.n.toLowerCase()}</h3>
     <p class="sub" style="text-align:center">${reps.join(' · ')} · ${fmt(secs)} min</p>
     <p class="note" style="text-align:center">${esc(msg)}</p><div style="height:16px"></div>
-    <button class="btn" id="rf-ok">Listo</button>`, () => { $('#rf-ok').onclick = () => { closeSheet(); renderPlans(); }; });
-  renderPlans();
+    <button class="btn" id="rf-ok">Listo</button>`, () => { $('#rf-ok').onclick = () => { closeSheet(); renderRetos(); }; });
+  renderRetos();
   setTimeout(() => checkAwards(true), 800);
 }
 // controles del reproductor del reto
@@ -369,7 +440,11 @@ function rFinish(partial) {
 $('#rplayer').addEventListener('pointerdown', e => {
   if (e.target.closest('button,.p-top,#sheet-root') || e.button > 0) return;
   try { audioCtx(); } catch (e2) {}
-  if (RP.phase === 'work' && !RP.paused) { e.preventDefault(); rCount(1); }
+  if (RP.phase === 'work' && !RP.paused) {
+    // al ritmo de la app solo se tocan las extra de la última serie
+    if (RP.mode === 'ritmo' && !(RP.set === RP.d.sets.length - 1 && !RP.d.test && RP.count >= rTarget())) return;
+    e.preventDefault(); rCount(1);
+  }
 });
 $('#rp-minus').onclick = () => rCount(-1);
 $('#rp-done').onclick = () => {
@@ -390,6 +465,7 @@ function rPause() {
     ${sensor ? `<h2>Sensibilidad del sensor</h2>
       <div class="seg" id="rpz-s">${[1, 2, 3, 4, 5].map(v => `<button data-v="${v}" aria-pressed="${RP.sens === v}">${v}</button>`).join('')}</div>
       <p class="note">1 = cuenta solo movimientos amplios · 5 = cuenta movimientos más cortos. Si cuenta de más, bájala; si no cuenta, súbela.</p>`
+    : RP.mode === 'ritmo' ? `<h2>Ritmo</h2><div class="seg" id="rpz-t">${TEMPOS.map(v => `<button data-v="${v}" aria-pressed="${RP.tempo === v}">${v} s</button>`).join('')}</div><p class="note">Segundos por repetición.</p>`
     : `<p class="note">Modo toque: toca cualquier parte de la pantalla en cada repetición.</p>`}
     <div style="height:14px"></div><button class="btn" id="rpz-go">▶ Seguir</button>`, () => {
     if (sensor) bindSeg('rpz-s', 'v', v => {
@@ -397,6 +473,7 @@ function rPause() {
       const all = getRetos(); if (all[RP.key]) { all[RP.key].sens = RP.sens; setRetos(all); }
       toast('Sensibilidad ' + v);
     });
+    if ($('#rpz-t')) bindSeg('rpz-t', 'v', v => { RP.tempo = +v; const all = getRetos(); if (all[RP.key]) { all[RP.key].tempo = RP.tempo; setRetos(all); } });
     $('#rpz-go').onclick = () => { closeSheet(); rResume(); };
   });
 }
@@ -427,12 +504,12 @@ function rSave() {
   if (!RP.key || RP.phase === 'idle') return;
   RP.lastSave = performance.now();
   PS.set('rsession', { key: RP.key, d: RP.d, set: RP.set, count: RP.count, done: RP.done, phase: RP.phase, restLeft: RP.phase === 'rest' ? Math.max(0, RP.restEnd - performance.now()) : 0,
-    initial: RP.initial, mode: RP.mode, sens: RP.sens, t0: RP.t0, active: RP.active, times: RP.times, setT0: RP.setT0, sensWanted: sensorMode(RP.key, RP.mode), savedAt: Date.now() });
+    initial: RP.initial, mode: RP.mode, sens: RP.sens, tempo: RP.tempo, kg: RP.kg, nextBeat: RP.nextBeat, t0: RP.t0, active: RP.active, times: RP.times, setT0: RP.setT0, sensWanted: sensorMode(RP.key, RP.mode), savedAt: Date.now() });
 }
 function resumeReto(x) {
   const R = RETOS[x.key]; if (!R) { PS.del('rsession'); return false; }
   Object.assign(RP, { key: x.key, s: getRetos()[x.key], d: x.d, set: x.set, count: x.count, extra: 0, done: x.done || [], phase: x.phase === 'rest' ? 'rest' : 'work',
-    restEnd: performance.now() + (x.restLeft || 0), initial: !!x.initial, mode: x.mode, sens: x.sens || 3, t0: x.t0, active: x.active || 0, times: x.times || [], setT0: x.setT0 || 0, lastTick: performance.now(), paused: true,
+    restEnd: performance.now() + (x.restLeft || 0), initial: !!x.initial, mode: x.mode, sens: x.sens || 3, tempo: x.tempo || 3, kg: x.kg || 0, nextBeat: x.nextBeat || 0, t0: x.t0, active: x.active || 0, times: x.times || [], setT0: x.setT0 || 0, lastTick: performance.now(), paused: true,
     sensOn: false, det: null, wantSens: !!x.sensWanted });
   if (!RP.initial && !RP.s) { PS.del('rsession'); return false; }
   $('#rplayer').classList.remove('hidden'); document.body.style.overflow = 'hidden'; wake(true);

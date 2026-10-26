@@ -123,6 +123,7 @@ nav.tabs button[aria-current=true] svg{color:var(--work)}
 .tag{font-size:12px;font-weight:600;padding:4px 9px;border-radius:99px;background:var(--surface2);color:var(--muted)}
 .now{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px;margin:14px 0}
 .now .wk{font-family:var(--display);font-size:15px;color:var(--work);font-weight:700;text-transform:uppercase;letter-spacing:.6px}
+.dbt{padding:10px 0;border-bottom:1px solid var(--line)}.dbt:last-child{border-bottom:0}.dbt .t b{display:block;font-size:15px}.dbt .t small{color:var(--muted);font-size:13px}.dbt-c{display:flex;align-items:center;justify-content:space-between;gap:8px;padding-right:2px;margin-top:8px}.dbt .ask{display:flex;align-items:center;gap:6px}.dbt .ask button{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--surface2);color:inherit;font-size:20px}.dbt .kg{min-width:44px;text-align:center;font-family:var(--display);font-size:22px}.dbt .kg small{font-size:11px;margin-left:2px;color:var(--muted)}.dbt .reps{display:flex;align-items:center;gap:6px}.dbt .reps input{width:60px;height:40px;border-radius:12px;border:1px solid var(--line);background:var(--surface2);color:inherit;font-size:18px;text-align:center}.dbt .reps small{color:var(--muted)}
 .dbr{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}.dbr:last-child{border-bottom:0}.dbr .t{flex:1;min-width:0}.dbr .t b{display:block;font-size:15px}.dbr .t small{color:var(--muted);font-size:13px}.dbr .warn{font-style:normal;color:var(--work)}.dbr .ask{display:flex;align-items:center;gap:6px}.dbr .ask button{width:36px;height:36px;border-radius:50%;border:1px solid var(--line);background:var(--surface2);color:inherit;font-size:20px}.dbr .kg{min-width:44px;text-align:center;font-family:var(--display);font-size:22px}.dbr .kg small{font-size:11px;margin-left:2px;color:var(--muted)}
 .now b.name{display:block;font-family:var(--display);font-size:30px;text-transform:uppercase;line-height:1;margin:4px 0 10px}
 .pbar{height:8px;border-radius:9px;background:var(--line);overflow:hidden}
@@ -470,7 +471,8 @@ input,textarea,select{font-size:16px}
 #st-all{margin-top:8px}
 .st-list .kv{display:flex;justify-content:space-between;gap:12px;padding:11px 14px;border-bottom:1px solid var(--line);font-size:14px}
 .st-list .kv:last-child{border-bottom:0}.st-list .kv span{color:var(--muted)}.st-list .kv b{text-align:right}
-.easy{display:inline-flex;align-items:center;gap:6px;margin:-10px 0 12px;padding:6px 12px;border-radius:999px;border:1px solid color-mix(in srgb,var(--c) 50%,transparent);background:color-mix(in srgb,var(--c) 12%,transparent);color:inherit;font-weight:700;font-size:13px;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.easy-row{display:flex;flex-wrap:wrap;justify-content:center;gap:6px;margin:-10px 0 12px;max-width:100%}.easy-row:not(:has(.easy:not(.hidden))){display:none}
+.easy{display:inline-flex;align-items:center;gap:6px;margin:0;padding:6px 12px;border-radius:999px;border:1px solid color-mix(in srgb,var(--c) 50%,transparent);background:color-mix(in srgb,var(--c) 12%,transparent);color:inherit;font-weight:700;font-size:13px;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 [data-theme=naranja] .player.work .easy{border-color:rgba(0,0,0,.35);background:rgba(0,0,0,.08)}
 </style>
 </head>
@@ -502,6 +504,7 @@ input,textarea,select{font-size:16px}
     <div class="seg" id="levels"></div>
     <h2>Opciones</h2>
     <div class="toggles" id="coach-opts">
+      <button class="tg" data-opt="useDb" role="switch"><span>Con mancuernas<small>Mezcla ejercicios con mancuernas en el circuito</small></span><i class="sw"></i></button>
       <button class="tg" data-opt="noJump" role="switch"><span>Sin saltos<small>Bajo impacto, ideal para pisos con vecinos</small></span><i class="sw"></i></button>
       <button class="tg" data-opt="warmup" role="switch"><span>Calentamiento<small>5 movimientos suaves antes (+2:45)</small></span><i class="sw"></i></button>
       <button class="tg" data-opt="cooldown" role="switch"><span>Estiramientos al final<small>5 estiramientos de 30 s (+2:40)</small></span><i class="sw"></i></button>
@@ -544,16 +547,11 @@ input,textarea,select{font-size:16px}
   <!-- PLANES -->
   <section id="v-plans" class="hidden"></section>
 
+  <!-- RETOS -->
+  <section id="v-retos" class="hidden"></section>
+
   <!-- CALENDARIO -->
   <section id="v-cal" class="hidden"></section>
-
-  <!-- GUARDADOS -->
-  <section id="v-favs" class="hidden">
-    <p class="hero">Guardados</p>
-    <p class="sub">Entrenamientos del coach que quieres repetir.</p>
-    <div style="height:16px"></div>
-    <div id="fav-list"></div>
-  </section>
 
   <!-- BIBLIOTECA DE EJERCICIOS -->
   <section id="v-lib" class="hidden">
@@ -569,6 +567,7 @@ input,textarea,select{font-size:16px}
     <p class="hero">Historial</p>
     <p class="sub" id="hist-sub"></p>
     <div class="stats" id="hist-stats"></div>
+    <div id="hist-favs"></div>
     <div id="hist-kpi"></div>
     <div id="hist-awards"></div>
     <div id="hist-list"></div>
@@ -578,8 +577,8 @@ input,textarea,select{font-size:16px}
 <nav class="tabs" id="tabs"><div class="in">
   <button data-tab="coach" aria-current="true"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-7 4 14 3-7h4"/></svg>Coach</button>
   <button data-tab="plans"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V3h6v1M9 10h6M9 14h6M9 18h3"/></svg>Planes</button>
+  <button data-tab="retos"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5v1a3 3 0 0 0 3 3M16 6h3v1a3 3 0 0 1-3 3M12 13v4M8 20h8M10 17h4"/></svg>Retos</button>
   <button data-tab="cal"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/><circle cx="12" cy="15" r="1.4" fill="currentColor"/></svg>Calendario</button>
-  <button data-tab="favs"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg>Guardados</button>
   <button data-tab="hist"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Historial</button>
 </div></nav>
 
@@ -595,7 +594,7 @@ input,textarea,select{font-size:16px}
   <div class="p-main">
     <div class="phase" id="p-phase"></div>
     <div class="exname" id="p-name"></div>
-    <button class="easy hidden" id="p-easy"></button>
+    <div class="easy-row"><button class="easy hidden" id="p-easy"></button><button class="easy hidden" id="p-swap"></button></div>
     <div class="ring" id="p-ring">
       <svg viewBox="0 0 100 100"><circle class="bg" cx="50" cy="50" r="46"/><circle class="fg" id="p-arc" cx="50" cy="50" r="46" stroke-dasharray="289.03" stroke-dashoffset="0"/></svg>
       <div class="anim" id="p-anim"></div>
