@@ -1381,7 +1381,16 @@ document.addEventListener('focusin', e => {
 document.addEventListener('keydown', e => {
   if (e.key === 'Enter' && e.target.tagName === 'INPUT') { e.preventDefault(); e.target.blur(); }
 });
+// solo al tocar una zona «vacía»: si se toca un botón no se cierra antes, para que el toque llegue al botón
+// (al cerrarse el teclado la pantalla se reacomoda y el botón se movería bajo el dedo)
 document.addEventListener('pointerdown', e => {
   const a = document.activeElement;
-  if (isField(a) && !isField(e.target) && !e.target.closest('label')) a.blur();
+  if (!isField(a) || isField(e.target)) return;
+  if (e.target.closest('button,a,label,select,[role=button],[onclick],.prof,.ag,.cd,.ex,.row')) return;
+  a.blur();
+}, true);
+// al pulsar un botón, el teclado se cierra después del toque
+document.addEventListener('click', e => {
+  const a = document.activeElement;
+  if (isField(a) && e.target.closest('button,[role=button]')) setTimeout(() => { if (document.activeElement === a) a.blur(); }, 0);
 }, true);
