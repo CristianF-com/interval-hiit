@@ -115,8 +115,12 @@ const vQual = x => { const k = x.voiceURI + ' ' + x.name; return /premium/i.test
 const vQualTxt = q => q === 2 ? 'premium' : q === 1 ? 'mejorada' : '';
 function esVoices() {
   let v = []; try { v = speechSynthesis.getVoices().filter(x => /^es/i.test(x.lang)); } catch (e) {}
-  return v.sort((a, b) => vQual(b) - vQual(a) || (b.localService - a.localService) || a.name.localeCompare(b.name, 'es'));
+  v.sort((a, b) => vQual(b) - vQual(a) || (b.localService - a.localService) || a.name.localeCompare(b.name, 'es'));
+  // el iPhone a veces informa la misma voz dos veces (o con dos identificadores): queda una por nombre, idioma y calidad
+  const seen = new Set();
+  return v.filter(x => { const k = vName(x).toLowerCase() + '|' + x.lang.replace('_', '-').toLowerCase() + '|' + vQual(x); if (seen.has(k)) return false; seen.add(k); return true; });
 }
+const vName = x => x.name.replace(/\s*\((Enhanced|Premium|Mejorada|Compacta|Compact)\)/ig, '').trim();
 pickVoice = function () {
   const v = esVoices();
   VOICE = (S.sysVoice && v.find(x => x.voiceURI === S.sysVoice)) || v[0] || null;
@@ -126,7 +130,7 @@ function sysVoiceList() {
   const v = esVoices();
   if (!v.length) return '<p class="note">El sistema todavía no informó sus voces. Toca «Probar» o vuelve a abrir este panel.</p>';
   const cur = VOICE && VOICE.voiceURI;
-  return `<div class="seg col" id="vs-sl">${v.map(x => `<button data-u="${esc(x.voiceURI)}" aria-pressed="${x.voiceURI === cur}">${esc(x.name.replace(/\s*\((Enhanced|Premium|Mejorada)\)/i, ''))}<small> · ${esc(x.lang)}${vQualTxt(vQual(x)) ? ' · ' + vQualTxt(vQual(x)) : ''}</small></button>`).join('')}</div>`;
+  return `<div class="seg col" id="vs-sl">${v.map(x => `<button data-u="${esc(x.voiceURI)}" aria-pressed="${x.voiceURI === cur}">${esc(vName(x))}<small> · ${esc(x.lang)}${vQualTxt(vQual(x)) ? ' · ' + vQualTxt(vQual(x)) : ''}</small></button>`).join('')}</div>`;
 }
 
 /* ---------- Ajustes de voz (en Perfil) ---------- */
