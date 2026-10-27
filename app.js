@@ -1160,6 +1160,8 @@ function tick() {
     if (sec !== P.lastSec) {
       P.lastSec = sec;
       if (sec <= 3 && sec >= 1 && s.dur >= 5) { beep(sec === 1 ? 880 : 740, 110, S.sound === 'voz' ? .1 : .22); say(NUM_WORDS[sec]); }
+      // en descansos largos, aviso a 10 s del final para ponerse en posición
+      else if (sec === 10 && (s.k === 'rest' || s.k === 'roundrest') && s.dur >= 20) { const v = S.sound === 'voz' ? .1 : .2; beep(660, 160, v); setTimeout(() => beep(660, 160, v), 220); say('10 segundos. Prepárate.'); }
       if (s.k === 'work' && !s.soft && s.dur >= 30 && sec === Math.round(s.dur / 2) && !ex(s.ex).s) say('¡Mitad!');
     }
     if (s.k === 'work' && ex(s.ex).s && !P.half && rem <= s.dur * 500) { P.half = true; beep(988, 200, .25); say('Cambia de lado'); }

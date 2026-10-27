@@ -108,6 +108,27 @@ function audioSession(on) { try { if (navigator.audioSession) navigator.audioSes
 const _startWorkout = startWorkout;
 startWorkout = function (w, resume) { audioSession(true); try { audioCtx(); } catch (e) {} _startWorkout(w, resume); try { vPreload(P.tl); } catch (e) {} };
 
+/* ---------- Voz del teléfono: elegir entre las voces en español que ofrece el sistema ---------- */
+// En iPhone las voces «mejoradas» y «premium» descargadas aparecen con «enhanced» o «premium» en su identificador;
+// las voces de Siri no están disponibles para las páginas web.
+const vQual = x => { const k = x.voiceURI + ' ' + x.name; return /premium/i.test(k) ? 2 : /enhanced|mejorad/i.test(k) ? 1 : 0; };
+const vQualTxt = q => q === 2 ? 'premium' : q === 1 ? 'mejorada' : '';
+function esVoices() {
+  let v = []; try { v = speechSynthesis.getVoices().filter(x => /^es/i.test(x.lang)); } catch (e) {}
+  return v.sort((a, b) => vQual(b) - vQual(a) || (b.localService - a.localService) || a.name.localeCompare(b.name, 'es'));
+}
+pickVoice = function () {
+  const v = esVoices();
+  VOICE = (S.sysVoice && v.find(x => x.voiceURI === S.sysVoice)) || v[0] || null;
+};
+if ('speechSynthesis' in window) { pickVoice(); speechSynthesis.onvoiceschanged = () => { pickVoice(); const l = document.querySelector('#vs-sys'); if (l) l.innerHTML = sysVoiceList(); }; }
+function sysVoiceList() {
+  const v = esVoices();
+  if (!v.length) return '<p class="note">El sistema todavía no informó sus voces. Toca «Probar» o vuelve a abrir este panel.</p>';
+  const cur = VOICE && VOICE.voiceURI;
+  return `<div class="seg col" id="vs-sl">${v.map(x => `<button data-u="${esc(x.voiceURI)}" aria-pressed="${x.voiceURI === cur}">${esc(x.name.replace(/\s*\((Enhanced|Premium|Mejorada)\)/i, ''))}<small> · ${esc(x.lang)}${vQualTxt(vQual(x)) ? ' · ' + vQualTxt(vQual(x)) : ''}</small></button>`).join('')}</div>`;
+}
+
 /* ---------- Ajustes de voz (en Perfil) ---------- */
 function openVoiceSettings() {
   let v = voiceOf();
@@ -115,13 +136,19 @@ function openVoiceSettings() {
     <p class="sub">Dora y Alex son voces grabadas con acento latino. «Voz del teléfono» usa la del iPhone o del navegador.</p>
     <h2>Voz</h2>
     <div class="seg" id="vs-v">${Object.entries(VOICES).map(([k, n]) => `<button data-v="${k}" aria-pressed="${v === k}">${n}</button>`).join('')}</div>
+    <div id="vs-sysbox" class="hidden"><h2>Voz del teléfono</h2><div id="vs-sys"></div>
+      <p class="note">Aparecen las voces en español que el iPhone deja usar a las apps web; primero las «mejoradas» y «premium». Si descargaste una y no está en la lista, cierra la app del todo (deslizándola hacia arriba) y vuelve a abrirla. Las voces de Siri no están disponibles para apps web.</p></div>
     <div class="gap"></div><button class="btn ghost small" id="vs-try">▶ Probar</button>
     <h2>Sin conexión</h2>
     <p class="note" id="vs-st">Los audios se descargan a medida que se usan. Para tenerlos todos sin internet, guárdalos ahora (unos 13 MB).</p>
     <button class="btn ghost small" id="vs-dl">Guardar la voz en este dispositivo</button>
     <p class="note">Sonido actual en el entrenamiento: ${SOUND_MODES[S.sound]} (se cambia con el altavoz del reproductor).</p>
     <div style="height:16px"></div><button class="btn" id="vs-ok">Listo</button>`, () => {
-    const sync = () => { $('#vs-dl').classList.toggle('hidden', v === 'sistema'); };
+    const sync = () => {
+      $('#vs-dl').classList.toggle('hidden', v === 'sistema'); $('#vs-sysbox').classList.toggle('hidden', v !== 'sistema');
+      if (v === 'sistema') { pickVoice(); $('#vs-sys').innerHTML = sysVoiceList(); }
+    };
+    $('#vs-sys').onclick = e => { const b = e.target.closest('[data-u]'); if (!b) return; S.sysVoice = b.dataset.u; save(); pickVoice(); $('#vs-sys').innerHTML = sysVoiceList(); const prev = S.sound; S.sound = 'voz'; say('¡Hola! ¡Vamos a entrenar!'); S.sound = prev; };
     sync();
     bindSeg('vs-v', 'v', x => { v = x; S.voiceSrc = x; save(); sync(); });
     $('#vs-try').onclick = () => {
