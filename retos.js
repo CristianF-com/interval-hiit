@@ -269,7 +269,7 @@ const sensorMode = (key, mode) => mode !== 'toque' && mode !== 'ritmo';
 async function startReto(key, opts = {}) {
   // audio antes de pedir permiso a los sensores: después de ese aviso ya no cuenta como toque y el iPhone lo deja mudo
   try { if (typeof audioSession === 'function') audioSession(true); audioCtx(); beep(660, 60, .1); } catch (e) {}
-  if (S.sound !== 'voz') toast(S.sound === 'silencio' ? 'Sonido desactivado: actívalo con el altavoz en un entrenamiento' : 'Voz desactivada: solo pitidos');
+  if (S.sound !== 'voz') toast(S.sound === 'silencio' ? 'Sonido desactivado: actívalo con el altavoz de arriba' : 'Voz desactivada: solo pitidos (cámbialo con el altavoz de arriba)');
   const R = RETOS[key], s = getRetos()[key];
   let mode = opts.mode || (s ? s.mode : R.mode);
   if (!R.modes[mode]) mode = R.mode; // modos de la versión anterior
@@ -286,7 +286,7 @@ async function startReto(key, opts = {}) {
     else toast('Sin acceso a los sensores: cuenta tocando la pantalla');
   }
   try { audioCtx(); } catch (e) {}
-  $('#rplayer').classList.remove('hidden'); document.body.style.overflow = 'hidden'; wake(true);
+  $('#rplayer').classList.remove('hidden'); document.body.style.overflow = 'hidden'; wake(true); voiceIcon();
   clearInterval(RP.timer); RP.timer = setInterval(rTick, 200);
   rRender();
   rSave();
@@ -520,7 +520,7 @@ function resumeReto(x) {
     restEnd: performance.now() + (x.restLeft || 0), initial: !!x.initial, mode: x.mode, sens: x.sens || 3, tempo: x.tempo || 3, kg: x.kg || 0, nextBeat: x.nextBeat || 0, t0: x.t0, active: x.active || 0, times: x.times || [], setT0: x.setT0 || 0, lastTick: performance.now(), paused: true,
     sensOn: false, det: null, wantSens: !!x.sensWanted });
   if (!RP.initial && !RP.s) { PS.del('rsession'); return false; }
-  $('#rplayer').classList.remove('hidden'); document.body.style.overflow = 'hidden'; wake(true);
+  $('#rplayer').classList.remove('hidden'); document.body.style.overflow = 'hidden'; wake(true); voiceIcon();
   clearInterval(RP.timer); RP.timer = setInterval(rTick, 200);
   rRender(); toast('Reto retomado donde quedó · toca Seguir');
   return true;

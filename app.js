@@ -1096,11 +1096,17 @@ const ICON_PAUSE = '<svg width="30" height="30" viewBox="0 0 24 24" fill="curren
 const ICON_PLAY = '<svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>';
 const ICON_DONE = '<svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg>';
 const SOUND_MODES = { voz: 'Voz y pitidos', pitidos: 'Solo pitidos', silencio: 'Silencio' };
+// botón de sonido del reproductor y del reto: voz y pitidos → solo pitidos → silencio
 function voiceIcon() {
   const spk = '<path d="M4 9v6h4l5 4V5L8 9z"/>';
-  $('#p-voice').innerHTML = '<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + spk +
+  const svg = '<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + spk +
     (S.sound === 'voz' ? '<path d="M16 9a4 4 0 0 1 0 6M19 6a8 8 0 0 1 0 12"/>' : S.sound === 'pitidos' ? '<path d="M16 10.5a2 2 0 0 1 0 3"/>' : '<path d="M17 9l5 6M22 9l-5 6"/>') + '</svg>';
-  $('#p-voice').setAttribute('aria-label', 'Sonido: ' + SOUND_MODES[S.sound]);
+  ['#p-voice', '#rp-voice'].forEach(id => { const b = $(id); if (!b) return; b.innerHTML = svg; b.setAttribute('aria-label', 'Sonido: ' + SOUND_MODES[S.sound]); });
+}
+function cycleSound() {
+  S.sound = S.sound === 'voz' ? 'pitidos' : S.sound === 'pitidos' ? 'silencio' : 'voz'; S.voice = S.sound === 'voz'; save(); voiceIcon();
+  if (S.sound !== 'voz') { try { speechSynthesis.cancel(); } catch (e) {} try { if (typeof vStop === 'function') vStop(); } catch (e) {} }
+  toast(SOUND_MODES[S.sound]); if (S.sound === 'voz') say('Voz activada'); else if (S.sound === 'pitidos') beep(880, 120, .2);
 }
 const cur = () => P.tl[P.i];
 
@@ -1301,11 +1307,8 @@ $('#p-prev').onclick = () => {
   step(j); if (P.paused && !cur().reps) { P.remain = cur().dur * 1000; render(); }
 };
 $('#p-hr').onclick = () => { if (HR.on) openHRSettings(); else hrConnect(); };
-$('#p-voice').onclick = () => {
-  S.sound = S.sound === 'voz' ? 'pitidos' : S.sound === 'pitidos' ? 'silencio' : 'voz'; S.voice = S.sound === 'voz'; save(); voiceIcon();
-  if (S.sound !== 'voz') try { speechSynthesis.cancel(); } catch (e) {}
-  toast(SOUND_MODES[S.sound]); if (S.sound === 'voz') say('Voz activada');
-};
+$('#p-voice').onclick = cycleSound;
+$('#rp-voice').onclick = e => { e.stopPropagation(); cycleSound(); };
 const isProgrammed = w => w.kind === 'plan' || !!w.smart;
 function closeMenu() { $('#p-menu').classList.add('hidden'); }
 function openMenu() {
