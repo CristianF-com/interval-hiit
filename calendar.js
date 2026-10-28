@@ -72,7 +72,12 @@ function renderCal() {
     const t = new Date(y, mo, d).getTime(), k = dkey(t), its = ag[k] || [];
     // un punto por cada actividad del día (hechas y programadas)
     const cls = its.map(x => x.type === 'done' ? (x.x.full ? 'ok' : 'part') : x.type === 'reto' ? 'rt' : x.type);
-    const dots = cls.length > 5 ? cls.slice(0, 4).map(c => `<i class="dt ${c}"></i>`).join('') + '<i class="dt more">+</i>' : cls.map(c => `<i class="dt ${c}"></i>`).join('');
+    // los puntos rodean el número: 3 abajo, 3 arriba y 2 a cada costado (hasta 10)
+    const nD = Math.min(cls.length, 10), nB = Math.min(nD, 3), nT = Math.min(nD - nB, 3), slots = [];
+    const row = (n, y) => { for (let j = 0; j < n; j++) slots.push([50 + (j - (n - 1) / 2) * 20, y]); };
+    row(nB, 81); row(nT, 19);
+    [[15, 40], [85, 40], [15, 60], [85, 60]].slice(0, nD - nB - nT).forEach(p => slots.push(p));
+    const dots = cls.slice(0, nD).map((c, j) => `<i class="dt ${c}" style="left:${slots[j][0]}%;top:${slots[j][1]}%"></i>`).join('');
     cells += `<button class="cd ${k === today ? 'today' : ''} ${k === calSel ? 'sel' : ''} ${t < dayStart(now) ? 'past' : ''}" data-k="${k}"><span class="cin"><b>${d}</b><span class="dots">${dots}</span></span></button>`;
   }
   const mname = m.toLocaleDateString('es', { month: 'long', year: 'numeric' });
