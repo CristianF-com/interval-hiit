@@ -80,7 +80,7 @@ function renderCal() {
   const up = [];
   for (let i = 0; i < 14; i++) { const t = addDays(now, i), k = dkey(t); (ag[k] || []).filter(x => x.type !== 'done').forEach(x => up.push({ t, k, x })); }
   const p = getPlan(), sm = getSmart();
-  el.innerHTML = `<div class="cols"><div class="col stick"><p class="hero">Calendario</p>
+  el.innerHTML = `<div class="cols"><div class="col stick"><p class="hero vh">Calendario</p>
     <p class="sub">${p || (sm && sm.I) || Object.keys(getRetos()).length || (typeof getDumb === 'function' && getDumb()) ? 'Tus próximos entrenamientos y los que ya hiciste.' : 'Empieza un plan, un reto o el entrenador inteligente para ver aquí tus próximos entrenamientos.'}</p>
     <div class="cal-h"><button class="icon-btn" id="cal-prev" aria-label="Mes anterior"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></button>
       <b>${mname}</b><button class="icon-btn" id="cal-next" aria-label="Mes siguiente"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 5l7 7-7 7"/></svg></button></div>

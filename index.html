@@ -31,6 +31,7 @@ input,select{font:inherit}
 .app{max-width:560px;margin:0 auto;padding:0 16px calc(96px + env(safe-area-inset-bottom))}
 header.top{display:flex;align-items:center;gap:10px;padding:calc(16px + env(safe-area-inset-top)) 0 8px}
 header.top .logo{width:34px;height:34px;border-radius:9px;background:var(--work);display:grid;place-items:center;flex:none}
+header.top .h-view{display:none;font-weight:400;margin-left:14px;padding-left:14px;border-left:2px solid var(--line)}header.top .h-view em{font-style:normal;color:var(--work)}
 header.top h1{font-family:var(--display);font-size:28px;letter-spacing:.5px;margin:0;text-transform:uppercase;flex:1}
 .who{display:flex;align-items:center;gap:8px;padding:5px 12px 5px 5px;border-radius:99px;background:var(--surface);border:1px solid var(--line);font-weight:600;font-size:14px;max-width:46vw}
 .who span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -339,6 +340,9 @@ code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.92em;backgroun
   .plans-cat .plan-card{justify-content:flex-start}
   .awards{grid-template-columns:repeat(auto-fill,minmax(80px,1fr))}
   .hero{font-size:30px;margin-top:6px}
+  /* el título de cada pestaña va en el encabezado, al lado del nombre */
+  section .hero.vh{display:none}
+  header.top .h-view{display:inline}
   .cal .cd{aspect-ratio:1.4}
   .cols .col.stick{position:sticky;top:8px}
   .dur{grid-template-columns:repeat(9,1fr)}
@@ -523,7 +527,7 @@ input,textarea,select{font-size:16px}
 <div class="app" id="app">
   <header class="top">
     <div class="logo"><svg width="22" height="22" viewBox="0 0 64 64"><path d="M6 34h12l6-14 9 26 7-18 4 6h14" fill="none" stroke="#0e0f12" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-    <h1>INHIIT</h1>
+    <h1>INHIIT<span class="h-view" id="h-view"></span></h1>
     <button class="icon-btn hidden" id="install-top" aria-label="Instalar app"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg></button>
     <button class="who" id="who"></button>
   </header>
@@ -533,7 +537,7 @@ input,textarea,select{font-size:16px}
 
   <!-- COACH -->
   <section id="v-coach">
-    <p class="hero">Tu coach <em>HIIT</em></p>
+    <p class="hero vh">Tu coach <em>HIIT</em></p>
     <div class="cols"><div class="col">
     <div id="smart"></div>
     <div id="dumb"></div>
@@ -602,7 +606,7 @@ input,textarea,select{font-size:16px}
   <!-- BIBLIOTECA DE EJERCICIOS -->
   <section id="v-lib" class="hidden">
     <button class="icon-btn" id="lib-back" aria-label="Volver" style="margin-left:-8px"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></button>
-    <p class="hero">Ejercicios</p>
+    <p class="hero vh">Ejercicios</p>
     <p class="sub" id="lib-sub"></p>
     <input class="search" id="lib-q" type="search" placeholder="Buscar ejercicio…" autocomplete="off">
     <div class="lib" id="lib-list"></div>
@@ -610,7 +614,7 @@ input,textarea,select{font-size:16px}
 
   <!-- HISTORIAL -->
   <section id="v-hist" class="hidden">
-    <p class="hero">Historial</p>
+    <p class="hero vh">Historial</p>
     <p class="sub" id="hist-sub"></p>
     <div class="cols"><div class="col">
     <div class="stats" id="hist-stats"></div>

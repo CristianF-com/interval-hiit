@@ -757,6 +757,15 @@ $('#pv-list').onclick = e => {
 
 /* ---------- Navegación ---------- */
 let previewFrom = 'coach';
+// en horizontal el título de la pestaña se muestra en el encabezado (al lado de INHIIT)
+function syncViewTitle() {
+  const h = $('#h-view'); if (!h) return;
+  const v = document.querySelector(`#v-${currentView} .vh`);
+  const t = currentView === 'preview' ? '' : v ? v.innerHTML : '';
+  if (h.innerHTML !== t) h.innerHTML = t;
+}
+let _svt = 0;
+new MutationObserver(() => { if (!_svt) _svt = requestAnimationFrame(() => { _svt = 0; syncViewTitle(); }); }).observe($('#app'), { childList: true, subtree: true });
 // vuelve a dibujar la pestaña visible (por ejemplo el calendario después de terminar un entrenamiento)
 function refreshView() {
   try {
@@ -778,7 +787,7 @@ function show(view) {
   if (view === 'hist') renderHist();
   if (view === 'lib') renderLib();
   if (view === 'cal') renderCal();
-  window.scrollTo(0, 0);
+  window.scrollTo(0, 0); syncViewTitle();
 }
 function openPreview(w, from) { W = w; previewFrom = from; renderPreview(); show('preview'); }
 $('#tabs').onclick = e => { const b = e.target.closest('[data-tab]'); if (!b) return; show(b.dataset.tab); };
@@ -833,7 +842,7 @@ function renderPlans() {
     const pr = planProgress(plan);
     const { days, kept } = planWeekInfo(plan, viewWeek);
     const nextIdx = viewWeek === plan.week ? kept.find(i => !plan.done[`${viewWeek}-${i}`]) : undefined;
-    h += `<div class="cols"><div class="col"><p class="hero">Tu <em>plan</em></p>
+    h += `<div class="cols"><div class="col"><p class="hero vh">Tu <em>plan</em></p>
       <div class="now">
         <div class="wk">Semana ${plan.week} de ${fam.weeks} · Nivel ${PLAN_LEVELS[plan.level]}</div>
         <b class="name">${esc(fam.n)}</b>
@@ -857,7 +866,7 @@ function renderPlans() {
       }).join('')}</div>
       <div class="row"><button class="btn ghost small" id="pl-settings">Ajustes del plan</button><button class="btn ghost small" id="pl-other">Ver otros planes</button></div></div></div>`;
   } else {
-    h += `<p class="hero">Planes</p><p class="sub">Programas de 3 a 12 semanas. El progreso se guarda en tu perfil automáticamente.</p><div style="height:16px"></div>`;
+    h += `<p class="hero vh">Planes</p><p class="sub">Programas de 3 a 12 semanas. El progreso se guarda en tu perfil automáticamente.</p><div style="height:16px"></div>`;
   }
   if (!plan || showCatalog) h += `<h2 id="cat">${plan ? 'Otros planes' : 'Elige un plan'}</h2><div class="plans-cat">` + catalogHTML(plan) + '</div>';
   const doneList = PS.get('plansDone', []);

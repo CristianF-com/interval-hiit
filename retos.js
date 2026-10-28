@@ -85,7 +85,7 @@ function retosHTML() {
 function renderRetos() {
   const el = $('#v-retos'); if (!el || !PROFILE) return;
   const st = getRetos(), act = Object.keys(st).filter(k => RETOS[k]);
-  el.innerHTML = `<p class="hero">Retos</p>
+  el.innerHTML = `<p class="hero vh">Retos</p>
     <p class="sub">Programas para llegar a muchas repeticiones de un ejercicio, con pruebas al final de cada etapa. ${act.length ? `Tienes ${act.length} ${act.length === 1 ? 'reto activo' : 'retos activos'}.` : 'Puedes tener varios activos a la vez.'}</p>
     <div style="height:6px"></div>${retosHTML()}`;
   el.querySelectorAll('[data-reto]').forEach(b => b.onclick = () => openReto(b.dataset.reto));
