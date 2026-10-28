@@ -353,6 +353,8 @@ code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.92em;backgroun
   .col.stick .cd b{font-size:14px}
   .col.stick .cd .dots .dt{width:4px;height:4px}
   .sheet{max-width:none}
+  /* las hojas empiezan donde empiezan los íconos del menú lateral (no quedan bajo el notch) */
+  .scrim{padding-left:calc(6px + env(safe-area-inset-left));padding-right:env(safe-area-inset-right)}
   #hist-kpi .kpis{grid-template-columns:repeat(4,minmax(0,1fr))}
   .hcols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:"favs aw" "list aw";gap:0 28px;align-items:start}
   .hcols>#hist-favs{grid-area:favs}.hcols>#hist-list{grid-area:list}.hcols>#hist-awards{grid-area:aw}
