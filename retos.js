@@ -438,8 +438,8 @@ function rFinish(partial) {
     <h3 style="text-align:center">${total} ${R.n.toLowerCase()}</h3>
     <p class="sub" style="text-align:center">${reps.join(' · ')} · ${fmt(secs)} min</p>
     <p class="note" style="text-align:center">${esc(msg)}</p><div style="height:16px"></div>
-    <button class="btn" id="rf-ok">Listo</button>`, () => { $('#rf-ok').onclick = () => { closeSheet(); renderRetos(); }; });
-  renderRetos();
+    <button class="btn" id="rf-ok">Listo</button>`, () => { $('#rf-ok').onclick = () => { closeSheet(); renderRetos(); refreshView(); }; });
+  renderRetos(); refreshView();
   setTimeout(() => checkAwards(true), 800);
 }
 // controles del reproductor del reto

@@ -91,6 +91,15 @@ function statsHTML() {
   h += `<p class="note">Calorías estimadas con ${S.weight ? 'tu peso (' + S.weight + ' kg)' : '70 kg: carga tu peso en Perfil → Editar actual'}; si hay pulso registrado se usa ese cálculo. La mejor marca es la serie con más repeticiones (y su tiempo, cuando quedó medido).</p>`;
   // retos
   if (st.retos.length) h += `<h3 class="st-h">Retos</h3><div class="tbl"><table class="st-t"><thead><tr><th>Reto</th><th>Más seguidas</th><th>Tiempo</th><th>Total</th></tr></thead><tbody>${st.retos.map(r => `<tr><td>${esc(r.n)}<small>${r.st ? `rango ${rangeLbl(r.key, r.st.k)} · etapa ${r.st.stage}` : r.sessions + ' sesiones'}</small></td><td>${r.best ? r.best.n : '—'}</td><td>${r.best && r.best.t ? fmtT(r.best.t) : '—'}</td><td>${fmtN(r.total)}</td></tr>`).join('')}</tbody></table></div>`;
+  // velocidad: segundos por repetición al principio (primeras 3 series) y ahora (mediana de las últimas 8)
+  try {
+    const m = buildPaces(), sp = Object.entries(m)
+      .filter(([id, v]) => v.length >= PACE_MIN && CATALOG[id])
+      .map(([id, v]) => { const first = median(v.slice(0, 3)), now = median(v.slice(-8)); return { id, n: v.length, first, now, d: first ? (first - now) / first * 100 : 0 }; })
+      .sort((a, b) => b.n - a.n).slice(0, 10);
+    if (sp.length) h += `<h3 class="st-h">Velocidad</h3><div class="tbl"><table class="st-t"><thead><tr><th>Ejercicio</th><th>Al principio</th><th>Ahora</th><th>Cambio</th></tr></thead><tbody>${sp.map(r => `<tr><td>${esc(ex(r.id).n)}<small>${r.n} series medidas</small></td><td>${r.first.toFixed(1).replace('.', ',')} s/rep</td><td>${r.now.toFixed(1).replace('.', ',')} s/rep</td><td>${r.n < 6 ? '—' : `<span class="${r.d > 2 ? 'up' : r.d < -2 ? 'down' : ''}">${r.d > 0 ? '−' : r.d < 0 ? '+' : ''}${Math.abs(Math.round(r.d))} %</span>`}</td></tr>`).join('')}</tbody></table></div>
+      <p class="note">Segundos por repetición según lo que tardas en tocar ✓ en los ejercicios por repeticiones (y en los retos). Con 3 series de un ejercicio ya calculo tu ritmo y, si está activado «Pasar solo al siguiente», te aviso 10 s antes de avanzar.</p>`;
+  } catch (e) { console.error(e); }
   // otros datos
   const fav = [...st.ex].sort((a, b) => b.sets - a.sets)[0];
   const moments = ['por la mañana', 'al mediodía', 'por la tarde', 'por la noche'], mi = st.hours.indexOf(Math.max(...st.hours));

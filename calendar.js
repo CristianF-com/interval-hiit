@@ -70,7 +70,9 @@ function renderCal() {
   for (let i = 0; i < lead; i++) cells += '<span class="cd blank"></span>';
   for (let d = 1; d <= nd; d++) {
     const t = new Date(y, mo, d).getTime(), k = dkey(t), its = ag[k] || [];
-    const dots = [...new Set(its.map(x => x.type === 'done' ? (x.x.full ? 'ok' : 'part') : x.type))].map(c => `<i class="dt ${c === 'reto' ? 'rt' : c}"></i>`).join('');
+    // un punto por cada actividad del día (hechas y programadas)
+    const cls = its.map(x => x.type === 'done' ? (x.x.full ? 'ok' : 'part') : x.type === 'reto' ? 'rt' : x.type);
+    const dots = cls.slice(0, 6).map(c => `<i class="dt ${c}"></i>`).join('') + (cls.length > 6 ? '<i class="dt more">+</i>' : '');
     cells += `<button class="cd ${k === today ? 'today' : ''} ${k === calSel ? 'sel' : ''} ${t < dayStart(now) ? 'past' : ''}" data-k="${k}"><b>${d}</b><span class="dots">${dots}</span></button>`;
   }
   const mname = m.toLocaleDateString('es', { month: 'long', year: 'numeric' });
@@ -78,18 +80,20 @@ function renderCal() {
   const up = [];
   for (let i = 0; i < 14; i++) { const t = addDays(now, i), k = dkey(t); (ag[k] || []).filter(x => x.type !== 'done').forEach(x => up.push({ t, k, x })); }
   const p = getPlan(), sm = getSmart();
-  el.innerHTML = `<p class="hero">Calendario</p>
+  el.innerHTML = `<div class="cols"><div class="col stick"><p class="hero">Calendario</p>
     <p class="sub">${p || (sm && sm.I) || Object.keys(getRetos()).length || (typeof getDumb === 'function' && getDumb()) ? 'Tus próximos entrenamientos y los que ya hiciste.' : 'Empieza un plan, un reto o el entrenador inteligente para ver aquí tus próximos entrenamientos.'}</p>
     <div class="cal-h"><button class="icon-btn" id="cal-prev" aria-label="Mes anterior"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></button>
       <b>${mname}</b><button class="icon-btn" id="cal-next" aria-label="Mes siguiente"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 5l7 7-7 7"/></svg></button></div>
     <div class="cal">${WD.map(w => `<span class="cw">${w}</span>`).join('')}${cells}</div>
     <div class="legend"><span><i class="dt plan"></i>Plan</span><span><i class="dt smart"></i>Entrenador</span><span><i class="dt rt"></i>Retos</span>${typeof getDumb === 'function' && getDumb() ? '<span><i class="dt db"></i>Mancuernas</span>' : ''}<span><i class="dt ok"></i>Hecho</span><span><i class="dt part"></i>Incompleto</span></div>
+    ${p ? `<h2>Días de entrenamiento del plan</h2>
+      <div class="wdpick" id="cal-wd">${WD.map((w, i) => `<button data-wd="${i}" aria-pressed="${planWeekdays(p).includes(i)}">${w}</button>`).join('')}</div>
+      <p class="note">${esc(FAM[p.fam].n)} · ${dayRange(p.file).min === dayRange(p.file).max ? dayRange(p.file).max : dayRange(p.file).min + ' a ' + dayRange(p.file).max} días por semana. Los entrenamientos pendientes se reparten en estos días.</p>` : ''}
+    </div><div class="col">
     <div id="cal-day"></div>
     <h2>Próximos 14 días</h2>
     ${up.length ? `<div class="block">${up.map(u => agendaRow(u.x, u.t)).join('')}</div>` : '<div class="empty">Nada programado en los próximos días.</div>'}
-    ${p ? `<h2>Días de entrenamiento del plan</h2>
-      <div class="wdpick" id="cal-wd">${WD.map((w, i) => `<button data-wd="${i}" aria-pressed="${planWeekdays(p).includes(i)}">${w}</button>`).join('')}</div>
-      <p class="note">${esc(FAM[p.fam].n)} · ${dayRange(p.file).min === dayRange(p.file).max ? dayRange(p.file).max : dayRange(p.file).min + ' a ' + dayRange(p.file).max} días por semana. Los entrenamientos pendientes se reparten en estos días.</p>` : ''}`;
+    </div></div>`;
   renderCalDay(ag);
   $('#cal-prev').onclick = () => { const d = new Date(calMonth); calMonth = new Date(d.getFullYear(), d.getMonth() - 1, 1).getTime(); renderCal(); };
   $('#cal-next').onclick = () => { const d = new Date(calMonth); calMonth = new Date(d.getFullYear(), d.getMonth() + 1, 1).getTime(); renderCal(); };

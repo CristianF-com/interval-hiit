@@ -39,7 +39,7 @@ const saveProfiles = p => LS.set('profiles', p);
 try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch (e) {}
 
 const DEFAULTS = { dur: 1200, parts: ['all'], level: 2, noJump: false, warmup: true, cooldown: true, vary: false, custom: false,
-  cw: 40, cr: 20, cn: 5, cR: 3, crr: 60, voice: true, sound: 'voz', planWarm: false, planCool: false };
+  cw: 40, cr: 20, cn: 5, cR: 3, crr: 60, voice: true, sound: 'voz', planWarm: false, planCool: false, autoNext: true };
 let S = { ...DEFAULTS };
 const save = () => PS.set('settings', S);
 
@@ -670,11 +670,35 @@ const total = tl => tl.reduce((a, s) => a + stepDur(s), 0);
 const lvBars = l => `<span class="lv">${[1, 2, 3].map(i => `<i class="${i <= l ? 'on' : ''}"></i>`).join('')}</span>`;
 const partTags = e => [...e.p].map(k => PARTS[k]).slice(0, 3).join(' · ');
 const SWAP_ICON = '<svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h13l-4-4M20 15H7l4 4"/></svg>';
-function exRow(id, i, where, tgt) {
+function exRow(id, i, where, tgt, lvl) {
   const e = ex(id);
   const meta = e.t === 'x' ? `${lvBars(e.lv)}${partTags(e)}${e.j ? ' · salto' : ''}${e.s ? ' · por lado' : ''}` : (e.s ? 'por lado' : (e.t === 's' ? 'estiramiento' : 'movilidad'));
-  const swap = where ? `<button class="icon-btn" data-swap="${where}" aria-label="Cambiar ejercicio">${SWAP_ICON}</button>` : '';
-  return `<div class="ex" data-id="${esc(id)}"><span class="n">${i + 1}</span><div class="t" data-toggle><b>${esc(e.n)}</b><small>${meta}</small><div class="cue">${esc(e.d)}</div></div>${tgt ? `<span class="tgt">${tgt}</span>` : ''}${swap}</div>`;
+  const swap = where ? `<button class="icon-btn" data-swap="${where}" aria-label="Cambiar por otro ejercicio">${SWAP_ICON}</button>` : '';
+  // versión más fácil / más difícil del mismo ejercicio (se aplica en todo el entrenamiento)
+  let lv = '';
+  if (lvl) {
+    const ez = easierOf(id), hd = harderOf(id, W && W.noJump);
+    if (ez || hd) lv = `<span class="lvsw"><button data-lvsw="-1" data-id="${esc(id)}" ${ez ? '' : 'disabled'} aria-label="${ez ? 'Más fácil: ' + esc(ex(ez).n) : 'No hay versión más fácil'}">${LV_DOWN}</button><button data-lvsw="1" data-id="${esc(id)}" ${hd ? '' : 'disabled'} aria-label="${hd ? 'Más difícil: ' + esc(ex(hd).n) : 'No hay versión más difícil'}">${LV_UP}</button></span>`;
+  }
+  return `<div class="ex" data-id="${esc(id)}"><span class="n">${i + 1}</span><div class="t" data-toggle><b>${esc(e.n)}</b><small>${meta}</small><div class="cue">${esc(e.d)}</div></div>${tgt ? `<span class="tgt">${tgt}</span>` : ''}${lv}${swap}</div>`;
+}
+const LV_DOWN = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>';
+const LV_UP = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M6 15l6-6 6 6"/></svg>';
+// cambia un ejercicio por su versión más fácil o más difícil en todas las rondas.
+// En los planes por repeticiones ajusta la cantidad (más fácil: +20 %, más difícil: −20 %).
+function previewLevelSwap(id, dir) {
+  const to = dir < 0 ? easierOf(id) : harderOf(id, W.noJump); if (!to) return;
+  const k = dir < 0 ? 1.2 : 0.8;
+  if (W.kind === 'plan') W.rounds = W.rounds.map(r => r.map(it => it.id === id ? { ...it, id: to, ...(it.reps ? { reps: Math.max(1, Math.round(it.reps * k)) } : {}) } : it));
+  else W.rounds = W.rounds.map(ids => ids.map(x => x === id ? to : x));
+  W.edited = true;
+  renderPreview();
+  toast(`${dir < 0 ? 'Más fácil' : 'Más difícil'}: ${ex(to).n}`);
+}
+// dificultad media de los ejercicios (1 a 3) para mostrar en el resumen
+function avgLevel(w) {
+  const ids = w.kind === 'plan' ? w.rounds.flat().filter(it => it.id !== 'pause').map(it => it.id) : w.rounds.flat();
+  const lv = ids.map(id => ex(id).lv || 1); return lv.length ? lv.reduce((a, b) => a + b, 0) / lv.length : 1;
 }
 const tgtOf = it => it.reps ? `×${it.reps}` : `${it.secs}s`;
 function renderPreview() {
@@ -685,7 +709,7 @@ function renderPreview() {
   let h = '';
   if (w.warm && w.warm.length) h += `<div class="block"><div class="block-h"><b>Calentamiento</b><span>${w.warm.length} × 30s</span></div>${w.warm.map((id, i) => exRow(id, i, '')).join('')}</div>`;
   if (isPlan) {
-    $('#pv-sub').textContent = w.sub;
+    $('#pv-sub').textContent = w.sub + ` · dificultad media ${avgLevel(w).toFixed(1).replace('.', ',')} de 3${w.edited ? ' (ajustada)' : ''}`;
     const nEx = w.rounds.reduce((a, r) => a + r.filter(x => x.id !== 'pause').length, 0);
     $('#pv-stats').innerHTML = `<div class="stat"><b>~${Math.round(total(tl) / 60)}</b><span>minutos</span></div><div class="stat"><b>${w.rounds.length}</b><span>rondas</span></div><div class="stat"><b>${nEx}</b><span>series</span></div>`;
     // agrupa rondas idénticas consecutivas
@@ -694,19 +718,21 @@ function renderPreview() {
     groups.forEach(g => {
       const n = g.to - g.from + 1; let k = 0;
       h += `<div class="block"><div class="block-h"><b>${n > 1 ? `Rondas ${g.from + 1}–${g.to + 1}` : `Ronda ${g.from + 1}`}</b><span>${n > 1 ? `repetir × ${n}` : ''}</span></div>` +
-        g.r.map(it => it.id === 'pause' ? `<div class="ex pause">Descanso ${it.secs} s</div>` : exRow(it.id, k++, '', tgtOf(it))).join('') + '</div>';
+        g.r.map(it => it.id === 'pause' ? `<div class="ex pause">Descanso ${it.secs} s</div>` : exRow(it.id, k++, '', tgtOf(it), true)).join('') + '</div>';
     });
   } else {
     const sk = w.sk;
-    $('#pv-sub').textContent = `${w.smart ? 'Entrenador inteligente · intensidad ' + w.I + ' · ' : ''}${LEVELS[w.level - 1]} · ${sk.w}s trabajo / ${sk.r}s descanso${w.noJump ? ' · sin saltos' : ''}`;
+    $('#pv-sub').textContent = `${w.smart ? 'Entrenador inteligente · intensidad ' + w.I + ' · ' : ''}${LEVELS[w.level - 1]} · ${sk.w}s trabajo / ${sk.r}s descanso${w.noJump ? ' · sin saltos' : ''} · dificultad media ${avgLevel(w).toFixed(1).replace('.', ',')} de 3${w.edited ? ' (ajustada)' : ''}`;
     $('#pv-stats').innerHTML = `<div class="stat"><b>${fmt(total(tl))}</b><span>minutos</span></div><div class="stat"><b>${w.rounds.length}</b><span>rondas</span></div><div class="stat"><b>${w.rounds.flat().length}</b><span>intervalos</span></div>`;
-    if (!w.vary) h += `<div class="block"><div class="block-h"><b>Circuito × ${w.rounds.length}</b><span>${sk.w}s / ${sk.r}s · ${sk.rr}s entre rondas</span></div>${w.rounds[0].map((id, i) => exRow(id, i, 'all-' + i)).join('')}</div>`;
-    else w.rounds.forEach((ids, r) => { h += `<div class="block"><div class="block-h"><b>Ronda ${r + 1}</b><span>${sk.w}s / ${sk.r}s</span></div>${ids.map((id, i) => exRow(id, i, r + '-' + i)).join('')}</div>`; });
+    if (!w.vary) h += `<div class="block"><div class="block-h"><b>Circuito × ${w.rounds.length}</b><span>${sk.w}s / ${sk.r}s · ${sk.rr}s entre rondas</span></div>${w.rounds[0].map((id, i) => exRow(id, i, 'all-' + i, '', true)).join('')}</div>`;
+    else w.rounds.forEach((ids, r) => { h += `<div class="block"><div class="block-h"><b>Ronda ${r + 1}</b><span>${sk.w}s / ${sk.r}s</span></div>${ids.map((id, i) => exRow(id, i, r + '-' + i, '', true)).join('')}</div>`; });
   }
   if (w.cool && w.cool.length) h += `<div class="block"><div class="block-h"><b>Estiramientos</b><span>${w.cool.length} × 30s</span></div>${w.cool.map((id, i) => exRow(id, i, '')).join('')}</div>`;
   $('#pv-list').innerHTML = h;
 }
 $('#pv-list').onclick = e => {
+  const lvb = e.target.closest('[data-lvsw]');
+  if (lvb) { if (!lvb.disabled) previewLevelSwap(lvb.dataset.id, +lvb.dataset.lvsw); return; }
   const sw = e.target.closest('[data-swap]');
   if (sw) {
     const [r, i] = sw.dataset.swap.split('-'); const idx = +i;
@@ -731,6 +757,14 @@ $('#pv-list').onclick = e => {
 
 /* ---------- Navegación ---------- */
 let previewFrom = 'coach';
+// vuelve a dibujar la pestaña visible (por ejemplo el calendario después de terminar un entrenamiento)
+function refreshView() {
+  try {
+    const v = currentView;
+    if (v === 'cal') renderCal(); else if (v === 'retos' && typeof renderRetos === 'function') renderRetos();
+    else if (v === 'plans') renderPlans(); else if (v === 'hist') renderHist(); else if (v === 'coach') renderSmart();
+  } catch (e) { console.error(e); }
+}
 function show(view) {
   currentView = view;
   if (view === 'favs') view = 'hist';   // los guardados ahora están dentro del historial
@@ -799,7 +833,7 @@ function renderPlans() {
     const pr = planProgress(plan);
     const { days, kept } = planWeekInfo(plan, viewWeek);
     const nextIdx = viewWeek === plan.week ? kept.find(i => !plan.done[`${viewWeek}-${i}`]) : undefined;
-    h += `<p class="hero">Tu <em>plan</em></p>
+    h += `<div class="cols"><div class="col"><p class="hero">Tu <em>plan</em></p>
       <div class="now">
         <div class="wk">Semana ${plan.week} de ${fam.weeks} · Nivel ${PLAN_LEVELS[plan.level]}</div>
         <b class="name">${esc(fam.n)}</b>
@@ -813,7 +847,7 @@ function renderPlans() {
     }
     h += `<h2>Semanas</h2><div class="weeks" id="weeks">${Array.from({ length: fam.weeks }, (_, i) => i + 1).map(w =>
       `<button data-w="${w}" class="${weekDone(plan, w) ? 'is-done' : ''} ${w === plan.week ? 'cur' : ''}" aria-pressed="${w === viewWeek}">${w}</button>`).join('')}</div>
-      <h2>Semana ${viewWeek}${viewWeek === plan.week ? ' · actual' : ''}</h2>
+      </div><div class="col"><h2>Semana ${viewWeek}${viewWeek === plan.week ? ' · actual' : ''}</h2>
       <div class="block">${days.map((d, i) => {
         const on = kept.includes(i), dn = plan.done[`${viewWeek}-${i}`], est = dayEstimate(d);
         const cls = dn ? 'is-done' : (i === nextIdx ? 'next' : (on ? '' : 'off'));
@@ -821,11 +855,11 @@ function renderPlans() {
         return `<button class="day ${cls}" data-day="${i}"><span class="dn">${dn ? '✓' : kept.indexOf(i) + 1 || '–'}</span><span class="t"><b>${i === nextIdx ? 'Siguiente: ' : ''}${on ? 'Entrenamiento ' + (kept.indexOf(i) + 1) : 'Entrenamiento extra'}</b><small>${label}</small></span>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button>`;
       }).join('')}</div>
-      <div class="row"><button class="btn ghost small" id="pl-settings">Ajustes del plan</button><button class="btn ghost small" id="pl-other">Ver otros planes</button></div>`;
+      <div class="row"><button class="btn ghost small" id="pl-settings">Ajustes del plan</button><button class="btn ghost small" id="pl-other">Ver otros planes</button></div></div></div>`;
   } else {
     h += `<p class="hero">Planes</p><p class="sub">Programas de 3 a 12 semanas. El progreso se guarda en tu perfil automáticamente.</p><div style="height:16px"></div>`;
   }
-  if (!plan || showCatalog) h += `<h2 id="cat">${plan ? 'Otros planes' : 'Elige un plan'}</h2>` + catalogHTML(plan);
+  if (!plan || showCatalog) h += `<h2 id="cat">${plan ? 'Otros planes' : 'Elige un plan'}</h2><div class="plans-cat">` + catalogHTML(plan) + '</div>';
   const doneList = PS.get('plansDone', []);
   if (doneList.length) h += `<h2>Planes completados</h2><div class="block">${doneList.map(d => `<div class="hist"><div class="t"><b>${esc(FAM[d.fam]?.n || d.fam)}</b><small>${dateStr(d.startedAt)} → ${dateStr(d.finishedAt)} · ${d.sessions} entrenamientos</small></div></div>`).join('')}</div>`;
   el.innerHTML = h;
@@ -1116,11 +1150,13 @@ function cycleSound() {
 const cur = () => P.tl[P.i];
 
 function startWorkout(w, resume) {
+  P.fromView = currentView === 'preview' ? previewFrom : currentView;
   P.w = clone(w); P.tl = buildTimeline(P.w); P.running = true; P.animId = null;
   P.startedAt = resume ? resume.startedAt : Date.now();
   P.activeMs = resume ? resume.activeMs : 0;
   P.hr = resume && resume.hr ? resume.hr : []; P.pauses = resume ? resume.pauses || 0 : 0;
   P.log = resume && resume.log ? resume.log : []; P.logOpen = null;
+  try { P.pace = buildPaces(); (P.log || []).forEach(r => { if (r[1] && !r[2] && !r[5]) paceAdd(P.pace, r[0], r[1], r[3] / 1000); }); } catch (e) { P.pace = {}; }
   if (typeof hrUI === 'function') hrUI();
   P.last = performance.now(); P.lastSave = 0;
   beep(660, 60, .12); // desbloquea el audio en iOS
@@ -1137,20 +1173,67 @@ function startWorkout(w, resume) {
 }
 // registro de cada ejercicio hecho: [id, repeticiones, segundos previstos, ms reales]
 $('#p-easy').onclick = e => { e.stopPropagation(); makeEasier(); };
+$('#p-side').addEventListener('click', e => {
+  if (e.target.closest('#p-more')) { e.stopPropagation(); moreTime(); }
+  else if (e.target.closest('#p-go-next')) { e.stopPropagation(); autoNext(); }
+});
 $('#p-swap').onclick = e => { e.stopPropagation(); const s = cur(); if (!s) return; const id = s.k === 'work' ? s.ex : s.next, to = swapOf(id); if (to) swapEx(id, to); };
 function logClose() {
   const o = P.logOpen; P.logOpen = null; if (!o) return;
   const s = P.tl[o.i]; if (!s) return;
   const ms = Math.round(P.activeMs - o.at); if (ms < 1500) return;
-  (P.log = P.log || []).push(s.kg != null ? [s.ex, s.reps || 0, s.dur || 0, ms, s.kg] : [s.ex, s.reps || 0, s.dur || 0, ms]);
+  const row = s.kg != null ? [s.ex, s.reps || 0, s.dur || 0, ms, s.kg] : [s.ex, s.reps || 0, s.dur || 0, ms];
+  if (o.auto) { row[4] = s.kg != null ? s.kg : null; row[5] = 1; }   // pasó solo o con «pasar al siguiente»: no cuenta para el ritmo
+  (P.log = P.log || []).push(row);
+  if (!o.auto && s.reps && P.pace) paceAdd(P.pace, s.ex, s.reps, ms / 1000);
 }
+
+/* ---------- Ritmo por ejercicio y paso automático ---------- */
+// Con cada serie por repeticiones se guarda cuánto tardaste. Con 3 o más series de un ejercicio se calcula
+// tu ritmo (segundos por repetición, mediana de las últimas 8). Cuando pasa el tiempo esperado,
+// avisa «Siguiente ejercicio en 10 segundos» y pasa solo; «+10 s» da más tiempo y «Pasar» avanza ya.
+const PACE_MIN = 3;
+const paceKey = id => (id || '').replace(/_(l|r)$/, '');
+function paceAdd(m, id, reps, secs) {
+  if (!reps || !secs) return; const v = secs / reps; if (v < 0.6 || v > 12) return;   // descarta toques olvidados o dobles
+  const k = paceKey(id); (m[k] = m[k] || []).push(v);
+}
+function buildPaces() {
+  const m = {}, H = PS.get('history', []).slice(0, 300).reverse();   // de la más vieja a la más nueva
+  H.forEach(x => {
+    if (x.log) x.log.forEach(r => { if (r[1] && !r[2] && !r[5]) paceAdd(m, r[0], r[1], r[3] / 1000); });
+    else if (x.w && x.w.kind === 'reto' && x.w.times && typeof RETOS !== 'undefined' && RETOS[x.w.reto]) (x.w.sets || []).forEach((n, i) => { const t = x.w.times[i]; if (t) paceAdd(m, RETOS[x.w.reto].ex, n, t); });
+  });
+  return m;
+}
+const median = a => { const b = [...a].sort((x, y) => x - y), n = b.length; return n ? (n % 2 ? b[(n - 1) / 2] : (b[n / 2 - 1] + b[n / 2]) / 2) : 0; };
+function paceOf(id, m) { const a = (m || {})[paceKey(id)]; return a && a.length >= PACE_MIN ? median(a.slice(-8)) : 0; }
+// segundos esperados para la serie actual (0 si todavía no hay datos suficientes)
+function expectedSecs(s) {
+  if (S.autoNext === false || !s || s.k !== 'work' || !s.reps || s.soft || s.test || s.ask || !P.pace) return 0;
+  const p = paceOf(s.ex, P.pace); return p ? Math.max(8, Math.round(s.reps * p)) : 0;
+}
+function autoTick(s) {
+  const exp = expectedSecs(s); if (!exp) return;
+  if (!P.autoAt) {
+    if (P.stepMs >= exp * 1000) { P.autoAt = P.stepMs + 10000; P.autoLast = null; beep(660, 160, .18); say('Siguiente ejercicio en 10 segundos.'); setSide(''); }
+    return;
+  }
+  const left = Math.ceil((P.autoAt - P.stepMs) / 1000);
+  if (left !== P.autoLast) { P.autoLast = left; if (left <= 3 && left >= 1) { beep(left === 1 ? 880 : 740, 110, S.sound === 'voz' ? .1 : .22); say(NUM_WORDS[left]); } }
+  if (P.stepMs >= P.autoAt) autoNext();
+}
+function autoNext() { if (P.logOpen) P.logOpen.auto = true; step(P.i + 1, false, 'auto'); }
+function moreTime() { if (!P.autoAt) return; P.autoAt += 10000; P.autoLast = null; beep(523, 90, .15); toast('+10 segundos'); setSide(''); }
+// el panel bajo el número se reescribe solo si cambia (si no, los botones no se pueden tocar)
+function setSide(h) { const el = $('#p-side'); if (el && el.dataset.h !== h) { el.dataset.h = h; el.innerHTML = h; } }
 function step(i, silent, reason) {
   logClose();
   P.i = i;
   if (P.tl[i] && P.tl[i].k === 'work' && !P.tl[i].soft) P.logOpen = { i, at: P.activeMs };
   if (i >= P.tl.length) { finish(true, reason); return; }
   const s = cur();
-  P.stepMs = 0; P.remain = s.reps ? 0 : s.dur * 1000; P.endAt = performance.now() + P.remain; P.lastSec = null; P.half = false;
+  P.stepMs = 0; P.remain = s.reps ? 0 : s.dur * 1000; P.endAt = performance.now() + P.remain; P.lastSec = null; P.half = false; P.autoAt = 0; P.autoLast = null;
   render(); saveSession();
   if (silent) return;
   if (s.k === 'work') beep(1046, 320, S.sound === 'voz' ? .16 : .3);
@@ -1162,7 +1245,7 @@ function tick() {
   if (!P.running || P.paused) return;
   P.activeMs += dt;
   const s = cur();
-  if (s.reps) { P.stepMs += dt; paint(); }
+  if (s.reps) { P.stepMs += dt; autoTick(s); if (P.i < P.tl.length && cur() === s) paint(); }
   else {
     const rem = P.endAt - now;
     if (rem <= 0) { step(P.i + 1, false, 'auto'); return; }
@@ -1203,6 +1286,14 @@ const EASIER = {
   russian_twist_hard: 'russian_twist_easy', knee_tuck_crunches: 'reverse_crunches', leg_raises: 'reverse_crunches', sl_crab_bridge: 'crab_bridge', single_leg_bridge: 'bridge', marching_wall_sit: 'wall_sit'
 };
 const fmtKg = k => (Math.round(k * 10) / 10).toLocaleString('es');
+// versión más difícil: la inversa de EASIER (si hay varias, la de menor nivel; sin saltos si así se pidió)
+function harderOf(id, noJump) {
+  const b = (id || '').replace(/_(l|r)$/, '');
+  let c = Object.keys(EASIER).filter(k => EASIER[k] === b && CATALOG[k]);
+  if (noJump) { const nj = c.filter(k => !CATALOG[k].j); if (nj.length) c = nj; }
+  c.sort((x, y) => (CATALOG[x].lv || 1) - (CATALOG[y].lv || 1));
+  return c[0] || null;
+}
 const easierOf = id => { const b = (id || '').replace(/_(l|r)$/, ''); const e = EASIER[b]; return e && CATALOG[e] ? e : null; };
 // cambia el ejercicio por su versión más fácil en lo que queda del entrenamiento (y en la sesión guardada)
 function makeEasier() {
@@ -1257,7 +1348,7 @@ function render() {
   $('#p-ring').classList.toggle('reps', !!s.reps);
   if (s.ask) {
     const tt = TESTS.find(x => x.key === s.ask), v = P.w.results[s.ask] ?? '';
-    $('#p-side').innerHTML = `<div class="ask"><span>${tt.n}:</span><button data-a="-1" aria-label="Menos">−</button><input id="p-ask" type="number" inputmode="numeric" min="0" max="300" value="${v}" placeholder="0"><button data-a="1" aria-label="Más">+</button></div>`;
+    $('#p-side').dataset.h = 'ask'; $('#p-side').innerHTML = `<div class="ask"><span>${tt.n}:</span><button data-a="-1" aria-label="Menos">−</button><input id="p-ask" type="number" inputmode="numeric" min="0" max="300" value="${v}" placeholder="0"><button data-a="1" aria-label="Más">+</button></div>`;
     const inp = $('#p-ask');
     const setV = v2 => { P.w.results[s.ask] = Math.max(0, Math.min(300, v2 | 0)); inp.value = P.w.results[s.ask]; saveSession(); };
     inp.oninput = () => { if (inp.value !== '') setV(+inp.value); };
@@ -1287,8 +1378,14 @@ function paint() {
   const l = $('#p-left'); if (l) l.textContent = fmt(tot - el);
   const e = s.k === 'work' && ex(s.ex);
   if (s.ask) { /* el campo del número se dibuja una vez en render() */ }
-  else if (s.test) $('#p-side').innerHTML = '<span class="side">Cuenta tus repeticiones</span>';
-  else $('#p-side').innerHTML = e && e.s && !s.reps ? `<span class="side">${P.half ? 'Lado izquierdo' : 'Lado derecho'}</span>` : (s.reps ? '<span class="side">Toca ✓ al terminar</span>' : '');
+  else if (s.test) setSide('<span class="side">Cuenta tus repeticiones</span>');
+  else if (s.reps && P.autoAt) {
+    const left = Math.max(0, Math.ceil((P.autoAt - P.stepMs) / 1000));
+    const el = $('#p-auto-n'); if (el && $('#p-side').dataset.h) el.textContent = left;
+    if (!el) setSide(`<div class="autonx"><span class="side">Siguiente ejercicio en <b id="p-auto-n">${left}</b> s</span><div class="autonx-b"><button class="btn ghost small" id="p-more">+10 s · más tiempo</button><button class="btn small" id="p-go-next">Pasar al siguiente</button></div></div>`);
+  }
+  else if (s.reps) { const exp = expectedSecs(s); setSide(`<span class="side">Toca ✓ al terminar${exp ? ` · tu ritmo: ~${fmt(exp)}` : ''}</span>`); }
+  else setSide(e && e.s ? `<span class="side">${P.half ? 'Lado izquierdo' : 'Lado derecho'}</span>` : '');
 }
 function togglePause() {
   if (!P.running) return;
@@ -1478,7 +1575,8 @@ $('#d-ok').onclick = () => {
   // sin respuesta en una sesión del entrenador: cuenta como «bien»
   if (lastDone && lastDone.w.smart && lastDone.fb == null && $('#fb-opts')) applyFeedback(lastDone.w, 'ok');
   $('#done').classList.add('hidden'); document.body.style.overflow = '';
-  W = null; show(lastDone && lastDone.w.kind === 'plan' ? 'plans' : lastDone && (lastDone.w.smart || lastDone.w.kind === 'test') ? 'coach' : 'hist');
+  // si se empezó desde el calendario, vuelve al calendario (ya actualizado)
+  W = null; show(P.fromView === 'cal' ? 'cal' : lastDone && lastDone.w.kind === 'plan' ? 'plans' : lastDone && (lastDone.w.smart || lastDone.w.kind === 'test') ? 'coach' : 'hist');
 };
 $('#d-fav').onclick = () => saveFav(lastDone.w);
 $('#d-mark').onclick = () => { if (markPlanDay(lastDone.w, lastDone.secs)) { toast('Día marcado como hecho'); $('#d-mark').classList.add('hidden'); } };
