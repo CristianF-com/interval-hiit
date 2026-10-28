@@ -63,7 +63,8 @@ function computeStats() {
     return { key, n: RETOS[key].n, best: bs, total: tot, sessions: xs.length, st: getRetos()[key] };
   }).filter(Boolean);
   const bestWeek = Object.values(weeks).reduce((a, b) => Math.max(a, b), 0);
-  return { H, ex: Object.values(ex), parts, days: days.size, secs, reps, kcal, best, curStreak, hours, longest, bestWeek, hrAvg: hrN ? Math.round(hrSum / hrN) : 0, retos };
+  const wk = Date.now() - 7 * 864e5, wkH = H.filter(x => x.at > wk);
+  return { wkN: wkH.length, wkSecs: wkH.reduce((a, x) => a + (x.secs || 0), 0), H, ex: Object.values(ex), parts, days: days.size, secs, reps, kcal, best, curStreak, hours, longest, bestWeek, hrAvg: hrN ? Math.round(hrSum / hrN) : 0, retos };
 }
 const fmtDur = s => { s = Math.round(s); const h = Math.floor(s / 3600), m = Math.round((s % 3600) / 60); return h ? `${h} h ${m} min` : `${m} min`; };
 const fmtT = s => { s = Math.round(s); return s >= 60 ? `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}` : `${s} s`; };
@@ -75,7 +76,8 @@ function statsHTML() {
   let h = `<h2>Estadísticas</h2><div class="kpis">
     ${tile(fmtN(st.H.length), st.H.length === 1 ? 'entrenamiento' : 'entrenamientos')}${tile(fmtN(st.days), st.days === 1 ? 'día activo' : 'días activos')}
     ${tile(fmtDur(st.secs), 'tiempo total')}${tile(fmtN(st.reps), 'repeticiones')}
-    ${tile(fmtN(st.kcal), 'kcal aprox.')}${tile(st.curStreak ? `${st.curStreak} / ${st.best}` : st.best, 'racha / mejor racha (días)')}</div>`;
+    ${tile(fmtN(st.kcal), 'kcal aprox.')}${tile(st.curStreak ? `${st.curStreak} / ${st.best}` : st.best, 'racha / mejor racha (días)')}
+    ${tile(fmtN(st.wkN), st.wkN === 1 ? 'entrenamiento esta semana' : 'entrenamientos esta semana')}${tile(fmtDur(st.wkSecs), 'tiempo esta semana')}</div>`;
   // partes del cuerpo
   const tot = Object.values(st.parts).reduce((a, b) => a + b, 0);
   if (tot) h += `<h3 class="st-h">Partes del cuerpo trabajadas</h3><div class="zbars">${Object.entries(ST_PARTS).map(([c, n]) => { const v = st.parts[c] || 0, p = Math.round(v / tot * 100);

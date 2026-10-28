@@ -260,7 +260,8 @@ code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.92em;backgroun
 .cal-h b{font-family:var(--display);font-size:24px;text-transform:uppercase}
 .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
 .cw{text-align:center;font-size:12px;font-weight:700;color:var(--muted);padding:4px 0}
-.cd{aspect-ratio:1;border-radius:12px;background:var(--surface);border:1px solid var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;min-width:0;min-height:0;overflow:hidden}
+.cd{position:relative;height:0;padding:0 0 calc(100% - 2px);border-radius:12px;background:var(--surface);border:1px solid var(--line);min-width:0;overflow:hidden}
+.cd .cin{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px}
 .cd.blank{background:transparent;border:0}
 .cd b{font-family:var(--display);font-size:18px;line-height:1}
 .cd.past b{color:var(--muted)}
@@ -343,8 +344,12 @@ code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.92em;backgroun
   /* el título de cada pestaña va en el encabezado, al lado del nombre */
   section .hero.vh{display:none}
   header.top .h-view{display:inline}
-  .cal .cd{aspect-ratio:1.2}
   .cols .col.stick{position:sticky;top:8px}
+  .sheet{max-width:none}
+  #hist-kpi .kpis{grid-template-columns:repeat(4,minmax(0,1fr))}
+  .hcols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:"favs aw" "list aw";gap:0 28px;align-items:start}
+  .hcols>#hist-favs{grid-area:favs}.hcols>#hist-list{grid-area:list}.hcols>#hist-awards{grid-area:aw}
+  .hcols>#hist-awards>h2:first-child,.hcols>#hist-favs>h2:first-child{margin-top:14px}
   .dur{grid-template-columns:repeat(9,1fr)}
 }
 @media (max-width:380px){.dur{grid-template-columns:repeat(3,1fr)}.hero{font-size:34px}}
@@ -616,14 +621,13 @@ input,textarea,select{font-size:16px}
   <section id="v-hist" class="hidden">
     <p class="hero vh">Historial</p>
     <p class="sub" id="hist-sub"></p>
-    <div class="cols"><div class="col">
-    <div class="stats" id="hist-stats"></div>
-    <div id="hist-favs"></div>
-    <div id="hist-list"></div>
-    </div><div class="col">
+    <div class="stats hidden" id="hist-stats"></div>
     <div id="hist-kpi"></div>
+    <div class="hcols">
+    <div id="hist-favs"></div>
     <div id="hist-awards"></div>
-    </div></div>
+    <div id="hist-list"></div>
+    </div>
   </section>
 </div>
 

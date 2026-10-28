@@ -73,7 +73,7 @@ function renderCal() {
     // un punto por cada actividad del día (hechas y programadas)
     const cls = its.map(x => x.type === 'done' ? (x.x.full ? 'ok' : 'part') : x.type === 'reto' ? 'rt' : x.type);
     const dots = cls.slice(0, 6).map(c => `<i class="dt ${c}"></i>`).join('') + (cls.length > 6 ? '<i class="dt more">+</i>' : '');
-    cells += `<button class="cd ${k === today ? 'today' : ''} ${k === calSel ? 'sel' : ''} ${t < dayStart(now) ? 'past' : ''}" data-k="${k}"><b>${d}</b><span class="dots">${dots}</span></button>`;
+    cells += `<button class="cd ${k === today ? 'today' : ''} ${k === calSel ? 'sel' : ''} ${t < dayStart(now) ? 'past' : ''}" data-k="${k}"><span class="cin"><b>${d}</b><span class="dots">${dots}</span></span></button>`;
   }
   const mname = m.toLocaleDateString('es', { month: 'long', year: 'numeric' });
   // próximos 14 días
@@ -81,7 +81,7 @@ function renderCal() {
   for (let i = 0; i < 14; i++) { const t = addDays(now, i), k = dkey(t); (ag[k] || []).filter(x => x.type !== 'done').forEach(x => up.push({ t, k, x })); }
   const p = getPlan(), sm = getSmart();
   el.innerHTML = `<div class="cols"><div class="col stick"><p class="hero vh">Calendario</p>
-    <p class="sub">${p || (sm && sm.I) || Object.keys(getRetos()).length || (typeof getDumb === 'function' && getDumb()) ? 'Tus próximos entrenamientos y los que ya hiciste.' : 'Empieza un plan, un reto o el entrenador inteligente para ver aquí tus próximos entrenamientos.'}</p>
+    ${p || (sm && sm.I) || Object.keys(getRetos()).length || (typeof getDumb === 'function' && getDumb()) ? '' : '<p class="sub">Empieza un plan, un reto o el entrenador inteligente para ver aquí tus próximos entrenamientos.</p>'}
     <div class="cal-h"><button class="icon-btn" id="cal-prev" aria-label="Mes anterior"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></button>
       <b>${mname}</b><button class="icon-btn" id="cal-next" aria-label="Mes siguiente"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 5l7 7-7 7"/></svg></button></div>
     <div class="cal">${WD.map(w => `<span class="cw">${w}</span>`).join('')}${cells}</div>
