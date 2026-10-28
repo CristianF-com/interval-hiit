@@ -196,8 +196,13 @@ function applyTheme() {
 }
 
 /* ---------- Hojas modales ---------- */
-function sheet(html, onMount) {
+// locked: sin X, sin deslizar y sin cerrar tocando fuera (solo se cierra con sus propios botones)
+function sheet(html, onMount, locked) {
   const root = $('#sheet-root');
+  if (locked) {
+    root.innerHTML = `<div class="scrim" id="scrim"><div class="sheet locked" role="dialog" aria-modal="true">${html}</div></div>`;
+    onMount && onMount(root); return;
+  }
   root.innerHTML = `<div class="scrim" id="scrim"><div class="sheet" role="dialog"><div class="sh-bar" id="sh-bar"><div class="grab"></div>
     <button class="icon-btn sh-x" id="sh-x" aria-label="Cerrar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>${html}</div></div>`;
   $('#scrim').onclick = e => { if (e.target.id === 'scrim') closeSheet(); };

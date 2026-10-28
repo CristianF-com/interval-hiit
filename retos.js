@@ -499,7 +499,7 @@ function rPause() {
     $('#rpz-go').onclick = () => rContinue();
     const sv = $('#rx-save'); if (sv) sv.onclick = () => { closeSheet(); RP.paused = false; rFinish(true); };
     $('#rx-quit').onclick = () => { closeSheet(); quit(); };
-  });
+  }, true);
 }
 function rResume() {
   if (!RP.paused) return;

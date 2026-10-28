@@ -190,6 +190,7 @@ nav.tabs button[aria-current=true] svg{color:var(--work)}
 /* hojas modales */
 .scrim{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:55;display:flex;align-items:flex-end;justify-content:center}
 .sheet{width:100%;max-width:560px;max-height:92dvh;overflow:auto;background:var(--bg);border:1px solid var(--line);border-bottom:0;border-radius:22px 22px 0 0;padding:10px 16px calc(20px + env(safe-area-inset-bottom))}
+.sheet.locked{padding-top:22px}
 .sheet .grab{width:40px;height:4px;border-radius:9px;background:var(--line);margin:0 auto 6px}
 .sheet .sh-bar{position:sticky;top:-10px;z-index:5;margin:-10px -16px 0;padding:12px 16px 8px;background:var(--bg);cursor:pointer;display:flex;justify-content:center;align-items:center;min-height:44px;touch-action:none}
 .sheet .sh-bar .grab{width:48px;height:5px;margin:0;background:var(--muted);opacity:.55}
