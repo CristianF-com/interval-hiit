@@ -382,7 +382,7 @@ function rRender() {
   $('#rp-help').textContent = prep ? 'Ponte en posición. ' + (R.how[RP.mode] || '') : rest ? 'Recupera el aire. A 10 s del final te aviso.' : RP.mode === 'ritmo' ? (lastSet && !d.test && RP.count >= tgt ? 'Objetivo cumplido: toca la pantalla por cada extra o «Terminar».' : d.test ? 'Una por pitido. Cuando no puedas más, toca «Terminar» (y «−1» si la última no salió).' : `Una por pitido, cada ${RP.tempo} s. Si no llegas, «Serie hecha».`) : RP.sensOn ? (RP.det.hint + ' · también puedes tocar la pantalla') : (R.how.toque || 'Toca la pantalla en cada repetición.');
   $('#rp-meter').classList.toggle('hidden', !RP.sensOn || rest);
   $('#rp-done').textContent = prep ? 'Empezar ya' : rest ? 'Saltar descanso' : (d.test || lastSet) ? 'Terminar' : 'Serie hecha';
-  $('#rp-pause').textContent = RP.paused ? '▶ Seguir' : 'Pausa';
+  const pb = $('#rp-close'); pb.innerHTML = RP.paused ? PLAY_SVG : PAUSE_SVG; pb.setAttribute('aria-label', RP.paused ? 'Seguir' : 'Pausa y opciones');
   const m = $('#rp-anim'); if (m && m.dataset.animId !== R.ex) Anim.mount(m, R.ex);
 }
 function rFinish(partial) {
@@ -460,29 +460,45 @@ $('#rp-done').onclick = () => {
   if (RP.d.test || RP.set === RP.d.sets.length - 1) { rFinish(); return; }
   rEndSet();
 };
-$('#rp-pause').onclick = async () => {
-  // al reanudar tras un cierre de la app, los sensores se vuelven a pedir con este toque
-  if (RP.paused && !RP.sensOn && RP.wantSens && await motionPermission()) { RP.det = makeDetector(RP.key, RP.mode, RP.sens); window.addEventListener('devicemotion', onMotion); RP.sensOn = true; }
-  if (RP.paused) rResume(); else rPause();
-};
+// un solo botón arriba a la izquierda: pausa el reto y abre las opciones (seguir, ajustes, salir).
+// Con el reto en pausa muestra ▶ y lo reanuda directamente.
+const PAUSE_SVG = '<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="5" width="4" height="14" rx="1.2"/><rect x="14" y="5" width="4" height="14" rx="1.2"/></svg>';
+const PLAY_SVG = '<svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg>';
+$('#rp-close').onclick = () => { if (RP.paused) rContinue(); else rPause(); };
+// al reanudar tras un cierre de la app, los sensores se vuelven a pedir con este toque
+async function rContinue() {
+  closeSheet();
+  if (!RP.sensOn && RP.wantSens && await motionPermission()) { RP.det = makeDetector(RP.key, RP.mode, RP.sens); window.addEventListener('devicemotion', onMotion); RP.sensOn = true; }
+  rResume();
+}
 function rPause() {
-  RP.paused = true; RP.pausedAt = performance.now(); say('Pausa'); rRender();
+  if (!RP.paused) { RP.paused = true; RP.pausedAt = performance.now(); say('Pausa'); }
+  rRender();
   const sensor = RP.sensOn || RP.wantSens;
+  const any = RP.done.filter(x => x != null).length || RP.count;
+  const reps = RP.done.filter(x => x != null).reduce((a, b) => a + b, 0) + (RP.phase === 'work' && RP.done[RP.set] == null ? RP.count : 0);
+  const quit = () => { window.removeEventListener('devicemotion', onMotion); clearInterval(RP.timer); wake(false); $('#rplayer').classList.add('hidden'); document.body.style.overflow = ''; RP.phase = 'idle'; RP.paused = false; PS.del('rsession'); };
   sheet(`<h3>Pausa</h3>
-    <p class="sub">${RETOS[RP.key].n} · ${RP.d.test ? 'prueba' : serieTxt(RP.set, RP.d.sets.length).toLowerCase()}</p>
+    <p class="sub">${RETOS[RP.key].n} · ${RP.d.test ? 'prueba' : serieTxt(RP.set, RP.d.sets.length).toLowerCase()} · ${any ? `llevas ${reps} repeticiones` : 'todavía sin repeticiones'}</p>
+    <div style="height:12px"></div><button class="btn" id="rpz-go">▶ Seguir</button>
     ${sensor ? `<h2>Sensibilidad del sensor</h2>
       <div class="seg" id="rpz-s">${[1, 2, 3, 4, 5].map(v => `<button data-v="${v}" aria-pressed="${RP.sens === v}">${v}</button>`).join('')}</div>
       <p class="note">1 = cuenta solo movimientos amplios · 5 = cuenta movimientos más cortos. Si cuenta de más, bájala; si no cuenta, súbela.</p>`
     : RP.mode === 'ritmo' ? `<h2>Ritmo</h2><div class="seg" id="rpz-t">${TEMPOS.map(v => `<button data-v="${v}" aria-pressed="${RP.tempo === v}">${v} s</button>`).join('')}</div><p class="note">Segundos por repetición.</p>`
     : `<p class="note">Modo toque: toca cualquier parte de la pantalla en cada repetición.</p>`}
-    <div style="height:14px"></div><button class="btn" id="rpz-go">▶ Seguir</button>`, () => {
+    <h2>Salir</h2>
+    ${any && !RP.initial ? `<button class="btn ghost" id="rx-save">Guardar lo hecho y salir<small>Queda en el historial; este día del programa sigue pendiente</small></button><div class="gap"></div>` : ''}
+    ${any && RP.initial ? `<button class="btn ghost" id="rx-save">Terminar la prueba aquí<small>Elijo rango y etapa con lo que hiciste</small></button><div class="gap"></div>` : ''}
+    <button class="btn danger" id="rx-quit">Salir sin guardar</button>`, () => {
     if (sensor) bindSeg('rpz-s', 'v', v => {
       RP.sens = +v; if (RP.sensOn) RP.det = makeDetector(RP.key, RP.mode, RP.sens);
       const all = getRetos(); if (all[RP.key]) { all[RP.key].sens = RP.sens; setRetos(all); }
       toast('Sensibilidad ' + v);
     });
     if ($('#rpz-t')) bindSeg('rpz-t', 'v', v => { RP.tempo = +v; const all = getRetos(); if (all[RP.key]) { all[RP.key].tempo = RP.tempo; setRetos(all); } });
-    $('#rpz-go').onclick = () => { closeSheet(); rResume(); };
+    $('#rpz-go').onclick = () => rContinue();
+    const sv = $('#rx-save'); if (sv) sv.onclick = () => { closeSheet(); RP.paused = false; rFinish(true); };
+    $('#rx-quit').onclick = () => { closeSheet(); quit(); };
   });
 }
 function rResume() {
@@ -490,22 +506,6 @@ function rResume() {
   if ((RP.phase === 'rest' || RP.phase === 'prep') && RP.pausedAt) RP.restEnd += performance.now() - RP.pausedAt; // el descanso no corre en pausa
   RP.paused = false; RP.pausedAt = 0; RP.lastTick = performance.now(); say('Seguimos'); rRender();
 }
-$('#rp-close').onclick = () => {
-  RP.paused = true; rRender();
-  const any = RP.done.length || RP.count;
-  const quit = () => { window.removeEventListener('devicemotion', onMotion); clearInterval(RP.timer); wake(false); $('#rplayer').classList.add('hidden'); document.body.style.overflow = ''; RP.phase = 'idle'; PS.del('rsession'); };
-  sheet(`<h3>¿Salir del reto?</h3>
-    <p class="sub">${any ? `Llevas ${RP.done.filter(x => x != null).reduce((a, b) => a + b, 0) + (RP.phase === 'work' && RP.done[RP.set] == null ? RP.count : 0)} repeticiones.` : 'Todavía no hiciste ninguna repetición.'}</p>
-    <div style="height:16px"></div>
-    <button class="btn" id="rx-go">▶ Seguir entrenando</button><div class="gap"></div>
-    ${any && !RP.initial ? `<button class="btn ghost" id="rx-save">Guardar lo hecho y salir<small>Queda en el historial; este día del programa sigue pendiente</small></button><div class="gap"></div>` : ''}
-    ${any && RP.initial ? `<button class="btn ghost" id="rx-save">Terminar la prueba aquí<small>Elijo rango y etapa con lo que hiciste</small></button><div class="gap"></div>` : ''}
-    <button class="btn danger" id="rx-quit">Salir sin guardar</button>`, () => {
-    $('#rx-go').onclick = () => { closeSheet(); RP.paused = false; rRender(); };
-    const sv = $('#rx-save'); if (sv) sv.onclick = () => { closeSheet(); rFinish(true); };
-    $('#rx-quit').onclick = () => { closeSheet(); quit(); };
-  });
-};
 
 /* ---------- Si el teléfono cierra la app a mitad del reto, se retoma ---------- */
 function rSave() {
@@ -522,7 +522,7 @@ function resumeReto(x) {
   if (!RP.initial && !RP.s) { PS.del('rsession'); return false; }
   $('#rplayer').classList.remove('hidden'); document.body.style.overflow = 'hidden'; wake(true); voiceIcon();
   clearInterval(RP.timer); RP.timer = setInterval(rTick, 200);
-  rRender(); toast('Reto retomado donde quedó · toca Seguir');
+  RP.pausedAt = performance.now(); rRender(); rPause(); toast('Reto retomado donde quedó');
   return true;
 }
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') rSave(); });
