@@ -72,7 +72,7 @@ function renderCal() {
     const t = new Date(y, mo, d).getTime(), k = dkey(t), its = ag[k] || [];
     // un punto por cada actividad del día (hechas y programadas)
     const cls = its.map(x => x.type === 'done' ? (x.x.full ? 'ok' : 'part') : x.type === 'reto' ? 'rt' : x.type);
-    const dots = cls.slice(0, 6).map(c => `<i class="dt ${c}"></i>`).join('') + (cls.length > 6 ? '<i class="dt more">+</i>' : '');
+    const dots = cls.length > 5 ? cls.slice(0, 4).map(c => `<i class="dt ${c}"></i>`).join('') + '<i class="dt more">+</i>' : cls.map(c => `<i class="dt ${c}"></i>`).join('');
     cells += `<button class="cd ${k === today ? 'today' : ''} ${k === calSel ? 'sel' : ''} ${t < dayStart(now) ? 'past' : ''}" data-k="${k}"><span class="cin"><b>${d}</b><span class="dots">${dots}</span></span></button>`;
   }
   const mname = m.toLocaleDateString('es', { month: 'long', year: 'numeric' });
