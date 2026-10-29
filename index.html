@@ -346,6 +346,7 @@ code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.92em;backgroun
   header.top .h-view{display:inline}
   .cols .col.stick{position:sticky;top:8px}
   /* calendario: el mes entero entra en el alto de la pantalla */
+  .col.stick>.sub{display:none}
   .col.stick .cal-h{margin:2px 0 2px}.col.stick .cal-h b{font-size:20px}
   .col.stick .cal,.col.stick .cal-h,.col.stick .legend{width:min(100%,calc((100dvh - 160px - env(safe-area-inset-bottom)) * 7 / 6));margin-left:auto;margin-right:auto}
   .col.stick .cw{padding:2px 0;font-size:11px}
@@ -370,6 +371,10 @@ code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.92em;backgroun
   --dark:#2b2c31; --dark2:#38393f; --dark-line:#45474d; --dark-muted:#b6bac2; --reto:#2b2c31;
 }
 [data-theme=naranja] header.top{background:var(--dark);color:#fff;margin:0 -16px 6px;padding-left:16px;padding-right:16px;padding-bottom:12px}
+/* horizontal: la banda del encabezado va del menú lateral hasta el borde derecho de la pantalla */
+@media (orientation:landscape) and (min-width:640px){
+  [data-theme=naranja] header.top{margin-left:-20px;margin-right:calc(-20px - env(safe-area-inset-right));padding-left:20px;padding-right:calc(20px + env(safe-area-inset-right))}
+}
 [data-theme=naranja] header.top .who{background:var(--dark2);border-color:var(--dark-line);color:#fff}
 [data-theme=naranja] header.top .icon-btn{color:#fff}
 [data-theme=naranja] nav.tabs{background:var(--dark);border-top-color:var(--dark);}
