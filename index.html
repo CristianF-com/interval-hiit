@@ -373,7 +373,8 @@ code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.92em;backgroun
 [data-theme=naranja] header.top{background:var(--dark);color:#fff;margin:0 -16px 6px;padding-left:16px;padding-right:16px;padding-bottom:12px}
 /* horizontal: la banda del encabezado va del menú lateral hasta el borde derecho de la pantalla */
 @media (orientation:landscape) and (min-width:640px){
-  [data-theme=naranja] header.top{margin-left:-20px;margin-right:calc(-20px - env(safe-area-inset-right));padding-left:20px;padding-right:calc(20px + env(safe-area-inset-right))}
+  [data-theme=naranja] header.top{margin-left:-20px;margin-right:calc(-20px - env(safe-area-inset-right));padding-left:20px;padding-right:calc(20px + env(safe-area-inset-right));
+    box-shadow:0 0 0 100vmax var(--dark);clip-path:inset(0 -100vmax 0 0)}   /* la banda sigue hasta el borde aunque el iPhone reserve margen para el notch */
 }
 [data-theme=naranja] header.top .who{background:var(--dark2);border-color:var(--dark-line);color:#fff}
 [data-theme=naranja] header.top .icon-btn{color:#fff}
