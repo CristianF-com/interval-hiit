@@ -223,7 +223,7 @@ nav.tabs button[aria-current=true] svg{color:var(--work)}
 .phase{font-family:var(--display);text-transform:uppercase;letter-spacing:3px;font-size:18px;color:var(--c);font-weight:800}
 .exname{font-family:var(--display);text-transform:uppercase;font-size:clamp(32px,9vw,50px);line-height:.95;margin:6px 0 18px;font-weight:800;max-width:100%;overflow-wrap:anywhere}
 .ring{position:relative;width:min(68vw,300px,38vh);aspect-ratio:1}
-.ring>svg{width:100%;height:100%;transform:rotate(-90deg)}
+.ring>svg{display:block;width:100%;height:100%;transform:rotate(-90deg)}
 .ring>svg circle{fill:none;stroke-width:7}
 .ring .bg{stroke:var(--line)}
 .ring .fg{stroke:var(--c);stroke-linecap:butt;transition:stroke-dashoffset .25s linear}
@@ -249,7 +249,7 @@ code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.92em;backgroun
 .side{display:inline-block;margin-top:8px;padding:4px 10px;border-radius:99px;background:var(--surface2);font-size:13px;font-weight:600}
 .p-bottom{position:relative;padding:12px 16px calc(18px + env(safe-area-inset-bottom));max-width:560px;width:100%;margin:0 auto}
 .next{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:12px 14px;margin-bottom:14px;font-size:14px}
-.next span{color:var(--muted)}
+.next span{color:var(--muted)}.next b.solo{flex:1;text-align:center;font-family:var(--display);text-transform:uppercase;letter-spacing:1px;font-size:17px}
 .next b{flex:1;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ctrl{display:flex;align-items:center;justify-content:center;gap:28px}
 .ctrl button{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;background:var(--surface);border:1px solid var(--line)}
@@ -488,7 +488,7 @@ input,textarea,select{font-size:16px}
   #player .p-top{padding-top:calc(6px + env(safe-area-inset-top));padding-bottom:4px}
   #player .p-main{display:grid;grid-template-columns:auto minmax(0,520px);grid-template-areas:"ring phase" "ring name" "ring easy" "ring num" "ring side" "ring cue";align-content:center;justify-content:center;column-gap:28px;row-gap:0;text-align:left;padding:4px 24px}
   #player .p-main>*{justify-self:start}
-  #player #p-ring{grid-area:ring;width:min(54vh,230px);align-self:center}
+  #player #p-ring{grid-area:ring;width:min(54vh,230px);height:min(54vh,230px);align-self:center}
   #player #p-phase{grid-area:phase;font-size:14px}
   #player #p-name{grid-area:name;font-size:clamp(24px,7.5vh,38px);margin:2px 0 6px}
   #player .st-t .up{color:var(--ok)}.st-t .down{color:#ff7a66}

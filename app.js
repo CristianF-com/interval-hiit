@@ -1353,7 +1353,15 @@ function render() {
   if (s.metaTxt) meta = s.metaTxt;
   else if (s.k !== 'work' && s.next && P.w.kind === 'db') { const nx = P.tl.slice(P.i + 1).find(x => x.k === 'work'); if (nx) meta = nx.metaTxt; }
   $('#p-meta').innerHTML = meta;
-  $('#p-next').innerHTML = s.k === 'work' ? `<span>Siguiente</span><b>${s.next ? esc(ex(s.next).n) : '¡Último!'}</b>` : `<span>Restante aprox.</span><b id="p-left"></b>`;
+  // recuadro inferior: el próximo ejercicio; en el último solo «Último»; si después vienen los estiramientos, «Siguiente: Estiramiento»
+  let nx = `<span>Restante aprox.</span><b id="p-left"></b>`;
+  if (s.k === 'work') {
+    const nw = P.tl.slice(P.i + 1).find(x => x.k === 'work');
+    if (!nw) nx = '<b class="solo">Último</b>';
+    else if (nw.sec === 'Estiramientos' && s.sec !== 'Estiramientos') nx = '<span>Siguiente</span><b>Estiramiento</b>';
+    else nx = `<span>Siguiente</span><b>${esc(ex(nw.ex).n)}</b>`;
+  }
+  $('#p-next').innerHTML = nx;
   $('#p-ring').classList.toggle('reps', !!s.reps);
   if (s.ask) {
     const tt = TESTS.find(x => x.key === s.ask), v = P.w.results[s.ask] ?? '';
