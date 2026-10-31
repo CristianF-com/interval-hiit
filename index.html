@@ -228,7 +228,7 @@ nav.tabs button[aria-current=true] svg{color:var(--work)}
 .ring .bg{stroke:var(--line)}
 .ring .fg{stroke:var(--c);stroke-linecap:butt;transition:stroke-dashoffset .25s linear}
 .ring.reps .fg{stroke-dashoffset:0!important;opacity:.9}
-.anim{position:absolute;inset:12px;border-radius:50%;overflow:hidden;background:var(--surface);display:grid;place-items:center}
+.anim{position:absolute;inset:11%;border-radius:50%;overflow:hidden;background:var(--surface);display:grid;place-items:center}
 .player.rest .anim,.player.roundrest .anim,.player.prep .anim{opacity:.55}
 .mini svg.fig{width:86%;height:86%}
 .anim svg.fig{width:72%;height:72%} /* cabe entero dentro del círculo */
@@ -303,6 +303,7 @@ code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.92em;backgroun
 .rp-tap{cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:manipulation}
 .rp-anim{width:min(42vw,170px);aspect-ratio:1;border-radius:50%;background:var(--surface);overflow:hidden;display:grid;place-items:center;margin:4px 0 6px}
 .rp-anim svg.fig{width:80%;height:80%}
+.rp-num.word,.num.word{font-size:clamp(34px,10vw,56px);line-height:1;text-transform:uppercase;text-align:center}
 .rp-num{font-family:var(--display);font-weight:800;font-size:clamp(90px,30vw,150px);line-height:.9;color:var(--c);font-variant-numeric:tabular-nums}
 .rp-small{font-family:var(--display);text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);font-weight:700;margin-top:4px}
 .rp-meter{width:min(70vw,280px);height:10px;border-radius:9px;background:var(--line);overflow:hidden;margin-top:14px}
@@ -509,6 +510,7 @@ input,textarea,select{font-size:16px}
   .rplayer #rp-phase{grid-area:phase;font-size:14px}
   .rplayer #rp-name{grid-area:name;font-size:clamp(24px,7vh,34px);margin:2px 0 4px}
   .rplayer #rp-num{grid-area:num;font-size:clamp(64px,24vh,120px)}
+  #player #p-num.word,.rplayer #rp-num.word{font-size:clamp(28px,10vh,46px);text-align:left;max-width:420px}
   .rplayer #rp-small{grid-area:small;margin-top:0}
   .rplayer #rp-meter{grid-area:meter;margin-top:8px;width:min(40vw,260px)}
   .rplayer #rp-help{grid-area:help;font-size:13px;-webkit-line-clamp:1;margin-top:4px}

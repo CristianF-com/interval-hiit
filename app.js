@@ -1262,7 +1262,7 @@ function tick() {
     const sec = Math.ceil(rem / 1000);
     if (sec !== P.lastSec) {
       P.lastSec = sec;
-      if (sec <= 3 && sec >= 1 && s.dur >= 5) { beep(sec === 1 ? 880 : 740, 110, S.sound === 'voz' ? .1 : .22); say(NUM_WORDS[sec]); }
+      if (sec <= 3 && sec >= 1 && s.dur >= 5) { beep(sec === 1 ? 880 : 740, 110, S.sound === 'voz' ? .1 : .22); say(sec === 1 && s.k === 'work' ? 'Último.' : NUM_WORDS[sec]); }
       // en descansos largos, aviso a 10 s del final para ponerse en posición
       else if (sec === 10 && (s.k === 'rest' || s.k === 'roundrest') && s.dur >= 20) { const v = S.sound === 'voz' ? .1 : .2; beep(660, 160, v); setTimeout(() => beep(660, 160, v), 220); say('10 segundos. Prepárate.'); }
       if (s.k === 'work' && !s.soft && s.dur >= 30 && sec === Math.round(s.dur / 2) && !ex(s.ex).s) say('¡Mitad!');
@@ -1378,8 +1378,10 @@ function paint() {
     $('#p-num').innerHTML = `${s.reps}<small>${fmt(P.stepMs / 1000)}${P.paused ? ' · pausa' : ''}</small>`;
     el = before + Math.min(stepDur(s), P.stepMs / 1000);
   } else {
-    const rem = Math.max(0, P.remain);
-    $('#p-num').textContent = Math.ceil(rem / 1000);
+    const rem = Math.max(0, P.remain), sec = Math.ceil(rem / 1000);
+    // en el último segundo de un ejercicio dice «Último»
+    const last = s.k === 'work' && sec === 1 && s.dur >= 5;
+    $('#p-num').textContent = last ? 'Último' : sec; $('#p-num').classList.toggle('word', last);
     $('#p-arc').style.strokeDashoffset = 289.03 * (1 - rem / (s.dur * 1000));
     el = before + (s.dur - rem / 1000);
   }

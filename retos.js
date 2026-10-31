@@ -313,8 +313,10 @@ function rCount(n) {
   RP.count++;
   const tgt = rTarget(), lastSet = RP.set === RP.d.sets.length - 1;
   beep(RP.count >= tgt ? 1046 : 880, 70, .18);
-  if (RP.d.test || (lastSet && RP.count >= tgt)) say(String(RP.count) + (RP.count === tgt ? '. ¡Objetivo!' : ''));
-  else { const left = tgt - RP.count; say(String(left > 0 ? left : 0)); }
+  // la cuenta regresiva nombra la última; al llegar a 0 la serie termina (en la última serie: seguir hasta el máximo)
+  if (RP.d.test || (lastSet && RP.count > tgt)) say(String(RP.count));
+  else if (lastSet && RP.count === tgt) say('¡Objetivo! ¡Sigue hasta tu máximo!');
+  else { const left = tgt - RP.count; if (left === 1) say('¡Última!'); else if (left > 1) say(String(left)); }
   if (!RP.d.test && !lastSet && RP.count >= tgt) rEndSet();
   else rRender();
   rSave();
@@ -325,7 +327,7 @@ function rEndSet() {
   if (lastSet || RP.d.test) { rFinish(); return; }
   const p = RP.d.pauses[RP.set] || RP.d.pauses[0] || 60;
   RP.phase = 'rest'; RP.restEnd = performance.now() + p * 1000; RP.restLen = p; RP.count = 0; RP.set++;
-  rSave(); beep(523, 300, .2); { const n = RP.d.sets.length, r = n - RP.set; say(`¡Bien! Descanso de ${p} segundos. ${r <= 3 ? serieTxt(RP.set, n) + '. ' : ''}Siguiente: ${RP.d.sets[RP.set]} repeticiones.`); }
+  rSave(); beep(523, 300, .2); { const n = RP.d.sets.length, r = n - RP.set; say(`¡Terminaste! Descanso de ${p} segundos. ${r <= 3 ? serieTxt(RP.set, n) + '. ' : ''}Siguiente: ${RP.d.sets[RP.set]} repeticiones.`); }
   rRender();
 }
 function rTick() {
@@ -376,9 +378,11 @@ function rRender() {
   let big, small;
   if (rest) { big = Math.max(0, Math.ceil((RP.restEnd - performance.now()) / 1000)); small = prep ? (d.test ? (RP.initial ? 'segundos · luego todas las que puedas' : `segundos · luego ${tgt} seguidas`) : `segundos · luego ${tgt} repeticiones`) : `segundos · luego ${tgt}`; }
   else if (d.test) { big = RP.count; small = RP.initial ? 'repeticiones' : `de ${tgt}`; }
-  else if (lastSet && RP.count >= tgt) { big = '+' + (RP.count - tgt); small = 'extra · sigue si puedes'; }
+  else if (lastSet && RP.count === tgt) { big = 'Sigue hasta tu máximo'; small = 'objetivo cumplido · cada toque suma una extra'; }
+  else if (lastSet && RP.count > tgt) { big = '+' + (RP.count - tgt); small = 'extra · sigue hasta tu máximo'; }
+  else if (tgt - RP.count === 1) { big = 'Última'; small = lastSet ? 'repetición · última serie' : 'repetición'; }
   else { big = tgt - RP.count; small = lastSet ? 'faltan · última serie' : 'faltan'; }
-  $('#rp-num').textContent = big; $('#rp-small').textContent = small;
+  $('#rp-num').textContent = big; $('#rp-num').classList.toggle('word', typeof big === 'string' && !/^\+?\d+$/.test(big)); $('#rp-small').textContent = small;
   $('#rp-help').textContent = prep ? 'Ponte en posición. ' + (R.how[RP.mode] || '') : rest ? 'Recupera el aire. A 10 s del final te aviso.' : RP.mode === 'ritmo' ? (lastSet && !d.test && RP.count >= tgt ? 'Objetivo cumplido: toca la pantalla por cada extra o «Terminar».' : d.test ? 'Una por pitido. Cuando no puedas más, toca «Terminar» (y «−1» si la última no salió).' : `Una por pitido, cada ${RP.tempo} s. Si no llegas, «Serie hecha».`) : RP.sensOn ? (RP.det.hint + ' · también puedes tocar la pantalla') : (R.how.toque || 'Toca la pantalla en cada repetición.');
   $('#rp-meter').classList.toggle('hidden', !RP.sensOn || rest);
   $('#rp-done').textContent = prep ? 'Empezar ya' : rest ? 'Saltar descanso' : (d.test || lastSet) ? 'Terminar' : 'Serie hecha';
