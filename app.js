@@ -1186,6 +1186,7 @@ $('#p-easy').onclick = e => { e.stopPropagation(); makeEasier(); };
 $('#p-side').addEventListener('click', e => {
   if (e.target.closest('#p-more')) { e.stopPropagation(); moreTime(); }
   else if (e.target.closest('#p-go-next')) { e.stopPropagation(); autoNext(); }
+  else if (e.target.closest('#p-skiprest')) { e.stopPropagation(); const s = cur(); if (s && s.k !== 'work') step(P.i + 1, false, 'auto'); }
 });
 $('#p-swap').onclick = e => { e.stopPropagation(); const s = cur(); if (!s) return; const id = s.k === 'work' ? s.ex : s.next, to = swapOf(id); if (to) swapEx(id, to); };
 function logClose() {
@@ -1405,6 +1406,8 @@ function paint() {
     if (!el) setSide(`<div class="autonx"><span class="side">Siguiente ejercicio en <b id="p-auto-n">${left}</b> s</span><div class="autonx-b"><button class="btn ghost small" id="p-more">+10 s · más tiempo</button><button class="btn small" id="p-go-next">Pasar al siguiente</button></div></div>`);
   }
   else if (s.reps) { const exp = expectedSecs(s); setSide(`<span class="side">Toca ✓ al terminar${exp ? ` · tu ritmo: ~${fmt(exp)}` : ''}</span>`); }
+  // en cualquier pausa (inicio, descansos, entre calentamiento y estiramientos) se puede pasar directo al siguiente
+  else if (s.k !== 'work') setSide(`<button class="btn ghost small skiprest" id="p-skiprest">${s.k === 'prep' ? 'Empezar ya' : 'Saltar pausa'} <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg></button>`);
   else setSide(e && e.s ? `<span class="side">${P.half ? 'Lado izquierdo' : 'Lado derecho'}</span>` : '');
 }
 function togglePause() {
