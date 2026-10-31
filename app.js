@@ -616,7 +616,8 @@ function buildTimeline(w) {
   let t = [];
   t.push({ k: 'prep', dur: 10, label: 'Prepárate' });
   if (w.warm && w.warm.length) {
-    w.warm.forEach((id, i) => t.push({ k: 'work', ex: id, dur: 30, sec: 'Calentamiento', i, N: w.warm.length, soft: 1 }));
+    // 10 s entre un movimiento y otro para acomodarse (avisa cuál sigue)
+    w.warm.forEach((id, i) => { if (i) t.push({ k: 'rest', dur: 10, label: 'Prepárate' }); t.push({ k: 'work', ex: id, dur: 30, sec: 'Calentamiento', i, N: w.warm.length, soft: 1 }); });
     t.push({ k: 'rest', dur: 15, label: 'Comienza el entrenamiento' });
   }
   if (w.kind === 'test') {
@@ -654,7 +655,7 @@ function buildTimeline(w) {
   }
   if (w.cool && w.cool.length) {
     t.push({ k: 'rest', dur: 10, label: 'Vamos a estirar' });
-    w.cool.forEach((id, i) => t.push({ k: 'work', ex: id, dur: 30, sec: 'Estiramientos', i, N: w.cool.length, soft: 1 }));
+    w.cool.forEach((id, i) => { if (i) t.push({ k: 'rest', dur: 10, label: 'Prepárate' }); t.push({ k: 'work', ex: id, dur: 30, sec: 'Estiramientos', i, N: w.cool.length, soft: 1 }); });
   }
   const link = () => { let next = null; for (let i = t.length - 1; i >= 0; i--) { t[i].next = next; if (t[i].k === 'work') next = t[i].ex; } };
   link();
