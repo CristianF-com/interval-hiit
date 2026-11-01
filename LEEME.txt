@@ -101,12 +101,12 @@ LOGROS
   Aparecen en pantalla al conseguirlos y se ven en Historial.
 
 VOZ DEL ENTRENADOR
-- Perfil → «Voz del entrenador»: Dora (latina), Alex (latino), Paula o la voz del teléfono.
-- Dora, Alex y Paula son audios grabados que van en la carpeta voz/ (se guardan en el
+- Perfil → «Voz del entrenador»: Dora (latina), Alex (latino), Paula, Julio o la voz del teléfono.
+- Dora, Alex, Paula y Julio son audios grabados que van en la carpeta voz/ (se guardan en el
   móvil a medida que se usan; «Guardar la voz en este dispositivo» los baja todos).
 - Si falta algún audio (por ejemplo, sin conexión), esa frase la dice la voz del teléfono.
-- Dora y Alex se regeneran con build/gen_voz.py (modelo Kokoro). Paula se
-  generó con la API de voz de AssemblyAI (mismas frases y códigos de voz/index.json;
+- Dora y Alex se regeneran con build/gen_voz.py (modelo Kokoro). Paula y Julio se
+  generaron con la API de voz de AssemblyAI (mismas frases y códigos de voz/index.json;
   la clave de la API nunca va en la app: los audios se generan aparte y se suben ya hechos).
 
 RETOS DE REPETICIONES (Planes → Retos de repeticiones)

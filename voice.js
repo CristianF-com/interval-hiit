@@ -1,19 +1,19 @@
 'use strict';
 /* =========================================================
-   Voz del entrenador: audios grabados (Dora, Alex y Paula)
+   Voz del entrenador: audios grabados (Dora, Alex, Paula y Julio)
    o la voz del teléfono. Se carga al final y reemplaza a say().
    ========================================================= */
 const VOICES = { dora: 'Dora · latina', alex: 'Alex · latino', paula: 'Paula', julio: 'Julio', sistema: 'Voz del teléfono' };
 const MALE_VOICES = ['alex', 'julio'];
 // voces que ya tienen sus audios en voz/<voz>/ (se agregan acá cuando están listas)
-const READY_VOICES = ['dora', 'alex', 'paula', 'sistema'];
+const READY_VOICES = ['dora', 'alex', 'paula', 'julio', 'sistema'];
 const sysSay = say; // voz del sistema (speechSynthesis), queda como respaldo
 const VNUM = { cero: '0', uno: '1', dos: '2', tres: '3' };
 const vnorm = t => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
 let VIDX = null;
 const loadIdx = () => VIDX || (VIDX = fetch('voz/index.json').then(r => r.ok ? r.json() : null).catch(() => null));
 const vbuf = new Map();
-// las voces grabadas (Dora, Alex y Paula) son en español: en otro idioma se usa la del teléfono
+// las voces grabadas (Dora, Alex, Paula y Julio) son en español: en otro idioma se usa la del teléfono
 const voiceOf = () => LANG !== 'es' ? 'sistema' : (S.voiceSrc && READY_VOICES.includes(S.voiceSrc)) ? S.voiceSrc : 'dora';
 function audioCtx() {
   if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)();
@@ -142,7 +142,7 @@ function sysVoiceList() {
 function openVoiceSettings() {
   let v = voiceOf();
   sheet(`<h3>Voz del entrenador</h3>
-    <p class="sub">Dora, Alex y Paula son voces grabadas en español. «Voz del teléfono» usa la del iPhone o del navegador.</p>
+    <p class="sub">Dora, Alex, Paula y Julio son voces grabadas en español. «Voz del teléfono» usa la del iPhone o del navegador.</p>
     <h2>Voz</h2>
     <div class="seg" id="vs-v">${Object.entries(VOICES).filter(([k]) => READY_VOICES.includes(k) && (LANG === 'es' || k === 'sistema')).map(([k, n]) => `<button data-v="${k}" aria-pressed="${v === k}">${n}</button>`).join('')}</div>
     <div id="vs-sysbox" class="hidden"><h2>Voz del teléfono</h2><div id="vs-sys"></div>

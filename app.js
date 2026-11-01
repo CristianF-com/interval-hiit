@@ -243,7 +243,7 @@ function openProfiles() {
     ${(S.avoid || []).length ? `<h2>Zonas a cuidar</h2><p class="note">Los entrenamientos evitan los ejercicios que cargan: <b>${S.avoid.map(k => AREAS[k].n.toLowerCase()).join(', ')}</b>.</p><button class="btn ghost small" id="pf-avoid">Dejar de cuidarlas</button>` : ''}
     <h2>Idioma</h2>
     <div class="seg" id="pf-lang">${Object.entries(LANGS).map(([k, n]) => `<button data-l="${k}" aria-pressed="${LANG === k}" data-noi18n>${n}</button>`).join('')}</div>
-    <p class="note">Cambia el idioma de toda la app. Las voces grabadas (Dora, Alex y Paula) son solo en español; en inglés se usa la voz del teléfono.</p>
+    <p class="note">Cambia el idioma de toda la app. Las voces grabadas (Dora, Alex, Paula y Julio) son solo en español; en inglés se usa la voz del teléfono.</p>
     <h2>Voz y pulso</h2>
     <div class="row"><button class="btn ghost small" id="pf-voice">Voz del entrenador</button><button class="btn ghost small" id="pf-hr">Pulsómetro y zonas</button></div>
     <h2>Copia en la nube</h2>
