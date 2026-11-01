@@ -1,17 +1,20 @@
 'use strict';
 /* =========================================================
-   Voz del entrenador: audios grabados (Dora / Alex, acento latino)
+   Voz del entrenador: audios grabados (Dora, Alex y Paula)
    o la voz del teléfono. Se carga al final y reemplaza a say().
    ========================================================= */
-const VOICES = { dora: 'Dora · latina', alex: 'Alex · latino', sistema: 'Voz del teléfono' };
+const VOICES = { dora: 'Dora · latina', alex: 'Alex · latino', paula: 'Paula', julio: 'Julio', sistema: 'Voz del teléfono' };
+const MALE_VOICES = ['alex', 'julio'];
+// voces que ya tienen sus audios en voz/<voz>/ (se agregan acá cuando están listas)
+const READY_VOICES = ['dora', 'alex', 'paula', 'sistema'];
 const sysSay = say; // voz del sistema (speechSynthesis), queda como respaldo
 const VNUM = { cero: '0', uno: '1', dos: '2', tres: '3' };
 const vnorm = t => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
 let VIDX = null;
 const loadIdx = () => VIDX || (VIDX = fetch('voz/index.json').then(r => r.ok ? r.json() : null).catch(() => null));
 const vbuf = new Map();
-// las voces grabadas (Dora y Alex) son en español: en otro idioma se usa la del teléfono
-const voiceOf = () => LANG !== 'es' ? 'sistema' : (S.voiceSrc && VOICES[S.voiceSrc]) ? S.voiceSrc : 'dora';
+// las voces grabadas (Dora, Alex y Paula) son en español: en otro idioma se usa la del teléfono
+const voiceOf = () => LANG !== 'es' ? 'sistema' : (S.voiceSrc && READY_VOICES.includes(S.voiceSrc)) ? S.voiceSrc : 'dora';
 function audioCtx() {
   if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)();
   if (AC.state !== 'running') AC.resume().catch(() => {}); // iOS: «suspended» o «interrupted» (tras un aviso del sistema)
@@ -139,14 +142,14 @@ function sysVoiceList() {
 function openVoiceSettings() {
   let v = voiceOf();
   sheet(`<h3>Voz del entrenador</h3>
-    <p class="sub">Dora y Alex son voces grabadas con acento latino. «Voz del teléfono» usa la del iPhone o del navegador.</p>
+    <p class="sub">Dora, Alex y Paula son voces grabadas en español. «Voz del teléfono» usa la del iPhone o del navegador.</p>
     <h2>Voz</h2>
-    <div class="seg" id="vs-v">${Object.entries(VOICES).filter(([k]) => LANG === 'es' || k === 'sistema').map(([k, n]) => `<button data-v="${k}" aria-pressed="${v === k}">${n}</button>`).join('')}</div>
+    <div class="seg" id="vs-v">${Object.entries(VOICES).filter(([k]) => READY_VOICES.includes(k) && (LANG === 'es' || k === 'sistema')).map(([k, n]) => `<button data-v="${k}" aria-pressed="${v === k}">${n}</button>`).join('')}</div>
     <div id="vs-sysbox" class="hidden"><h2>Voz del teléfono</h2><div id="vs-sys"></div>
       <p class="note">Aparecen las voces en español que el iPhone deja usar a las apps web; primero las «mejoradas» y «premium». Si descargaste una y no está en la lista, cierra la app del todo (deslizándola hacia arriba) y vuelve a abrirla. Las voces de Siri no están disponibles para apps web.</p></div>
     <div class="gap"></div><button class="btn ghost small" id="vs-try">▶ Probar</button>
     <h2>Sin conexión</h2>
-    <p class="note" id="vs-st">Los audios se descargan a medida que se usan. Para tenerlos todos sin internet, guárdalos ahora (unos 13 MB).</p>
+    <p class="note" id="vs-st">Los audios se descargan a medida que se usan. Para tenerlos todos sin internet, guárdalos ahora (unos 15 MB).</p>
     <button class="btn ghost small" id="vs-dl">Guardar la voz en este dispositivo</button>
     <p class="note">Sonido actual en el entrenamiento: ${SOUND_MODES[S.sound]} (se cambia con el altavoz del reproductor).</p>
     <div style="height:16px"></div><button class="btn" id="vs-ok">Listo</button>`, () => {
@@ -159,7 +162,7 @@ function openVoiceSettings() {
     bindSeg('vs-v', 'v', x => { v = x; S.voiceSrc = x; save(); sync(); });
     $('#vs-try').onclick = () => {
       audioCtx();
-      const t = v === 'alex' ? 'Hola, soy tu entrenador. ¡Vamos a entrenar!' : 'Hola, soy tu entrenadora. ¡Vamos a entrenar!';
+      const t = MALE_VOICES.includes(v) ? 'Hola, soy tu entrenador. ¡Vamos a entrenar!' : 'Hola, soy tu entrenadora. ¡Vamos a entrenar!';
       const prev = S.sound; S.sound = 'voz'; say(v === 'sistema' ? '¡Hola! ¡Vamos a entrenar! Tres, dos, uno, ¡comienza!' : t); S.sound = prev;
     };
     $('#vs-dl').onclick = async () => {

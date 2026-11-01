@@ -1186,7 +1186,7 @@ I18N = {
 "press": "press",
 "curl": "curl",
 "Idioma": "Language",
-"Cambia el idioma de toda la app. Las voces grabadas (Dora y Alex) son solo en español; en inglés se usa la voz del teléfono.": "Changes the language of the whole app. The recorded voices (Dora and Alex) are Spanish only; in English the phone's voice is used.",
+"Cambia el idioma de toda la app. Las voces grabadas (Dora, Alex y Paula) son solo en español; en inglés se usa la voz del teléfono.": "Changes the language of the whole app. The recorded voices (Dora, Alex and Paula) are Spanish only; in English the phone's voice is used.",
 "Pasa a la etapa": "Moves to stage",
 "¡Prueba superada!": "Test passed!",
 "lento": "slow",
@@ -1244,7 +1244,9 @@ I18N = {
 "Dejar de cuidarlas": "Stop protecting them",
 "Ya no se cuida ninguna zona": "No areas are being protected now",
 "Zonas a cuidar": "Areas to protect",
-"Los entrenamientos evitan los ejercicios que cargan:": "Workouts avoid exercises that load:"
+"Los entrenamientos evitan los ejercicios que cargan:": "Workouts avoid exercises that load:",
+"Los audios se descargan a medida que se usan. Para tenerlos todos sin internet, guárdalos ahora (unos 15 MB).": "Audio clips download as they're used. To have them all without internet, save them now (about 15 MB).",
+"Dora, Alex y Paula son voces grabadas en español. «Voz del teléfono» usa la del iPhone o del navegador.": "Dora, Alex and Paula are recorded Spanish voices. \"Phone voice\" uses the iPhone's or browser's voice."
 };
 I18N_PAT = [
 [
