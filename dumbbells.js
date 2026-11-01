@@ -228,7 +228,7 @@ renderDoneExtras = function (full, secs) {
   _rdeDb(full, secs);
   const w = P.w; if (w && w.kind === 'db') {
     const kg = w.items.reduce((a, it) => a + (it.kg || 0) * it.reps * it.sets * (DB_EX[it.id] && DB_EX[it.id].one ? 1 : 2), 0);
-    $('#d-stats').innerHTML = `<div class="stat"><b>${fmt(secs)}</b><span>tiempo activo</span></div><div class="stat"><b>${w.items.length}</b><span>ejercicios</span></div><div class="stat"><b>${Math.round(kg).toLocaleString('es')}</b><span>kg movidos</span></div>`;
+    $('#d-stats').innerHTML = `<div class="stat"><b>${fmt(secs)}</b><span>tiempo activo</span></div><div class="stat"><b>${w.items.length}</b><span>ejercicios</span></div><div class="stat"><b>${Math.round(kg).toLocaleString(LOC)}</b><span>kg movidos</span></div>`;
   }
 };
 
@@ -252,12 +252,12 @@ buildAgenda = function () {
 };
 const _itDb = itemTitle, _isDb = itemSub;
 itemTitle = x => x.type === 'db' ? `Mancuernas · ${DB_SESS[x.ty].n}` : _itDb(x);
-itemSub = x => x.type === 'db' ? DB_SESS[x.ty].ids.map(id => DB_EX[id].n.split(' ')[0]).join(' · ') : _isDb(x);
+itemSub = x => x.type === 'db' ? DB_SESS[x.ty].ids.map(id => LANG === 'es' ? DB_EX[id].n.split(' ')[0] : tr(DB_EX[id].n)).join(' · ') : _isDb(x);
 const _oaDb = openAgendaItem;
 openAgendaItem = function (o) {
   if (o.type !== 'db') return _oaDb(o);
   const st = getDumb(); if (!st) return;
-  const t = o.t != null ? o.t : Date.now(), isToday = dkey(t) === dkey(Date.now()), when = isToday ? 'hoy' : new Date(t).toLocaleDateString('es', { weekday: 'long', day: 'numeric', month: 'long' });
+  const t = o.t != null ? o.t : Date.now(), isToday = dkey(t) === dkey(Date.now()), when = isToday ? 'hoy' : new Date(t).toLocaleDateString(LOC, { weekday: 'long', day: 'numeric', month: 'long' });
   sheet(`<h3>${esc(itemTitle(o))}</h3><p class="sub">Programada para ${esc(when)} · ${DB_LV[(st.level || 1) - 1]}</p>
     <div class="block">${DB_SESS[o.ty].ids.map((id, i) => exRow(id, i, '', `${DB_SETS[(st.level || 1) - 1]} series`)).join('')}</div>
     ${o.first ? `<button class="btn" id="ai-go">${isToday || Date.now() >= (st.nextAt || 0) ? 'Empezar' : 'Hacerla ahora'}</button><div class="gap"></div>

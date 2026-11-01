@@ -118,6 +118,17 @@ RETOS DE REPETICIONES (Planes → Retos de repeticiones)
 - Los sensores solo funcionan con la app abierta por https (publicada) y, en iPhone,
   después de aceptar el permiso de «movimiento y orientación».
 
+IDIOMAS (español / inglés)
+- Por defecto la app usa el idioma del teléfono o navegador (español si es español; si no, inglés).
+  Se cambia en Perfil → Idioma (se guarda en el dispositivo y recarga la app).
+- Los textos del código están en español. Las traducciones están en i18n/en.js:
+  · I18N: diccionario «texto en español → texto en inglés».
+  · I18N_PAT: frases con partes variables, por ejemplo «Serie {0} de {1}» → «Set {0} of {1}».
+  · I18N_EX: nombres y descripciones de los ejercicios.
+  Lo que aparece en pantalla y lo que dice la voz se traduce con esos datos (i18n.js).
+  Para agregar otro idioma: copiar i18n/en.js, traducirlo y sumarlo en LANGS (i18n.js) e index.html.
+- En inglés la voz es la del teléfono (las voces grabadas Dora y Alex son solo en español).
+
 SIN CONEXIÓN Y CIERRES DEL TELÉFONO
 - La app usa un service worker «primero la caché»: después de abrirla una vez con internet,
   se abre desde el teléfono al instante, sin red y sin pedir recargar la página.

@@ -68,7 +68,7 @@ function computeStats() {
 }
 const fmtDur = s => { s = Math.round(s); const h = Math.floor(s / 3600), m = Math.round((s % 3600) / 60); return h ? `${h} h ${m} min` : `${m} min`; };
 const fmtT = s => { s = Math.round(s); return s >= 60 ? `${Math.floor(s / 60)}:${String(s % 60).padStart(2, '0')}` : `${s} s`; };
-const fmtN = n => Math.round(n).toLocaleString('es');
+const fmtN = n => Math.round(n).toLocaleString(LOC);
 let statsAll = false;
 function statsHTML() {
   const st = computeStats(); if (!st.H.length) return '';

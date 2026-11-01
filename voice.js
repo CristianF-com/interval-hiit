@@ -10,7 +10,8 @@ const vnorm = t => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().repl
 let VIDX = null;
 const loadIdx = () => VIDX || (VIDX = fetch('voz/index.json').then(r => r.ok ? r.json() : null).catch(() => null));
 const vbuf = new Map();
-const voiceOf = () => (S.voiceSrc && VOICES[S.voiceSrc]) ? S.voiceSrc : 'dora';
+// las voces grabadas (Dora y Alex) son en español: en otro idioma se usa la del teléfono
+const voiceOf = () => LANG !== 'es' ? 'sistema' : (S.voiceSrc && VOICES[S.voiceSrc]) ? S.voiceSrc : 'dora';
 function audioCtx() {
   if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)();
   if (AC.state !== 'running') AC.resume().catch(() => {}); // iOS: «suspended» o «interrupted» (tras un aviso del sistema)
@@ -78,6 +79,7 @@ async function vPlay(text, voice) {
 // reemplaza la voz de toda la app
 say = function (t) {
   if (S.sound !== 'voz') return;
+  t = tr(t);   // en inglés se traduce antes de hablar (con la voz del teléfono)
   const v = voiceOf();
   if (v === 'sistema') { vStop(); sysSay(t); return; }
   try { speechSynthesis.cancel(); } catch (e) {}
@@ -114,7 +116,7 @@ startWorkout = function (w, resume) { audioSession(true); try { audioCtx(); } ca
 const vQual = x => { const k = x.voiceURI + ' ' + x.name; return /premium/i.test(k) ? 2 : /enhanced|mejorad/i.test(k) ? 1 : 0; };
 const vQualTxt = q => q === 2 ? 'premium' : q === 1 ? 'mejorada' : '';
 function esVoices() {
-  let v = []; try { v = speechSynthesis.getVoices().filter(x => /^es/i.test(x.lang)); } catch (e) {}
+  let v = []; try { v = speechSynthesis.getVoices().filter(x => x.lang.toLowerCase().startsWith(LANG)); } catch (e) {}
   v.sort((a, b) => vQual(b) - vQual(a) || (b.localService - a.localService) || a.name.localeCompare(b.name, 'es'));
   // el iPhone a veces informa la misma voz dos veces (o con dos identificadores): queda una por nombre, idioma y calidad
   const seen = new Set();
@@ -139,7 +141,7 @@ function openVoiceSettings() {
   sheet(`<h3>Voz del entrenador</h3>
     <p class="sub">Dora y Alex son voces grabadas con acento latino. «Voz del teléfono» usa la del iPhone o del navegador.</p>
     <h2>Voz</h2>
-    <div class="seg" id="vs-v">${Object.entries(VOICES).map(([k, n]) => `<button data-v="${k}" aria-pressed="${v === k}">${n}</button>`).join('')}</div>
+    <div class="seg" id="vs-v">${Object.entries(VOICES).filter(([k]) => LANG === 'es' || k === 'sistema').map(([k, n]) => `<button data-v="${k}" aria-pressed="${v === k}">${n}</button>`).join('')}</div>
     <div id="vs-sysbox" class="hidden"><h2>Voz del teléfono</h2><div id="vs-sys"></div>
       <p class="note">Aparecen las voces en español que el iPhone deja usar a las apps web; primero las «mejoradas» y «premium». Si descargaste una y no está en la lista, cierra la app del todo (deslizándola hacia arriba) y vuelve a abrirla. Las voces de Siri no están disponibles para apps web.</p></div>
     <div class="gap"></div><button class="btn ghost small" id="vs-try">▶ Probar</button>

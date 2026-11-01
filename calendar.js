@@ -4,6 +4,7 @@
    ========================================================= */
 const WD = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];          // lunes = 0
 const WDN = ['lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado', 'domingo'];
+if (LANG === 'en') { WD.splice(0, 7, 'M', 'T', 'W', 'T', 'F', 'S', 'S'); WDN.splice(0, 7, 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'); }
 const wdOf = t => (new Date(t).getDay() + 6) % 7;
 const dkey = t => { const d = new Date(t); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`; };
 const addDays = (t, n) => { const d = new Date(dayStart(t)); d.setDate(d.getDate() + n); return d.getTime(); };
@@ -80,7 +81,7 @@ function renderCal() {
     const dots = cls.slice(0, nD).map((c, j) => `<i class="dt ${c}" style="left:${slots[j][0]}%;top:${slots[j][1]}%"></i>`).join('');
     cells += `<button class="cd ${k === today ? 'today' : ''} ${k === calSel ? 'sel' : ''} ${t < dayStart(now) ? 'past' : ''}" data-k="${k}"><span class="cin"><b>${d}</b><span class="dots">${dots}</span></span></button>`;
   }
-  const mname = m.toLocaleDateString('es', { month: 'long', year: 'numeric' });
+  const mname = m.toLocaleDateString(LOC, { month: 'long', year: 'numeric' });
   // próximos 14 días
   const up = [];
   for (let i = 0; i < 14; i++) { const t = addDays(now, i), k = dkey(t); (ag[k] || []).filter(x => x.type !== 'done').forEach(x => up.push({ t, k, x })); }
@@ -134,7 +135,7 @@ function agendaRow(x, t) {
 }
 function renderCalDay(ag) {
   const k = calSel, its = ag[k] || [], [y, mo, d] = k.split('-').map(Number), t = new Date(y, mo - 1, d).getTime();
-  const lbl = k === dkey(Date.now()) ? 'Hoy' : new Date(t).toLocaleDateString('es', { weekday: 'long', day: 'numeric', month: 'long' });
+  const lbl = k === dkey(Date.now()) ? 'Hoy' : new Date(t).toLocaleDateString(LOC, { weekday: 'long', day: 'numeric', month: 'long' });
   $('#cal-day').innerHTML = `<h2>${esc(lbl)}</h2>` + (its.length ? `<div class="block">${its.map(x => agendaRow(x, null)).join('')}</div>` : '<div class="empty" style="padding:20px 16px">Día libre.</div>');
   $('#cal-day').querySelectorAll('[data-open]').forEach(b => b.onclick = () => { const o = JSON.parse(b.dataset.open); o.t = t; openAgendaItem(o); });
 }
@@ -148,7 +149,7 @@ function exListHTML(w) {
 function openAgendaItem(o) {
   if (o.type === 'reto') { openRetoDetail(o.key); return; }
   if (o.type === 'done') { openHistDetail(o.i); return; }
-  const t = o.t != null ? o.t : Date.now(), isToday = dkey(t) === dkey(Date.now()), when = isToday ? 'hoy' : new Date(t).toLocaleDateString('es', { weekday: 'long', day: 'numeric', month: 'long' });
+  const t = o.t != null ? o.t : Date.now(), isToday = dkey(t) === dkey(Date.now()), when = isToday ? 'hoy' : new Date(t).toLocaleDateString(LOC, { weekday: 'long', day: 'numeric', month: 'long' });
   if (o.type === 'plan') {
     const p = getPlan(); if (!p) return;
     const w = planDayWorkout(o.week, o.day);

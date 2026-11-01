@@ -227,7 +227,7 @@ function openHistDetail(i) {
   const r = x.reps || repsOf(x);
   const rl = [['sq', 'sentadillas'], ['pu', 'flexiones'], ['ab', 'abdominales'], ['bu', 'burpees']].filter(([k]) => r[k]).map(([k, n]) => `${r[k]} ${n}`).join(' · ');
   sheet(`<h3>${esc(title(x.w))}</h3>
-    <p class="sub">${dateStr(x.at)} · ${new Date(x.at - x.secs * 1000).toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' })} · ${fmt(x.secs)} min activos${x.full ? '' : ' · incompleto'}${x.fb ? ' · ' + FB[x.fb].n.toLowerCase() : ''}</p>
+    <p class="sub">${dateStr(x.at)} · ${new Date(x.at - x.secs * 1000).toLocaleTimeString(LOC, { hour: '2-digit', minute: '2-digit' })} · ${fmt(x.secs)} min activos${x.full ? '' : ' · incompleto'}${x.fb ? ' · ' + FB[x.fb].n.toLowerCase() : ''}</p>
     ${rl ? `<p class="note">Aprox.: ${rl}${r.pl ? ` · ${fmt(r.pl)} min de plancha` : ''}</p>` : ''}
     <div class="gap"></div>
     ${x.hr ? hrBlockHTML(x.hr) : '<div class="empty" style="padding:22px 16px">Sin datos de pulso.</div>'}
@@ -436,7 +436,7 @@ function bkResumen(list) {
 }
 function backupAll() {
   const profs = profiles().map(p => ({ profile: p, data: profileData(p.id) }));
-  return { app: 'intervalo', v: 4, all: true, exportedAt: Date.now(), guardado: new Date().toLocaleString('es'), resumen: bkResumen(profs), active: PROFILE && PROFILE.id, profiles: profs };
+  return { app: 'intervalo', v: 4, all: true, exportedAt: Date.now(), guardado: new Date().toLocaleString(LOC), resumen: bkResumen(profs), active: PROFILE && PROFILE.id, profiles: profs };
 }
 function saveCloud() {
   deliverJSON(backupAll(), BK_NAME, () => { LS.set('bkLast', Date.now()); renderBkRemind(); const d = $('#d-bk'); if (d) d.innerHTML = ''; toast('Copia lista'); });
@@ -453,7 +453,7 @@ function readBackup(j) {
   }).join('');
   const clash = list.filter(x => profiles().some(p => p.id === x.profile.id)).length;
   sheet(`<h3>Restaurar copia</h3>
-    <p class="sub">Copia guardada el <b>${j.exportedAt ? dateStr(j.exportedAt) + ' a las ' + new Date(j.exportedAt).toLocaleTimeString('es', { hour: '2-digit', minute: '2-digit' }) : '—'}</b>. Contiene:</p>
+    <p class="sub">Copia guardada el <b>${j.exportedAt ? dateStr(j.exportedAt) + ' a las ' + new Date(j.exportedAt).toLocaleTimeString(LOC, { hour: '2-digit', minute: '2-digit' }) : '—'}</b>. Contiene:</p>
     <div class="bk-prev">${rows}</div>
     ${clash ? `<p class="note">${clash === 1 ? 'Uno de estos perfiles ya existe' : clash + ' de estos perfiles ya existen'} en este teléfono.</p>
       <button class="btn" id="rb-rep">Reemplazar con la copia<small>Lo de este teléfono se cambia por lo de la copia</small></button><div class="gap"></div>

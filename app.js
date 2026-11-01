@@ -13,7 +13,7 @@ const shuffle = a => { a = [...a]; for (let i = a.length - 1; i > 0; i--) { cons
 const clone = o => JSON.parse(JSON.stringify(o));
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 function toast(t) { const el = $('#toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('on'), 2200); }
-const dateStr = t => new Date(t).toLocaleDateString('es', { weekday: 'short', day: 'numeric', month: 'short' });
+const dateStr = t => new Date(t).toLocaleDateString(LOC, { weekday: 'short', day: 'numeric', month: 'short' });
 
 /* ---------- Almacenamiento (por perfil) ---------- */
 const NS = 'intervalo.';
@@ -233,13 +233,16 @@ function openProfiles() {
     <div class="gap"></div>
     <div class="block">${list.map(p => `
       <button class="prof" data-id="${p.id}"><span class="av lg" style="${avStyle(p)}">${esc(p.name[0].toUpperCase())}</span>
-        <span class="t"><b>${esc(p.name)}</b><small>Planes: ${VARIANTS[p.variant]}${LS.get(`p.${p.id}.plan`, null) ? ' · ' + esc(FAM[LS.get(`p.${p.id}.plan`).fam]?.n || '') : ''}</small></span>
+        <span class="t"><b data-noi18n>${esc(p.name)}</b><small>Planes: ${VARIANTS[p.variant]}${LS.get(`p.${p.id}.plan`, null) ? ' · ' + esc(FAM[LS.get(`p.${p.id}.plan`).fam]?.n || '') : ''}</small></span>
         ${p.id === PROFILE.id ? '<span class="ck"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span>' : ''}
       </button>`).join('')}</div>
     <div class="row"><button class="btn ghost small" id="pf-add">+ Nuevo perfil</button><button class="btn ghost small" id="pf-edit">Editar actual</button></div>
     <div id="pf-form"></div>
     <h2>Apariencia</h2>
     <div class="theme-pick" id="pf-theme">${Object.entries(THEMES).map(([k, t]) => `<button data-t="${k}" aria-pressed="${(S.theme || 'oscuro') === k}"><span class="sw4">${t.sw.map(c => `<i style="background:${c}"></i>`).join('')}</span>${t.n}</button>`).join('')}</div>
+    <h2>Idioma</h2>
+    <div class="seg" id="pf-lang">${Object.entries(LANGS).map(([k, n]) => `<button data-l="${k}" aria-pressed="${LANG === k}" data-noi18n>${n}</button>`).join('')}</div>
+    <p class="note">Cambia el idioma de toda la app. Las voces grabadas (Dora y Alex) son solo en español; en inglés se usa la voz del teléfono.</p>
     <h2>Voz y pulso</h2>
     <div class="row"><button class="btn ghost small" id="pf-voice">Voz del entrenador</button><button class="btn ghost small" id="pf-hr">Pulsómetro y zonas</button></div>
     <h2>Copia en la nube</h2>
@@ -252,6 +255,7 @@ function openProfiles() {
     $('#pf-hr').onclick = openHRSettings;
     $('#pf-voice').onclick = openVoiceSettings;
     bindSeg('pf-theme', 't', t => { S.theme = t; save(); applyTheme(); });
+    bindSeg('pf-lang', 'l', l => { if (l !== LANG) setLang(l); });
     $('#pf-backup').onclick = openBackup;
     renderInstallBlock();
   });
@@ -528,7 +532,7 @@ function smartRefresh(sm) {
 }
 const whenStr = t => {
   const d = Math.round((dayStart(t) - dayStart(Date.now())) / DAY);
-  return d <= 0 ? 'hoy' : d === 1 ? 'mañana' : new Date(t).toLocaleDateString('es', { weekday: 'long', day: 'numeric' });
+  return d <= 0 ? 'hoy' : d === 1 ? 'mañana' : new Date(t).toLocaleDateString(LOC, LANG === 'es' ? { weekday: 'long', day: 'numeric' } : { weekday: 'long', month: 'short', day: 'numeric' });
 };
 function renderSmart() {
   const el = $('#smart'); if (!el || !PROFILE) return;
@@ -1172,7 +1176,7 @@ if ('speechSynthesis' in window) { pickVoice(); speechSynthesis.onvoiceschanged 
 function say(t) {
   if (S.sound !== 'voz' || !('speechSynthesis' in window)) return;
   t = t.replace(/ · /g, ', ');
-  try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t); u.lang = VOICE ? VOICE.lang : 'es-ES'; if (VOICE) u.voice = VOICE; u.rate = 1.05; speechSynthesis.speak(u); } catch (e) {}
+  try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t); u.lang = VOICE ? VOICE.lang : (LANG === 'es' ? 'es-ES' : 'en-US'); if (VOICE) u.voice = VOICE; u.rate = 1.05; speechSynthesis.speak(u); } catch (e) {}
 }
 // Frases del entrenador
 const NUM_WORDS = ['cero', 'uno', 'dos', 'tres'];
@@ -1366,7 +1370,7 @@ const EASIER = {
   v_ups: 'single_leg_v_up', single_leg_v_up: 'crunches', wide_legged_v_ups: 'v_ups', sit_ups: 'crunches', straight_leg_bicycle_crunches: 'bicycle_crunches',
   russian_twist_hard: 'russian_twist_easy', knee_tuck_crunches: 'reverse_crunches', leg_raises: 'reverse_crunches', sl_crab_bridge: 'crab_bridge', single_leg_bridge: 'bridge', marching_wall_sit: 'wall_sit'
 };
-const fmtKg = k => (Math.round(k * 10) / 10).toLocaleString('es');
+const fmtKg = k => (Math.round(k * 10) / 10).toLocaleString(LOC);
 // versión más difícil: la inversa de EASIER (si hay varias, la de menor nivel; sin saltos si así se pidió)
 function harderOf(id, noJump) {
   const b = (id || '').replace(/_(l|r)$/, '');
