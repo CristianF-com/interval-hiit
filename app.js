@@ -39,7 +39,7 @@ const saveProfiles = p => LS.set('profiles', p);
 try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch (e) {}
 
 const DEFAULTS = { dur: 1200, parts: ['all'], level: 2, noJump: false, warmup: true, cooldown: true, vary: false, custom: false,
-  cw: 40, cr: 20, cn: 5, cR: 3, crr: 60, voice: true, sound: 'voz', planWarm: false, planCool: false, autoNext: true };
+  cw: 40, cr: 20, cn: 5, cR: 3, crr: 60, voice: true, sound: 'voz', planWarm: false, planCool: false, autoNext: true, prepSec: 10 };
 let S = { ...DEFAULTS };
 const save = () => PS.set('settings', S);
 
@@ -481,8 +481,26 @@ function zoneMaxOf(sm) {
   TESTS.forEach(x => x.zones.forEach(k => { z[k] = sc[x.key] < 2 ? 1 : sc[x.key] < 3 ? 2 : 3; }));
   return z;
 }
+// Opciones propias del entrenador inteligente (las mismas del «a medida», salvo duración, zonas,
+// nivel y tiempos, que calcula solo). Mientras no existe, se guardan como borrador.
+const SMART_OPTS = [
+  ['warm', 'Calentamiento', '5 movimientos suaves antes'],
+  ['cool', 'Estiramientos al final', '5 estiramientos de 30 s'],
+  ['noJump', 'Sin saltos', 'Bajo impacto, ideal para pisos con vecinos'],
+  ['vary', 'Ejercicios distintos cada ronda', 'Si está apagado, se repite el circuito'],
+  ['db', 'Con mancuernas', 'La mitad de los ejercicios con mancuerna (peso liviano, por tiempo)'],
+];
+function smartOpts(sm) {
+  const d = { warm: !!S.warmup, cool: !!S.cooldown, noJump: !!S.noJump, vary: false, db: false };
+  return { ...d, ...(PS.get('smartOpts', null) || {}), ...((sm && sm.opts) || {}), ...(sm && sm.db != null && !(sm.opts && 'db' in sm.opts) ? { db: !!sm.db } : {}) };
+}
+const smartOptsHTML = o => `<div class="toggles">${SMART_OPTS.map(([k, t, d]) => `<button class="tg" data-so="${k}" role="switch" aria-checked="${!!o[k]}"><span>${t}<small>${d}</small></span><i class="sw"></i></button>`).join('')}</div>`;
+function bindSmartOpts(root, o, onChange) {
+  root.querySelectorAll('[data-so]').forEach(b => b.onclick = () => { const k = b.dataset.so; o[k] = !o[k]; b.setAttribute('aria-checked', o[k]); onChange && onChange(o); });
+}
 // Arma la próxima sesión según la intensidad (1–10), la zona del día y la nota de cada zona
 function genSmart(sm) {
+  const op = smartOpts(sm);
   const I = sm.I, level = levelOfI(I), n = (sm.sessions || 0) + 1, focus = (n - 1) % 3;
   const want = 600 + (I - 1) * 240, cap = sm.maxDur || 1800;
   const durs = DURS.filter(d => d <= cap);
@@ -490,12 +508,13 @@ function genSmart(sm) {
   // más intensidad dentro del mismo tiempo = menos descanso
   const c = SKELETONS.filter(k => k.dur === dur).sort((a, b) => (b.r / b.w) - (a.r / a.w));
   const band = (I - 1) / 8, sk = c[Math.min(c.length - 1, Math.round(band * (c.length - 1)))];
-  const o = { parts: FOCUS[focus].parts, level, noJump: S.noJump, zoneMax: zoneMaxOf(sm), db: !!sm.db };
-  let ids = pickExercises(sk.n, o);
-  if (ids.length < sk.n) ids = pickExercises(sk.n, { ...o, zoneMax: null });
-  const rounds = []; for (let r = 0; r < sk.R; r++) rounds.push(ids);
-  return { kind: 'coach', smart: true, smartN: n, focus, I: +I.toFixed(1), created: Date.now(), sk, level, parts: FOCUS[focus].parts.slice(), noJump: S.noJump, vary: false, rounds, db: !!sm.db,
-    warm: S.warmup ? shuffle(WARM).slice(0, 5) : [], cool: S.cooldown ? shuffle(COOL).slice(0, 5) : [] };
+  const o = { parts: FOCUS[focus].parts, level, noJump: op.noJump, zoneMax: zoneMaxOf(sm), db: op.db };
+  const pick = avoid => { let ids = pickExercises(sk.n, o, avoid); if (ids.length < sk.n) ids = pickExercises(sk.n, { ...o, zoneMax: null }, avoid); return ids; };
+  const rounds = [];
+  if (op.vary) { const seen = new Set(); for (let r = 0; r < sk.R; r++) { const ids = pick(seen); ids.forEach(i => seen.add(i)); rounds.push(ids); } }
+  else { const ids = pick(); for (let r = 0; r < sk.R; r++) rounds.push(ids); }
+  return { kind: 'coach', smart: true, smartN: n, focus, I: +I.toFixed(1), created: Date.now(), sk, level, parts: FOCUS[focus].parts.slice(), noJump: op.noJump, vary: op.vary, rounds, db: op.db,
+    warm: op.warm ? shuffle(WARM).slice(0, 5) : [], cool: op.cool ? shuffle(COOL).slice(0, 5) : [] };
 }
 function smartRefresh(sm) {
   // si pasan muchos días sin entrenar, baja un poco la intensidad (una vez por semana extra de pausa)
@@ -519,12 +538,15 @@ function renderSmart() {
       <div class="wk">Entrenador inteligente</div>
       <b class="name">Prueba de capacidad</b>
       <p class="sub">3 minutos: sentadillas, flexiones y abdominales, 1 minuto cada uno. Con tus resultados armo sesiones progresivas, una cada dos días, y después de cada una me dices si fue fácil, bien o difícil para ajustar la siguiente.</p>
+      <h2>Opciones</h2>${smartOptsHTML(smartOpts(null))}
+      <p class="note">La duración, las zonas, el nivel y los tiempos los calculo yo según tus resultados. Estas opciones se pueden cambiar después en Ajustes, y el calentamiento y los estiramientos también antes de cada sesión.</p>
       <div class="gap"></div><button class="btn" id="sm-test">Hacer la prueba</button>
       <div class="gap"></div><button class="btn ghost small" id="sm-skip">Empezar sin prueba</button></div>`;
+    bindSmartOpts(el, smartOpts(null), o => PS.set('smartOpts', o));
     $('#sm-test').onclick = openTestSetup;
     $('#sm-skip').onclick = () => {
       const I = [2, 4.5, 7.5][S.level - 1];
-      const n = { I, tests: [], sessions: 0, maxDur: 1800, nextAt: Date.now(), log: [{ at: Date.now(), I, why: 'inicio' }] };
+      const n = { I, tests: [], sessions: 0, maxDur: 1800, nextAt: Date.now(), log: [{ at: Date.now(), I, why: 'inicio' }], opts: smartOpts(null) };
       n.next = genSmart(n); setSmart(n); renderSmart(); toast('Listo: tu primera sesión está preparada');
     };
     return;
@@ -541,34 +563,32 @@ function renderSmart() {
     <div class="pbar"><i style="width:${pct}%"></i></div>
     <div class="pmeta"><span>Intensidad ${sm.I.toFixed(1)} de 10</span><span>${sm.last ? 'Última: ' + FB[sm.last.fb].n.toLowerCase() : ''}</span></div>
     <div class="gap"></div>
-    <div class="row"><button class="btn ${due ? '' : 'ghost'}" id="sm-go">${due ? 'Empezar' : 'Entrenar igual'}</button><button class="btn ghost" id="sm-see">Ver</button></div>
+    <button class="btn ${due ? '' : 'ghost'}" id="sm-go">${due ? 'Empezar' : 'Entrenar igual'}</button>
     ${t ? `<p class="note">Prueba del ${dateStr(t.at)}: ${t.sq} sentadillas · ${t.pu} flexiones${t.puKnee ? ' (rodillas)' : ''} · ${t.ab} abdominales${old ? ' · <b>conviene repetirla</b>' : ''}</p>` : '<p class="note">Sin prueba de capacidad: empiezo por tu nivel y me guío por tus respuestas.</p>'}
     <div class="row" style="margin-top:10px"><button class="btn ghost small" id="sm-retest">${t ? 'Repetir prueba' : 'Hacer la prueba'}</button><button class="btn ghost small" id="sm-set">Ajustes</button></div></div>`;
-  $('#sm-go').onclick = () => startWorkout(clone(getSmart().next));
-  $('#sm-see').onclick = () => openPreview(clone(getSmart().next), 'coach');
+  // antes de empezar se ve la sesión y se elige calentamiento, estiramientos y pausa de ese día
+  $('#sm-go').onclick = () => openPreview(clone(getSmart().next), 'coach');
   $('#sm-retest').onclick = openTestSetup;
   $('#sm-set').onclick = openSmartSettings;
 }
 function openSmartSettings() {
-  const sm = getSmart(); let cap = sm.maxDur || 1800, useDb = !!sm.db;
+  const sm = getSmart(); let cap = sm.maxDur || 1800; const op = smartOpts(sm);
   const caps = DURS.filter(d => d >= 600);
   sheet(`<h3>Entrenador inteligente</h3><p class="sub">Intensidad actual ${sm.I.toFixed(1)} de 10 · ${sm.sessions || 0} sesiones hechas.</p>
     <h2>Duración máxima de cada sesión</h2>
     <div class="seg" id="ss-cap" style="grid-auto-flow:row;grid-template-columns:repeat(4,1fr)">${caps.map(d => `<button data-c="${d}" aria-pressed="${cap === d}">${d / 60} min</button>`).join('')}</div>
-    <h2>Mancuernas</h2>
-    <div class="seg" id="ss-db"><button data-v="0" aria-pressed="${!useDb}">Sin mancuernas</button><button data-v="1" aria-pressed="${useDb}">Con mancuernas</button></div>
-    <p class="note">Con mancuernas, la mitad de los ejercicios de cada circuito se hacen con mancuerna (con un peso liviano: es por tiempo, no por repeticiones).${typeof getDumb === 'function' && getDumb() ? ' Si también usas el entrenador con mancuernas, conviene dejarlo sin: la fuerza ya la trabajas ahí.' : ''}</p>
+    <h2>Opciones</h2>${smartOptsHTML(op)}
+    <p class="note">${typeof getDumb === 'function' && getDumb() ? 'Si también usas el entrenador con mancuernas, conviene dejar estas sesiones sin mancuernas: la fuerza ya la trabajas ahí. ' : ''}El calentamiento y los estiramientos también se pueden cambiar antes de cada sesión.</p>
     <h2>Ajuste manual</h2>
     <div class="row"><button class="btn ghost small" id="ss-down">− Más suave</button><button class="btn ghost small" id="ss-up">+ Más intenso</button></div>
-    <p class="note">Las opciones «Sin saltos», «Calentamiento» y «Estiramientos» del coach también se aplican aquí.</p>
     <div style="height:20px"></div><button class="btn" id="ss-save">Guardar</button><div class="gap"></div>
     <button class="btn danger" id="ss-reset">Reiniciar el entrenador</button>`, () => {
     bindSeg('ss-cap', 'c', c => cap = +c);
-    bindSeg('ss-db', 'v', v => useDb = v === '1');
+    bindSmartOpts($('#sheet-root'), op);
     const nudge = d => { const s2 = getSmart(); s2.I = Math.max(1, Math.min(10, s2.I + d)); s2.log.push({ at: Date.now(), I: s2.I, why: 'manual' }); s2.next = genSmart(s2); setSmart(s2); toast(`Intensidad ${s2.I.toFixed(1)}`); };
     $('#ss-down').onclick = () => nudge(-0.5);
     $('#ss-up').onclick = () => nudge(0.5);
-    $('#ss-save').onclick = () => { const s2 = getSmart(); s2.maxDur = cap; s2.db = useDb; s2.next = genSmart(s2); setSmart(s2); closeSheet(); renderSmart(); toast('Guardado'); };
+    $('#ss-save').onclick = () => { const s2 = getSmart(); s2.maxDur = cap; s2.opts = op; delete s2.db; s2.next = genSmart(s2); setSmart(s2); closeSheet(); renderSmart(); toast('Guardado'); };
     $('#ss-reset').onclick = async () => { if (!(await askApp('Reiniciar entrenador', 'Se borran la prueba de capacidad y la intensidad. Tu historial se mantiene.', 'Reiniciar', true))) return; PS.del('smart'); closeSheet(); renderSmart(); };
   });
 }
@@ -592,7 +612,7 @@ function saveTest(r) {
   let sm = getSmart();
   const sc = scoresOf(r), It = intensityOf(sc);
   const entry = { at: Date.now(), sq: r.sq, pu: r.pu, ab: r.ab, puKnee: !!r.puKnee };
-  if (!sm || !sm.I) sm = { I: It, tests: [entry], sessions: 0, maxDur: 1800, log: [] };
+  if (!sm || !sm.I) sm = { I: It, tests: [entry], sessions: 0, maxDur: 1800, log: [], opts: smartOpts(null) };
   else { sm.I = sm.tests && sm.tests.length ? (sm.I + It) / 2 : It; sm.tests = [entry, ...(sm.tests || [])].slice(0, 20); sm.decay = 0; }
   sm.I = +sm.I.toFixed(2); sm.nextAt = Date.now();
   sm.log = [...(sm.log || []), { at: Date.now(), I: sm.I, why: 'prueba' }];
@@ -611,13 +631,38 @@ function applyFeedback(w, fb) {
   return sm;
 }
 
+/* ---------- Pausa para acomodarse (3, 5 o 10 s) ---------- */
+// Son las pausas cortas antes de empezar y entre movimientos de calentamiento y estiramientos (acc: 1).
+// Las de descanso propias de cada entrenamiento no cambian.
+const ACC_OPTS = [3, 5, 10];
+const accSec = () => ACC_OPTS.includes(S.prepSec) ? S.prepSec : 10;
+const accSegHTML = id => `<div class="seg" id="${id}">${ACC_OPTS.map(v => `<button data-v="${v}" aria-pressed="${accSec() === v}">${v} s</button>`).join('')}</div>`;
+function setAccSec(v) {
+  S.prepSec = v; save();
+  const now = performance.now();
+  // entrenamiento en curso: cambia las pausas que faltan (y acorta la actual si hace falta)
+  if (P.running) {
+    P.tl.forEach((st, i) => { if (st.acc && i > P.i) st.dur = v; });
+    const s = cur();
+    if (s && s.acc) {
+      s.dur = v;
+      if (P.paused) P.remain = Math.min(P.remain, v * 1000); else { P.endAt = Math.min(P.endAt, now + v * 1000); P.remain = P.endAt - now; }
+      paint();
+    }
+  }
+  // reto en curso: la preparación inicial
+  if (typeof RP !== 'undefined' && RP.phase === 'prep') RP.restEnd = Math.min(RP.restEnd, now + v * 1000);
+}
+const bindAcc = id => { if ($('#' + id)) bindSeg(id, 'v', v => setAccSec(+v)); };
+
 /* ---------- Línea de tiempo ---------- */
 function buildTimeline(w) {
   let t = [];
-  t.push({ k: 'prep', dur: 10, label: 'Prepárate' });
+  const A = accSec();
+  t.push({ k: 'prep', dur: A, label: 'Prepárate', acc: 1 });
   if (w.warm && w.warm.length) {
     // 10 s entre un movimiento y otro para acomodarse (avisa cuál sigue)
-    w.warm.forEach((id, i) => { if (i) t.push({ k: 'rest', dur: 10, label: 'Prepárate' }); t.push({ k: 'work', ex: id, dur: 30, sec: 'Calentamiento', i, N: w.warm.length, soft: 1 }); });
+    w.warm.forEach((id, i) => { if (i) t.push({ k: 'rest', dur: A, label: 'Prepárate', acc: 1 }); t.push({ k: 'work', ex: id, dur: 30, sec: 'Calentamiento', i, N: w.warm.length, soft: 1 }); });
     t.push({ k: 'rest', dur: 15, label: 'Comienza el entrenamiento' });
   }
   if (w.kind === 'test') {
@@ -654,8 +699,8 @@ function buildTimeline(w) {
     }));
   }
   if (w.cool && w.cool.length) {
-    t.push({ k: 'rest', dur: 10, label: 'Vamos a estirar' });
-    w.cool.forEach((id, i) => { if (i) t.push({ k: 'rest', dur: 10, label: 'Prepárate' }); t.push({ k: 'work', ex: id, dur: 30, sec: 'Estiramientos', i, N: w.cool.length, soft: 1 }); });
+    t.push({ k: 'rest', dur: A, label: 'Vamos a estirar', acc: 1 });
+    w.cool.forEach((id, i) => { if (i) t.push({ k: 'rest', dur: A, label: 'Prepárate', acc: 1 }); t.push({ k: 'work', ex: id, dur: 30, sec: 'Estiramientos', i, N: w.cool.length, soft: 1 }); });
   }
   const link = () => { let next = null; for (let i = t.length - 1; i >= 0; i--) { t[i].next = next; if (t[i].k === 'work') next = t[i].ex; } };
   link();
@@ -705,7 +750,8 @@ const tgtOf = it => it.reps ? `×${it.reps}` : `${it.secs}s`;
 function renderPreview() {
   const w = W, tl = buildTimeline(w), isPlan = w.kind === 'plan';
   $('#pv-title').textContent = title(w);
-  $('#pv-plan-opts').classList.toggle('hidden', !isPlan);
+  $('#pv-plan-opts').classList.add('hidden');
+  const ps = $('#pv-sess'); ps.innerHTML = w.kind === 'test' ? '' : sessHTML(w); bindSess(ps, w, renderPreview);
   $('#pv-coach-btns').classList.toggle('hidden', isPlan);
   let h = '';
   if (w.warm && w.warm.length) h += `<div class="block"><div class="block-h"><b>Calentamiento</b><span>${w.warm.length} × 30s</span></div>${w.warm.map((id, i) => exRow(id, i, '')).join('')}</div>`;
@@ -790,7 +836,32 @@ function show(view) {
   if (view === 'cal') renderCal();
   window.scrollTo(0, 0); syncViewTitle();
 }
-function openPreview(w, from) { W = w; previewFrom = from; renderPreview(); show('preview'); }
+function openPreview(w, from) {
+  // planes: el calendario y la lista traen el día sin calentamiento; se agrega según la última elección
+  if (w.kind === 'plan' && !w.sessSet) { w.warm = S.planWarm ? shuffle(WARM).slice(0, 5) : []; w.cool = S.planCool ? shuffle(COOL).slice(0, 5) : []; }
+  W = w; previewFrom = from; renderPreview(); show('preview');
+}
+/* ---------- Opciones de esta sesión (antes de empezar) ---------- */
+// Calentamiento, estiramientos y pausa para acomodarse se eligen para cada sesión.
+// En los planes, lo elegido queda como valor de los próximos días.
+function sessHTML(w) {
+  const tg = (k, on, t, d) => `<button class="tg" data-sess="${k}" role="switch" aria-checked="${on}"><span>${t}<small>${d}</small></span><i class="sw"></i></button>`;
+  return `<h2>Para esta sesión</h2><div class="toggles">
+    ${tg('warm', !!(w.warm && w.warm.length), 'Calentamiento', '5 movimientos suaves de 30 s antes')}
+    ${tg('cool', !!(w.cool && w.cool.length), 'Estiramientos', '5 estiramientos de 30 s al final')}
+    ${w.kind === 'plan' ? tg('auto', S.autoNext !== false, 'Pasar solo al siguiente', 'En ejercicios por repeticiones, cuando ya sé tu ritmo (3 series o más)') : ''}
+    <div class="tg-row"><span>Pausa para acomodarte<small>Antes de empezar y entre calentamiento o estiramientos</small></span>${accSegHTML('pv-acc')}</div></div>`;
+}
+function bindSess(root, w, after) {
+  root.querySelectorAll('[data-sess]').forEach(b => b.onclick = () => {
+    const k = b.dataset.sess, on = b.getAttribute('aria-checked') !== 'true';
+    if (k === 'warm') { w.warm = on ? shuffle(WARM).slice(0, 5) : []; if (w.kind === 'plan') { S.planWarm = on; save(); } }
+    if (k === 'cool') { w.cool = on ? shuffle(COOL).slice(0, 5) : []; if (w.kind === 'plan') { S.planCool = on; save(); } }
+    if (k === 'auto') { S.autoNext = on; save(); }
+    w.sessSet = true; b.setAttribute('aria-checked', on); after && after();
+  });
+  bindSeg('pv-acc', 'v', v => { setAccSec(+v); after && after(); });
+}
 $('#tabs').onclick = e => { const b = e.target.closest('[data-tab]'); if (!b) return; show(b.dataset.tab); };
 $('#gen').onclick = () => {
   if (!poolFor({ parts: activeParts(), level: S.level, noJump: S.noJump }).length) { toast('No hay ejercicios con esa combinación'); return; }
@@ -804,7 +875,6 @@ $('#back').onclick = () => { W = null; show(previewFrom); };
 $('#fav').onclick = () => saveFav(W);
 $('#start').onclick = () => {
   const w = clone(W);
-  if (w.kind === 'plan') { w.warm = S.planWarm ? shuffle(WARM).slice(0, 5) : []; w.cool = S.planCool ? shuffle(COOL).slice(0, 5) : []; }
   if (w.smart) { const sm = getSmart(); if (sm) { sm.next = clone(w); setSmart(sm); } } // conserva los cambios de ejercicio
   startWorkout(w);
 };
@@ -1452,10 +1522,12 @@ function openMenu() {
     <button class="btn" data-m="go">▶ Continuar</button>
     <button class="btn ghost" data-m="end">Terminar<small>${prog ? 'Queda pendiente para repetirlo otro día' : 'Se guarda en el historial'}</small></button>
     ${prog ? `<button class="btn ghost" data-m="skip">Terminar y saltar<small>${w.kind === 'plan' ? 'Marca este día y pasa al siguiente del plan' : 'Pasa a la siguiente sesión del entrenador'}</small></button>` : ''}
+    ${P.tl.slice(P.i).some(x => x.acc) ? `<div class="acc-row pm-acc"><span>Pausa para acomodarte<small>Las que quedan en esta sesión</small></span>${accSegHTML('pm-acc')}</div>` : ''}
     ${canChange ? `<button class="btn ghost" data-m="chg">Cambiar entrenamiento<small>Elige otro más fácil, igual o más difícil</small></button>
     <div class="pm-chg hidden" id="pm-chg"><button class="btn small ghost" data-d="-1">Más fácil</button><button class="btn small ghost" data-d="0">Otro igual</button><button class="btn small ghost" data-d="1">Más difícil</button></div>` : ''}
   </div>`;
   $('#p-menu').classList.remove('hidden');
+  bindAcc('pm-acc');
 }
 $('#p-menu').onclick = e => {
   if (e.target.id === 'p-menu') { menuContinue(); return; }

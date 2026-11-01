@@ -110,7 +110,7 @@ function dbSuggest(id, st) {
 function dbWorkout(st, kgs) {
   const s = DB_SESS[st.type || 'A'], lv = st.level || 1;
   const items = s.ids.map(id => { const kg = kgs[id]; const r = dbReps(id, kg, st); return { id, kg, reps: r.reps, sets: DB_SETS[lv - 1], rest: DB_REST[lv - 1], warn: r.warn }; });
-  return { kind: 'db', type: st.type || 'A', title: `Mancuernas · ${s.n}`, level: lv, items, restEx: 90, warm: S.planWarm ? shuffle(WARM).slice(0, 4) : [], cool: [], rounds: [] };
+  return { kind: 'db', type: st.type || 'A', title: `Mancuernas · ${s.n}`, level: lv, items, restEx: 90, warm: S.dbWarm !== false ? shuffle(WARM).slice(0, 4) : [], cool: S.dbCool ? shuffle(COOL).slice(0, 4) : [], rounds: [] };
 }
 
 /* ---------- Tarjeta en el Coach ---------- */
@@ -174,7 +174,13 @@ function openDbStart() {
   sheet(`<h3>${s.n}</h3><p class="sub">Elige el peso de mancuerna. Las repeticiones se ajustan para mantener el nivel.</p>
     <h2>Mismo peso para todo</h2><div class="chips" id="dbw-all">${ws.map(w => `<button class="chip" data-w="${w}" aria-pressed="false">${fmtKg(w)} kg</button>`).join('')}</div>
     <h2>Por ejercicio</h2><div class="block" id="dbw-rows">${rows()}</div>
-    <button class="btn" id="dbw-go">Empezar</button>`, () => {
+    <h2>Para esta sesión</h2><div class="toggles">
+      <button class="tg" data-dbo="dbWarm" role="switch" aria-checked="${S.dbWarm !== false}"><span>Calentamiento<small>4 movimientos suaves de 30 s antes</small></span><i class="sw"></i></button>
+      <button class="tg" data-dbo="dbCool" role="switch" aria-checked="${!!S.dbCool}"><span>Estiramientos<small>4 estiramientos de 30 s al final</small></span><i class="sw"></i></button>
+      <div class="tg-row"><span>Pausa para acomodarte<small>Antes de empezar y entre calentamiento o estiramientos</small></span>${accSegHTML('dbw-acc')}</div></div>
+    <div class="gap"></div><button class="btn" id="dbw-go">Empezar</button>`, () => {
+    $('#sheet-root').querySelectorAll('[data-dbo]').forEach(b => b.onclick = () => { const k = b.dataset.dbo, on = b.getAttribute('aria-checked') !== 'true'; S[k] = on; save(); b.setAttribute('aria-checked', on); });
+    bindAcc('dbw-acc');
     const redraw = () => { $('#dbw-rows').innerHTML = rows(); const v = kgs[s.ids[0]], same = s.ids.every(id => kgs[id] === v); $('#dbw-all').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', same && +b.dataset.w === v)); };
     $('#dbw-all').onclick = e => { const b = e.target.closest('[data-w]'); if (!b) return; s.ids.forEach(id => kgs[id] = +b.dataset.w); redraw(); };
     $('#dbw-rows').onclick = e => { const b = e.target.closest('[data-a]'); if (!b) return; const id = b.dataset.k, i = ws.indexOf(kgs[id]); kgs[id] = ws[Math.max(0, Math.min(ws.length - 1, i + +b.dataset.a))]; redraw(); };

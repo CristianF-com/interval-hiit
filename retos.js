@@ -151,12 +151,14 @@ function openRetoDetail(key) {
       <span class="t"><b>${d.test ? 'Prueba: ' + d.sets[0] + ' seguidas' : d.sets.join(' · ')}</b><small>${d.test ? 'Todas las que puedas' : dayTotal(d) + ' en total · descansos de ' + [...new Set(d.pauses)].join('/') + ' s'}${when ? ' · ' + when : ''}</small></span></div>`;
   }).join('');
   sheet(`<h3>${R.n}</h3><p class="sub">${s.kg ? fmtKg(s.kg) + ' kg · ' : ''}Rango ${rangeLbl(key, s.k)} · etapa ${s.stage} de 3 · día ${s.day + 1} de ${days.length}${s.best ? ' · tu récord: ' + s.best : ''}</p>
+    <div class="acc-row"><span>Pausa para acomodarte<small>Antes de empezar a contar</small></span>${accSegHTML('rd-acc')}</div>
     <div class="gap"></div>
     <button class="btn" id="rd-go">${due ? 'Empezar' : 'Entrenar igual'} · ${days[s.day].test ? 'prueba' : dayTotal(days[s.day]) + ' ' + R.n.toLowerCase()}</button>
     ${due ? '' : `<p class="note">Próximo entrenamiento: ${whenStr(s.nextAt)}. Descansar entre sesiones es parte del programa.</p>`}
     ${last ? `<p class="note">Último: ${dateStr(last.at)} · ${last.total} ${R.n.toLowerCase()}${last.test ? (last.passed ? ' · prueba superada' : ' · prueba no superada') : ''}</p>` : ''}
     <h2>Etapa ${s.stage}</h2><div class="block">${rows}</div>
     <div class="row"><button class="btn ghost small" id="rd-chg">Cambiar ${R.db ? 'peso, rango o modo' : 'rango o modo'}</button><button class="btn ghost small" id="rd-quit">Abandonar</button></div>`, () => {
+    bindAcc('rd-acc');
     $('#rd-go').onclick = () => { closeSheet(); startReto(key); };
     $('#rd-chg').onclick = () => openRetoSetup(key, true);
     $('#rd-quit').onclick = () => confirmApp(`¿Abandonar el reto de ${R.n.toLowerCase()}?`, 'Se borra el progreso del reto. Las sesiones hechas siguen en tu historial.', 'Abandonar', () => { const a = getRetos(); delete a[key]; setRetos(a); renderRetos(); toast('Reto abandonado'); }, true);
@@ -276,7 +278,7 @@ async function startReto(key, opts = {}) {
   let d;
   if (opts.initial || !s) d = { sets: [0], pauses: [], next: 1, test: true, initial: true };
   else d = retoDays(key, s.k, s.stage)[s.day];
-  Object.assign(RP, { key, s, d, set: 0, count: 0, extra: 0, done: [], times: [], setT0: 0, phase: 'prep', restEnd: performance.now() + PREP_S * 1000, lastSec: null, initial: !!opts.initial || !s, mode, sens: opts.sens || (s && s.sens) || 3, t0: Date.now(), active: 0, lastTick: performance.now(), paused: false,
+  Object.assign(RP, { key, s, d, set: 0, count: 0, extra: 0, done: [], times: [], setT0: 0, phase: 'prep', restEnd: performance.now() + accSec() * 1000, lastSec: null, initial: !!opts.initial || !s, mode, sens: opts.sens || (s && s.sens) || 3, t0: Date.now(), active: 0, lastTick: performance.now(), paused: false,
     tempo: opts.tempo || (s && s.tempo) || 3, kg: opts.kg || (s && s.kg) || 0, nextBeat: 0 });
   // sensores (en iPhone hace falta permiso, pedido aquí con el toque del usuario)
   RP.sensOn = false;
@@ -293,7 +295,7 @@ async function startReto(key, opts = {}) {
   const tg = d.test ? (RP.initial ? 'Prueba inicial: todas las que puedas' : `Prueba: ${d.sets[0]} seguidas`) : `Serie 1 de ${d.sets.length}: ${d.sets[0]} repeticiones`;
   say(`${R.n}. ${tg}. Prepárate.`);
 }
-const PREP_S = 10;   // segundos para ponerse en posición antes de empezar a contar
+// la preparación antes de empezar a contar dura lo elegido en «Pausa para acomodarte» (3, 5 o 10 s)
 // modo ritmo: una repetición por pulso; en la última serie se detiene al llegar al objetivo (las extra se tocan)
 function rBeat() {
   if (RP.mode !== 'ritmo' || RP.phase !== 'work' || RP.paused) return;
@@ -485,6 +487,7 @@ function rPause() {
   sheet(`<h3>Pausa</h3>
     <p class="sub">${RETOS[RP.key].n} · ${RP.d.test ? 'prueba' : serieTxt(RP.set, RP.d.sets.length).toLowerCase()} · ${any ? `llevas ${reps} repeticiones` : 'todavía sin repeticiones'}</p>
     <div style="height:12px"></div><button class="btn" id="rpz-go">▶ Seguir</button>
+    ${RP.phase === 'prep' ? `<div class="acc-row"><span>Pausa para acomodarte<small>Lo que queda de la preparación se ajusta</small></span>${accSegHTML('rpz-acc')}</div>` : ''}
     ${sensor ? `<h2>Sensibilidad del sensor</h2>
       <div class="seg" id="rpz-s">${[1, 2, 3, 4, 5].map(v => `<button data-v="${v}" aria-pressed="${RP.sens === v}">${v}</button>`).join('')}</div>
       <p class="note">1 = cuenta solo movimientos amplios · 5 = cuenta movimientos más cortos. Si cuenta de más, bájala; si no cuenta, súbela.</p>`
@@ -500,6 +503,7 @@ function rPause() {
       toast('Sensibilidad ' + v);
     });
     if ($('#rpz-t')) bindSeg('rpz-t', 'v', v => { RP.tempo = +v; const all = getRetos(); if (all[RP.key]) { all[RP.key].tempo = RP.tempo; setRetos(all); } });
+    bindAcc('rpz-acc');
     $('#rpz-go').onclick = () => rContinue();
     const sv = $('#rx-save'); if (sv) sv.onclick = () => { closeSheet(); RP.paused = false; rFinish(true); };
     $('#rx-quit').onclick = () => { closeSheet(); quit(); };
