@@ -17,7 +17,16 @@ const RETOS = {
     how: { toque: 'Deja el móvil en el suelo bajo tu cara y tócalo con la nariz o la barbilla en cada bajada.' } },
   pullups: { n: 'Dominadas', one: 'dominada', ex: 'pull_ups', goal: 30, tests: [10, 20, 30], rep: 'dm',
     modes: { original: 'Móvil en el bolsillo (sensor)', toque: 'Tocando la pantalla al bajar' }, mode: 'original',
-    how: { original: 'Guarda el móvil en un bolsillo ajustado o en una banda de brazo. Detecta la bajada y la frenada abajo: cuenta al terminar cada dominada.', toque: 'Deja el móvil cerca y tócalo al bajar de cada dominada.' } },
+    how: { original: 'Guarda el móvil en un bolsillo ajustado o en una banda de brazo. Detecta la bajada y la frenada abajo: cuenta al terminar cada dominada.', toque: 'Deja el móvil cerca y tócalo al bajar de cada dominada.' },
+    // rango previo (k = −1) para quien todavía no hace dominadas seguidas: negativas → asistidas → sueltas con descanso largo
+    pre: { lbl: 'Primera dominada', tests: [5, 8, 3], st: [
+      { n: 'Dominadas negativas', unit: 'negativas', tip: 'Sube a la barra con un salto o desde una silla, con la barbilla por encima, y baja lo más lento que puedas (unos 5 segundos) hasta tener los brazos estirados. Cuenta una al llegar abajo.' },
+      { n: 'Dominadas asistidas', unit: 'asistidas', tip: 'Con una banda elástica enganchada a la barra bajo las rodillas o los pies, o con un pie apoyado en una silla para ayudarte lo justo. Sube hasta pasar la barbilla por encima de la barra y baja controlando.' },
+      { n: 'Dominadas sueltas', unit: 'dominadas', tip: 'Una dominada completa por serie, con descansos largos para llegar fresco a cada una. Si una no sale, haz una negativa lenta en su lugar, pero no la cuentes.' }],
+      data: [
+        [[[2, 2, 2], [90, 90], 2], [[2, 2, 2, 2], [90, 90, 90], 2], [[3, 2, 2, 2], [90, 90, 90], 3], [[3, 3, 2, 2], [90, 90, 90], 2], [[3, 3, 3, 2], [120, 120, 120], 2], [[4, 3, 3, 3], [120, 120, 120], 3], [[4, 4, 3, 3], [120, 120, 120], 2], [[5], [], 3]],
+        [[[3, 3, 3], [90, 90], 2], [[4, 3, 3, 3], [90, 90, 90], 2], [[4, 4, 3, 3], [90, 90, 90], 3], [[5, 4, 4, 3], [90, 90, 90], 2], [[5, 5, 4, 4], [120, 120, 120], 2], [[6, 5, 5, 4], [120, 120, 120], 3], [[6, 6, 5, 5], [120, 120, 120], 2], [[7, 6, 6, 5], [120, 120, 120], 2], [[8], [], 3]],
+        [[[1, 1, 1], [180, 180], 2], [[1, 1, 1, 1], [180, 180, 180], 2], [[1, 1, 1, 1, 1], [180, 180, 180, 180], 3], [[2, 1, 1, 1], [180, 180, 180], 2], [[2, 1, 1, 1, 1], [180, 180, 180, 180], 2], [[2, 2, 1, 1], [180, 180, 180], 3], [[2, 2, 1, 1, 1], [180, 180, 180, 180], 2], [[2, 2, 2, 1], [180, 180, 180], 2], [[3], [], 3]]] } },
 };
 // retos con mancuernas: con las manos ocupadas se cuenta al ritmo de la app o con el móvil en el brazo
 const DB_MODES = (where, extra) => ({
@@ -54,10 +63,16 @@ function migrateRetos() {
   }
   if (ch) setRetos(all);
 }
-const rangeLbl = (key, k) => `${k * RETOS[key].goal}–${(k + 1) * RETOS[key].goal}`;
+const rangeLbl = (key, k) => k < 0 ? RETOS[key].pre.lbl : `${k * RETOS[key].goal}–${(k + 1) * RETOS[key].goal}`;
+// etapa del rango previo (o null): { n, unit, tip }
+const preSt = (key, k, stage) => k < 0 && RETOS[key].pre ? RETOS[key].pre.st[stage - 1] : null;
+const retoN = (key, k, stage) => (preSt(key, k, stage) || RETOS[key]).n;
+// las negativas y las asistidas no cuentan como dominadas (récords, ritmo y logros)
+const preNoCount = w => w && w.pre && w.pre < 3;
 // días de una etapa en un rango: el rango 0 es el programa base; los demás se escalan
 // para que cada prueba sea (inicio del rango + prueba base)
 function retoDays(key, k, stage) {
+  if (k < 0) { const P = RETOS[key].pre; return P.data[stage - 1].map(([sets, pauses, next], i, a) => ({ sets, pauses, next, gap: next + 1, test: i === a.length - 1 })); }
   const R = RETOS[key], src = RETOS_DATA[key][stage - 1], t = R.tests[stage - 1];
   const f = (k * R.goal + t) / t;
   return src.map(([sets, pauses, next], i) => {
@@ -100,9 +115,10 @@ function openRetoSetup(key, change) {
   const render = () => sheet(`<h3>${R.n}</h3>
     <p class="sub">Programa de 3 etapas con pruebas a las ${R.tests.join(', ')} repeticiones${R.goal !== R.tests[2] ? '' : ''}. Elige desde dónde empiezas.</p>
     <h2>Rango</h2>
-    <div class="seg wrap" id="rs-k">${Array.from({ length: RANGES }, (_, i) => `<button data-k="${i}" aria-pressed="${k === i}">${rangeLbl(key, i)}</button>`).join('')}</div>
+    <div class="seg wrap" id="rs-k">${(R.pre ? [-1] : []).concat(Array.from({ length: RANGES }, (_, i) => i)).map(i => `<button data-k="${i}" aria-pressed="${k === i}">${rangeLbl(key, i)}</button>`).join('')}</div>
     <h2>Etapa inicial</h2>
-    <div class="seg" id="rs-st">${[1, 2, 3].map(i => `<button data-s="${i}" aria-pressed="${stage === i}">${i}<br><small>hasta ${k * R.goal + R.tests[i - 1]}</small></button>`).join('')}</div>
+    <div class="seg" id="rs-st">${[1, 2, 3].map(i => `<button data-s="${i}" aria-pressed="${stage === i}">${i}<br><small>${k < 0 ? R.pre.st[i - 1].unit : 'hasta ' + (k * R.goal + R.tests[i - 1])}</small></button>`).join('')}</div>
+    ${k < 0 ? `<p class="note">Para quien todavía no puede hacer más de una dominada seguida. Etapa 1: negativas (solo la bajada, lenta). Etapa 2: asistidas con banda elástica o un pie en una silla. Etapa 3: dominadas sueltas con descansos largos. Al hacer ${R.pre.tests[2]} seguidas pasas al rango ${rangeLbl(key, 0)}.</p>` : ''}
     <p class="note">Si no sabes dónde empezar, haz la prueba inicial: tantas ${R.n.toLowerCase()} como puedas y elijo el rango y la etapa.</p>
     ${R.db ? `<h2>Peso de la mancuerna</h2>
     <div class="field"><input id="rs-kg" inputmode="decimal" value="${kg ? fmtKg(kg) : ''}" placeholder="kg por mancuerna"></div>
@@ -141,22 +157,22 @@ function openRetoSetup(key, change) {
 function openRetoDetail(key) {
   const R = RETOS[key], s = getRetos()[key]; if (!s) return;
   const days = retoDays(key, s.k, s.stage), due = Date.now() >= (s.nextAt || 0);
-  const last = (s.log || []).slice(-1)[0];
+  const last = (s.log || []).slice(-1)[0], ps = preSt(key, s.k, s.stage), unit = ps ? ps.unit : R.n.toLowerCase();
   let t = Math.max(dayStart(Date.now()), dayStart(s.nextAt || Date.now()));
   const rows = days.map((d, i) => {
     let when = '';
     if (i >= s.day) { when = i === s.day ? (due ? 'hoy' : whenStr(t)) : whenStr(t); t = addDays(t, d.gap); }
     const done = i < s.day;
     return `<div class="rday ${done ? 'is-done' : ''} ${i === s.day ? 'cur' : ''}"><span class="dn">${done ? '✓' : i + 1}</span>
-      <span class="t"><b>${d.test ? 'Prueba: ' + d.sets[0] + ' seguidas' : d.sets.join(' · ')}</b><small>${d.test ? 'Todas las que puedas' : dayTotal(d) + ' en total · descansos de ' + [...new Set(d.pauses)].join('/') + ' s'}${when ? ' · ' + when : ''}</small></span></div>`;
+      <span class="t"><b>${d.test ? 'Prueba: ' + d.sets[0] + (ps ? ' ' + ps.unit : '') + ' seguidas' : d.sets.join(' · ')}</b><small>${d.test ? 'Todas las que puedas' : dayTotal(d) + ' en total · descansos de ' + [...new Set(d.pauses)].join('/') + ' s'}${when ? ' · ' + when : ''}</small></span></div>`;
   }).join('');
   sheet(`<h3>${R.n}</h3><p class="sub">${s.kg ? fmtKg(s.kg) + ' kg · ' : ''}Rango ${rangeLbl(key, s.k)} · etapa ${s.stage} de 3 · día ${s.day + 1} de ${days.length}${s.best ? ' · tu récord: ' + s.best : ''}</p>
     <div class="acc-row"><span>Pausa para acomodarte<small>Antes de empezar a contar</small></span>${accSegHTML('rd-acc')}</div>
     <div class="gap"></div>
-    <button class="btn" id="rd-go">${due ? 'Empezar' : 'Entrenar igual'} · ${days[s.day].test ? 'prueba' : dayTotal(days[s.day]) + ' ' + R.n.toLowerCase()}</button>
+    <button class="btn" id="rd-go">${due ? 'Empezar' : 'Entrenar igual'} · ${days[s.day].test ? 'prueba' : dayTotal(days[s.day]) + ' ' + unit}</button>
     ${due ? '' : `<p class="note">Próximo entrenamiento: ${whenStr(s.nextAt)}. Descansar entre sesiones es parte del programa.</p>`}
-    ${last ? `<p class="note">Último: ${dateStr(last.at)} · ${last.total} ${R.n.toLowerCase()}${last.test ? (last.passed ? ' · prueba superada' : ' · prueba no superada') : ''}</p>` : ''}
-    <h2>Etapa ${s.stage}</h2><div class="block">${rows}</div>
+    ${last ? `<p class="note">Último: ${dateStr(last.at)} · ${last.total} ${(preSt(key, last.k, last.stage) || { unit: R.n.toLowerCase() }).unit}${last.test ? (last.passed ? ' · prueba superada' : ' · prueba no superada') : ''}</p>` : ''}
+    <h2>Etapa ${s.stage}${ps ? ' · ' + ps.n : ''}</h2>${ps ? `<p class="note">${esc(ps.tip)}</p>` : ''}<div class="block">${rows}</div>
     <div class="row"><button class="btn ghost small" id="rd-chg">Cambiar ${R.db ? 'peso, rango o modo' : 'rango o modo'}</button><button class="btn ghost small" id="rd-quit">Abandonar</button></div>`, () => {
     bindAcc('rd-acc');
     $('#rd-go').onclick = () => { closeSheet(); startReto(key); };
@@ -280,6 +296,7 @@ async function startReto(key, opts = {}) {
   else d = retoDays(key, s.k, s.stage)[s.day];
   Object.assign(RP, { key, s, d, set: 0, count: 0, extra: 0, done: [], times: [], setT0: 0, phase: 'prep', restEnd: performance.now() + accSec() * 1000, lastSec: null, initial: !!opts.initial || !s, mode, sens: opts.sens || (s && s.sens) || 3, t0: Date.now(), active: 0, lastTick: performance.now(), paused: false,
     tempo: opts.tempo || (s && s.tempo) || 3, kg: opts.kg || (s && s.kg) || 0, nextBeat: 0 });
+  RP.pre = !RP.initial && s.k < 0 ? s.stage : 0; RP.ps = RP.pre ? preSt(key, s.k, s.stage) : null;
   // sensores (en iPhone hace falta permiso, pedido aquí con el toque del usuario)
   RP.sensOn = false;
   if (sensorMode(key, mode)) {
@@ -375,7 +392,7 @@ function rRender() {
   const prep = RP.phase === 'prep', rest = RP.phase === 'rest' || prep;
   $('#rplayer').className = 'player rplayer ' + (rest ? 'rest' : 'work');
   $('#rp-phase').textContent = (prep ? 'Prepárate' : rest ? 'Descanso' : d.test ? (RP.initial ? 'Prueba inicial' : 'Prueba') : serieTxt(RP.set, d.sets.length)) + (RP.kg ? ' · ' + fmtKg(RP.kg) + ' kg' : '');
-  $('#rp-name').textContent = R.n;
+  $('#rp-name').textContent = RP.ps ? RP.ps.n : R.n;
   $('#rp-sets').innerHTML = d.test ? '' : setsBar(d.sets, rest ? 0 : Math.min(1, RP.count / Math.max(1, tgt)));
   let big, small;
   if (rest) { big = Math.max(0, Math.ceil((RP.restEnd - performance.now()) / 1000)); small = prep ? (d.test ? (RP.initial ? 'segundos · luego todas las que puedas' : `segundos · luego ${tgt} seguidas`) : `segundos · luego ${tgt} repeticiones`) : `segundos · luego ${tgt}`; }
@@ -385,7 +402,7 @@ function rRender() {
   else if (tgt - RP.count === 1) { big = 'Última'; small = lastSet ? 'repetición · última serie' : 'repetición'; }
   else { big = tgt - RP.count; small = lastSet ? 'faltan · última serie' : 'faltan'; }
   $('#rp-num').textContent = big; $('#rp-num').classList.toggle('word', typeof big === 'string' && !/^\+?\d+$/.test(big)); $('#rp-small').textContent = small;
-  $('#rp-help').textContent = prep ? 'Ponte en posición. ' + (R.how[RP.mode] || '') : rest ? 'Recupera el aire. A 10 s del final te aviso.' : RP.mode === 'ritmo' ? (lastSet && !d.test && RP.count >= tgt ? 'Objetivo cumplido: toca la pantalla por cada extra o «Terminar».' : d.test ? 'Una por pitido. Cuando no puedas más, toca «Terminar» (y «−1» si la última no salió).' : `Una por pitido, cada ${RP.tempo} s. Si no llegas, «Serie hecha».`) : RP.sensOn ? (RP.det.hint + ' · también puedes tocar la pantalla') : (R.how.toque || 'Toca la pantalla en cada repetición.');
+  $('#rp-help').textContent = prep ? (RP.ps ? RP.ps.tip + ' ' : 'Ponte en posición. ') + (R.how[RP.mode] || '') : rest ? 'Recupera el aire. A 10 s del final te aviso.' : RP.mode === 'ritmo' ? (lastSet && !d.test && RP.count >= tgt ? 'Objetivo cumplido: toca la pantalla por cada extra o «Terminar».' : d.test ? 'Una por pitido. Cuando no puedas más, toca «Terminar» (y «−1» si la última no salió).' : `Una por pitido, cada ${RP.tempo} s. Si no llegas, «Serie hecha».`) : RP.sensOn ? (RP.det.hint + ' · también puedes tocar la pantalla') : (R.how.toque || 'Toca la pantalla en cada repetición.');
   $('#rp-meter').classList.toggle('hidden', !RP.sensOn || rest);
   $('#rp-done').textContent = prep ? 'Empezar ya' : rest ? 'Saltar descanso' : (d.test || lastSet) ? 'Terminar' : 'Serie hecha';
   const pb = $('#rp-close'); pb.innerHTML = RP.paused ? PLAY_SVG : PAUSE_SVG; pb.setAttribute('aria-label', RP.paused ? 'Seguir' : 'Pausa y opciones');
@@ -400,9 +417,17 @@ function rFinish(partial) {
   const total = reps.reduce((a, b) => a + b, 0), secs = Math.round(RP.active / 1000) || Math.round((Date.now() - RP.t0) / 1000);
   $('#rplayer').classList.add('hidden'); document.body.style.overflow = '';
   RP.phase = 'idle';
-  if (!total) { toast('Sesión sin repeticiones: no se guarda'); renderRetos(); return; }
+  const preInit = RP.initial && R.pre && total < R.pre.tests[2];
+  if (!total && !preInit) { toast('Sesión sin repeticiones: no se guarda'); renderRetos(); return; }
   let msg = '', s = all[key];
-  if (RP.initial) {
+  if (preInit) {
+    // dominadas: con 0, 1 o 2 seguidas empieza en «Primera dominada» (0 → negativas; 1–2 → dominadas sueltas)
+    const stage = total ? 3 : 1;
+    all[key] = { k: -1, stage, day: 0, mode: RP.mode, sens: RP.sens, tempo: RP.tempo, v: 2, startedAt: Date.now(), nextAt: addDays(Date.now(), 1), log: [], best: total };
+    s = all[key];
+    msg = `${total ? 'Hiciste ' + total + '.' : 'Todavía no sale ninguna: no pasa nada.'} Empiezas en «${R.pre.lbl}», etapa ${stage} (${R.pre.st[stage - 1].unit}), mañana.`;
+    if (!total) { setRetos(all); toast(msg); renderRetos(); refreshView(); return; }
+  } else if (RP.initial) {
     // la prueba inicial elige rango y etapa
     const k = Math.min(RANGES - 1, Math.floor(total / R.goal)), r = total - k * R.goal;
     const stage = r < R.tests[0] ? 1 : r < R.tests[1] ? 2 : 3;
@@ -412,16 +437,17 @@ function rFinish(partial) {
   } else if (partial) {
     // salida antes de terminar: se guarda lo hecho, pero el programa no avanza
     s.log = [...(s.log || []), { at: Date.now(), k: s.k, stage: s.stage, day: s.day, sets: reps, total, test: !!d.test, partial: true }].slice(-300);
-    s.best = Math.max(s.best || 0, Math.max(...reps));
+    if (!(RP.pre && RP.pre < 3)) s.best = Math.max(s.best || 0, Math.max(...reps));
     msg = `Guardado como incompleto. ${d.test ? 'La prueba' : 'El día ' + (s.day + 1)} queda pendiente para repetirlo.`;
   } else {
     const days = retoDays(key, s.k, s.stage), target = d.test ? d.sets[0] : 0;
     const passed = d.test ? total >= target : null;
     s.log = [...(s.log || []), { at: Date.now(), k: s.k, stage: s.stage, day: s.day, sets: reps, total, test: !!d.test, passed, ...(RP.kg ? { kg: RP.kg } : {}) }].slice(-300);
-    s.best = Math.max(s.best || 0, Math.max(...reps));
+    if (!(RP.pre && RP.pre < 3)) s.best = Math.max(s.best || 0, Math.max(...reps));
     if (d.test) {
       if (passed) {
         if (s.stage < 3) { s.stage++; s.day = 0; msg = `¡Prueba superada! Pasas a la etapa ${s.stage}.`; }
+        else if (s.k < 0) { s.k = 0; s.stage = 1; s.day = 0; msg = `¡Ya haces ${target} dominadas seguidas! Empieza el rango ${rangeLbl(key, 0)}.`; }
         else if (s.k < RANGES - 1) { s.k++; s.stage = 1; s.day = 0; s.goalsDone = (s.goalsDone || 0) + 1; msg = `¡Meta de ${s.k * R.goal} conseguida! Empieza el rango ${rangeLbl(key, s.k)}.`; }
         else { s.goalsDone = (s.goalsDone || 0) + 1; msg = '¡Completaste el último rango!'; }
       } else { s.day = Math.max(0, s.day - 3); msg = `Hiciste ${total} de ${target}. Repite las últimas sesiones y vuelve a intentarlo.`; }
@@ -435,13 +461,13 @@ function rFinish(partial) {
   setRetos(all);
   // historial y logros
   const h = PS.get('history', []);
-  const rp = { sq: 0, pu: 0, ab: 0, bu: 0, pl: 0, dm: 0 }; rp[R.rep] = total;
-  h.unshift({ at: Date.now(), start: RP.t0, secs, full: !partial, w: { kind: 'reto', reto: key, ...(RP.kg ? { kg: RP.kg } : {}), title: `${R.n}${RP.kg ? ' ' + fmtKg(RP.kg) + ' kg' : ''} · ${RP.initial ? 'prueba inicial' : d.test ? 'prueba' : 'día ' + ((s.log.slice(-1)[0] || {}).day + 1)}`, sets: reps, times: (RP.times || []).slice(0, reps.length), rounds: [] }, reps: rp });
+  const rp = { sq: 0, pu: 0, ab: 0, bu: 0, pl: 0, dm: 0 }; if (!(RP.pre && RP.pre < 3)) rp[R.rep] = total;
+  h.unshift({ at: Date.now(), start: RP.t0, secs, full: !partial, w: { kind: 'reto', reto: key, ...(RP.kg ? { kg: RP.kg } : {}), ...(RP.pre ? { pre: RP.pre } : {}), title: `${RP.ps ? RP.ps.n : R.n}${RP.kg ? ' ' + fmtKg(RP.kg) + ' kg' : ''} · ${RP.initial ? 'prueba inicial' : d.test ? 'prueba' : 'día ' + ((s.log.slice(-1)[0] || {}).day + 1)}`, sets: reps, times: (RP.times || []).slice(0, reps.length), rounds: [] }, reps: rp });
   PS.set('history', h.slice(0, 400));
   beep(784, 150, .25); setTimeout(() => beep(1046, 350, .3), 170);
-  if (!partial) say(`¡Terminaste! ${total} ${R.n.toLowerCase()}. Buen trabajo.`);
+  if (!partial) say(RP.pre && RP.pre < 3 ? `¡Terminaste! ${total} repeticiones. Buen trabajo.` : `¡Terminaste! ${total} ${R.n.toLowerCase()}. Buen trabajo.`);
   sheet(`<div class="big-check" style="margin:8px auto 10px"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></div>
-    <h3 style="text-align:center">${total} ${R.n.toLowerCase()}</h3>
+    <h3 style="text-align:center">${total} ${RP.ps ? RP.ps.unit : R.n.toLowerCase()}</h3>
     <p class="sub" style="text-align:center">${reps.join(' · ')} · ${fmt(secs)} min</p>
     <p class="note" style="text-align:center">${esc(msg)}</p><div style="height:16px"></div>
     <button class="btn" id="rf-ok">Listo</button>`, () => { $('#rf-ok').onclick = () => { closeSheet(); renderRetos(); refreshView(); }; });
@@ -528,6 +554,7 @@ function resumeReto(x) {
     restEnd: performance.now() + (x.restLeft || 0), initial: !!x.initial, mode: x.mode, sens: x.sens || 3, tempo: x.tempo || 3, kg: x.kg || 0, nextBeat: x.nextBeat || 0, t0: x.t0, active: x.active || 0, times: x.times || [], setT0: x.setT0 || 0, lastTick: performance.now(), paused: true,
     sensOn: false, det: null, wantSens: !!x.sensWanted });
   if (!RP.initial && !RP.s) { PS.del('rsession'); return false; }
+  RP.pre = !RP.initial && RP.s.k < 0 ? RP.s.stage : 0; RP.ps = RP.pre ? preSt(x.key, RP.s.k, RP.s.stage) : null;
   $('#rplayer').classList.remove('hidden'); document.body.style.overflow = 'hidden'; wake(true); voiceIcon();
   clearInterval(RP.timer); RP.timer = setInterval(rTick, 200);
   RP.pausedAt = performance.now(); rRender(); rPause(); toast('Reto retomado donde quedó');

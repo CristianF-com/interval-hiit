@@ -1292,7 +1292,7 @@ function buildPaces() {
   const m = {}, H = PS.get('history', []).slice(0, 300).reverse();   // de la más vieja a la más nueva
   H.forEach(x => {
     if (x.log) x.log.forEach(r => { if (r[1] && !r[2] && !r[5]) paceAdd(m, r[0], r[1], r[3] / 1000); });
-    else if (x.w && x.w.kind === 'reto' && x.w.times && typeof RETOS !== 'undefined' && RETOS[x.w.reto]) (x.w.sets || []).forEach((n, i) => { const t = x.w.times[i]; if (t) paceAdd(m, RETOS[x.w.reto].ex, n, t); });
+    else if (x.w && x.w.kind === 'reto' && x.w.times && !x.w.pre && typeof RETOS !== 'undefined' && RETOS[x.w.reto]) (x.w.sets || []).forEach((n, i) => { const t = x.w.times[i]; if (t) paceAdd(m, RETOS[x.w.reto].ex, n, t); });
   });
   return m;
 }

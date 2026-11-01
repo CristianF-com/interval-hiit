@@ -1246,7 +1246,16 @@ I18N = {
 "Zonas a cuidar": "Areas to protect",
 "Los entrenamientos evitan los ejercicios que cargan:": "Workouts avoid exercises that load:",
 "Los audios se descargan a medida que se usan. Para tenerlos todos sin internet, guárdalos ahora (unos 15 MB).": "Audio clips download as they're used. To have them all without internet, save them now (about 15 MB).",
-"Dora, Alex, Paula y Julio son voces grabadas en español. «Voz del teléfono» usa la del iPhone o del navegador.": "Dora, Alex, Paula and Julio are recorded Spanish voices. \"Phone voice\" uses the iPhone's or browser's voice."
+"Dora, Alex, Paula y Julio son voces grabadas en español. «Voz del teléfono» usa la del iPhone o del navegador.": "Dora, Alex, Paula and Julio are recorded Spanish voices. \"Phone voice\" uses the iPhone's or browser's voice.",
+"Primera dominada": "First pull-up",
+"Dominadas negativas": "Negative pull-ups",
+"Dominadas asistidas": "Assisted pull-ups",
+"Dominadas sueltas": "Single pull-ups",
+"negativas": "negatives",
+"asistidas": "assisted",
+"Sube a la barra con un salto o desde una silla, con la barbilla por encima, y baja lo más lento que puedas (unos 5 segundos) hasta tener los brazos estirados. Cuenta una al llegar abajo.": "Get up to the bar with a jump or from a chair, chin above it, and lower as slowly as you can (about 5 seconds) until your arms are straight. Count one when you reach the bottom.",
+"Con una banda elástica enganchada a la barra bajo las rodillas o los pies, o con un pie apoyado en una silla para ayudarte lo justo. Sube hasta pasar la barbilla por encima de la barra y baja controlando.": "With a resistance band hooked on the bar under your knees or feet, or with one foot on a chair to help just enough. Pull up until your chin clears the bar and lower with control.",
+"Una dominada completa por serie, con descansos largos para llegar fresco a cada una. Si una no sale, haz una negativa lenta en su lugar, pero no la cuentes.": "One full pull-up per set, with long rests so you're fresh for each one. If one doesn't come, do a slow negative instead, but don't count it."
 };
 I18N_PAT = [
 [
@@ -2152,6 +2161,38 @@ I18N_PAT = [
 [
 "Cambié {0} ejercicios para cuidar: {1}",
 "Swapped {0} exercises to protect: {1}"
+],
+[
+"{0} negativas",
+"{0} negatives"
+],
+[
+"{0} asistidas",
+"{0} assisted"
+],
+[
+"{0} negativas seguidas",
+"{0} negatives in a row"
+],
+[
+"{0} asistidas seguidas",
+"{0} assisted in a row"
+],
+[
+"¡Ya haces {0} dominadas seguidas! Empieza el rango {1}.",
+"You can now do {0} pull-ups in a row! Range {1} begins."
+],
+[
+"Hiciste {0}. Empiezas en «{1}», etapa {2} ({3}), mañana.",
+"You did {0}. You start in \"{1}\", stage {2} ({3}), tomorrow."
+],
+[
+"Todavía no sale ninguna: no pasa nada. Empiezas en «{0}», etapa {1} ({2}), mañana.",
+"You can't do one yet, and that's fine. You start in \"{0}\", stage {1} ({2}), tomorrow."
+],
+[
+"Para quien todavía no puede hacer más de una dominada seguida. Etapa 1: negativas (solo la bajada, lenta). Etapa 2: asistidas con banda elástica o un pie en una silla. Etapa 3: dominadas sueltas con descansos largos. Al hacer {0} seguidas pasas al rango {1}.",
+"For those who can't yet do more than one pull-up in a row. Stage 1: negatives (just the slow lowering). Stage 2: assisted with a resistance band or one foot on a chair. Stage 3: single pull-ups with long rests. When you can do {0} in a row you move up to range {1}."
 ]
 ];
 // catálogo de ejercicios y planes en inglés (búsqueda, voz y textos armados en el código)

@@ -114,6 +114,11 @@ RETOS DE REPETICIONES (Planes → Retos de repeticiones)
   (cada etapa termina con una prueba). Los días de descanso siguen el programa.
 - Rango a elegir: 0–100, 100–200, 200–300… (en dominadas 0–30, 30–60…; en sentadillas 0–150…).
   O «prueba inicial»: haces todas las que puedas y la app elige rango y etapa.
+- Dominadas tiene un rango previo, «Primera dominada», para quien no puede hacer más de una
+  seguida: etapa 1 negativas (solo la bajada, lenta), etapa 2 asistidas (banda elástica o un
+  pie en una silla), etapa 3 dominadas sueltas con 3 min de descanso. La prueba final es hacer
+  3 seguidas y pasa sola al rango 0–30. En la prueba inicial, con 0 empieza en negativas y con
+  1 o 2 en dominadas sueltas. Las negativas y asistidas no suman a récords ni logros de dominadas.
 - Conteo: abdominales con el móvil sobre el pecho; sentadillas con el móvil en el bolsillo
   (o en la mano); dominadas con el móvil en el bolsillo; flexiones tocando la pantalla con la
   nariz o la barbilla. Siempre se puede contar tocando la pantalla y corregir con «−1».

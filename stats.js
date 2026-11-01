@@ -57,7 +57,7 @@ function computeStats() {
   for (let d = days.has(today) ? today : today - DAY; days.has(d); d -= DAY) curStreak++;
   // retos
   const retos = Object.keys(RETOS).map(key => {
-    const xs = H.filter(x => x.w.kind === 'reto' && x.w.reto === key); if (!xs.length) return null;
+    const xs = H.filter(x => x.w.kind === 'reto' && x.w.reto === key && !preNoCount(x.w)); if (!xs.length) return null;
     let bs = null, tot = 0;
     xs.forEach(x => (x.w.sets || []).forEach((n, i) => { tot += n; const t = (x.w.times || [])[i]; if (!bs || n > bs.n || (n === bs.n && t && (!bs.t || t < bs.t))) bs = { n, t, at: x.at }; }));
     return { key, n: RETOS[key].n, best: bs, total: tot, sessions: xs.length, st: getRetos()[key] };
