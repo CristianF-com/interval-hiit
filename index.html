@@ -30,7 +30,7 @@ button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 input,select{font:inherit}
 .app{max-width:560px;margin:0 auto;padding:0 16px calc(96px + env(safe-area-inset-bottom))}
 header.top{display:flex;align-items:center;gap:10px;padding:calc(16px + env(safe-area-inset-top)) 0 8px}
-header.top .logo{width:34px;height:34px;border-radius:9px;background:var(--work);display:grid;place-items:center;flex:none}
+header.top .logo{width:40px;height:40px;display:block;flex:none;object-fit:contain}
 header.top .h-view{display:none;font-weight:400;margin-left:14px;padding-left:14px;border-left:2px solid var(--line)}header.top .h-view em{font-style:normal;color:var(--work)}
 header.top h1{font-family:var(--display);font-size:28px;letter-spacing:.5px;margin:0;text-transform:uppercase;flex:1}
 .who{display:flex;align-items:center;gap:8px;padding:5px 12px 5px 5px;border-radius:99px;background:var(--surface);border:1px solid var(--line);font-weight:600;font-size:14px;max-width:46vw}
@@ -64,7 +64,7 @@ h2{font-family:var(--display);text-transform:uppercase;letter-spacing:.6px;font-
 /* pantalla de carga */
 #splash{position:fixed;inset:0;z-index:9999;background:#0e0f12;color:#f3f4f6;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;transition:opacity .3s;padding:24px;text-align:center}
 #splash.out{opacity:0;pointer-events:none}
-#splash .sp-logo{width:76px;height:76px;border-radius:20px;background:#ff5a36;display:grid;place-items:center;margin-bottom:8px}
+#splash .sp-logo{width:min(72vw,300px);height:auto;aspect-ratio:560/556;display:block;margin-bottom:2px}
 #splash .sp-name{font-family:var(--display);font-size:46px;font-weight:700;letter-spacing:1.5px;line-height:1}
 #splash .sp-sub{font-family:var(--display);text-transform:uppercase;letter-spacing:.8px;font-size:15px;color:#9aa0aa}
 #splash .sp-ver{font-size:14px;color:#9aa0aa;min-height:18px;margin-top:18px}
@@ -575,8 +575,7 @@ input,textarea,select{font-size:16px}
 <body>
 <!-- Pantalla de carga: se va al confirmar que es la última versión o al ver que no hay conexión -->
 <div id="splash" aria-live="polite">
-  <div class="sp-logo"><svg width="48" height="48" viewBox="0 0 64 64"><path d="M6 34h12l6-14 9 26 7-18 4 6h14" fill="none" stroke="#0e0f12" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
-  <div class="sp-name">INHIIT</div>
+  <img class="sp-logo" src="icons/logo.svg" alt="INHIIT">
   <div class="sp-sub">Tu coach HIIT</div>
   <div class="sp-ver" id="sp-ver"></div>
   <div class="sp-bar"><i></i></div>
@@ -585,7 +584,7 @@ input,textarea,select{font-size:16px}
 
 <div class="app" id="app">
   <header class="top">
-    <div class="logo"><svg width="22" height="22" viewBox="0 0 64 64"><path d="M6 34h12l6-14 9 26 7-18 4 6h14" fill="none" stroke="#0e0f12" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+    <img class="logo" src="icons/logo-mark.svg" alt="">
     <h1>INHIIT<span class="h-view" id="h-view"></span></h1>
     <button class="icon-btn hidden" id="install-top" aria-label="Instalar app"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11M7 10l5 5 5-5M5 20h14"/></svg></button>
     <button class="who" id="who" data-noi18n></button>
@@ -760,7 +759,7 @@ input,textarea,select{font-size:16px}
 
 <!-- ONBOARDING -->
 <div class="onboard hidden" id="onboard"><div class="app">
-  <div class="logo" style="width:56px;height:56px;border-radius:15px;background:var(--work);display:grid;place-items:center"><svg width="36" height="36" viewBox="0 0 64 64"><path d="M6 34h12l6-14 9 26 7-18 4 6h14" fill="none" stroke="#0e0f12" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+  <img class="logo" src="icons/logo-mark.svg" alt="INHIIT" style="width:72px;height:72px;display:block">
   <p class="hero" style="margin-top:22px">¿Quién <em>entrena</em>?</p>
   <p class="sub">Cada perfil guarda su propio plan, progreso, historial y ajustes en este dispositivo.</p>
   <div id="ob-form"></div>

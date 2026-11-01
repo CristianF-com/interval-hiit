@@ -5,7 +5,8 @@ Contenido de la carpeta
   index.html, app.js, data.js   la app
   sw.js, manifest.webmanifest   lo necesario para instalarla y usarla sin conexión
   anim.js                       animaciones de los ejercicios
-  icons/                        iconos de la app
+  icons/                        iconos de la app; logo.svg (logo completo, pantalla de carga)
+                                y logo-mark.svg (solo el símbolo: cabecera, bienvenida e iconos)
   media/                        (opcional) tus propios vídeos o GIF
 
 1) Usarla sin instalar
