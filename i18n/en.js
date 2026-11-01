@@ -1214,7 +1214,37 @@ I18N = {
 "FC máxima (ppm)": "Max heart rate (bpm)",
 "El calentamiento y los estiramientos también se pueden cambiar antes de cada sesión.": "Warm-up and stretching can also be changed before each session.",
 "faltan": "to go",
-"HIIT": "HIIT coach"
+"HIIT": "HIIT coach",
+"¿Por qué lo pasas?": "Why are you skipping it?",
+"Muy difícil": "Too hard",
+"Lo cambio por una versión más fácil en lo que queda": "I'll swap it for an easier version for the rest",
+"Muy fácil": "Too easy",
+"Lo cambio por una versión más difícil en lo que queda": "I'll swap it for a harder version for the rest",
+"Dolor o molestia": "Pain or discomfort",
+"Elijo la zona y ajusto los ejercicios que quedan": "Pick the area and I'll adjust the remaining exercises",
+"Otro motivo": "Other reason",
+"Solo pasar al siguiente": "Just skip to the next",
+"▶ Seguir con este ejercicio": "▶ Keep doing this exercise",
+"¿Dónde te molesta?": "Where does it hurt?",
+"Cambio los ejercicios que quedan por otros que no carguen esa zona. Si el dolor es fuerte o no se va, para y consulta a un profesional.": "I'll swap the remaining exercises for others that don't load that area. If the pain is strong or doesn't go away, stop and see a professional.",
+"Rodillas": "Knees",
+"Muñecas y manos": "Wrists and hands",
+"Tobillos y gemelos": "Ankles and calves",
+"Codos y bíceps": "Elbows and biceps",
+"Espalda baja": "Lower back",
+"Cuello": "Neck",
+"Cadera": "Hips",
+"Cuidarla también en las próximas sesiones": "Also protect it in upcoming sessions",
+"Se puede quitar en Perfil → Zonas a cuidar": "You can remove it in Profile → Areas to protect",
+"Ajustar y pasar al siguiente": "Adjust and skip to the next",
+"Elige al menos una zona": "Choose at least one area",
+"Ningún ejercicio de los que quedan carga esa zona": "None of the remaining exercises load that area",
+"Cuidando:": "Protecting:",
+"Los ejercicios que cargan esas zonas ya están cambiados.": "Exercises that load those areas have already been swapped.",
+"Dejar de cuidarlas": "Stop protecting them",
+"Ya no se cuida ninguna zona": "No areas are being protected now",
+"Zonas a cuidar": "Areas to protect",
+"Los entrenamientos evitan los ejercicios que cargan:": "Workouts avoid exercises that load:"
 };
 I18N_PAT = [
 [
@@ -2100,6 +2130,26 @@ I18N_PAT = [
 [
 "{0} a {1} días por semana.",
 "{0} to {1} days per week."
+],
+[
+"Ajustados {0} ejercicios para cuidar: {1}",
+"Adjusted {0} exercises to protect: {1}"
+],
+[
+"{0}, {1}",
+"{0}, {1}"
+],
+[
+"{0} carga: {1}.",
+"{0} loads: {1}."
+],
+[
+"Cambié 1 ejercicio para cuidar: {0}",
+"Swapped 1 exercise to protect: {0}"
+],
+[
+"Cambié {0} ejercicios para cuidar: {1}",
+"Swapped {0} exercises to protect: {1}"
 ]
 ];
 // catálogo de ejercicios y planes en inglés (búsqueda, voz y textos armados en el código)

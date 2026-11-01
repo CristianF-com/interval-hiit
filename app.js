@@ -240,6 +240,7 @@ function openProfiles() {
     <div id="pf-form"></div>
     <h2>Apariencia</h2>
     <div class="theme-pick" id="pf-theme">${Object.entries(THEMES).map(([k, t]) => `<button data-t="${k}" aria-pressed="${(S.theme || 'oscuro') === k}"><span class="sw4">${t.sw.map(c => `<i style="background:${c}"></i>`).join('')}</span>${t.n}</button>`).join('')}</div>
+    ${(S.avoid || []).length ? `<h2>Zonas a cuidar</h2><p class="note">Los entrenamientos evitan los ejercicios que cargan: <b>${S.avoid.map(k => AREAS[k].n.toLowerCase()).join(', ')}</b>.</p><button class="btn ghost small" id="pf-avoid">Dejar de cuidarlas</button>` : ''}
     <h2>Idioma</h2>
     <div class="seg" id="pf-lang">${Object.entries(LANGS).map(([k, n]) => `<button data-l="${k}" aria-pressed="${LANG === k}" data-noi18n>${n}</button>`).join('')}</div>
     <p class="note">Cambia el idioma de toda la app. Las voces grabadas (Dora y Alex) son solo en español; en inglés se usa la voz del teléfono.</p>
@@ -256,6 +257,7 @@ function openProfiles() {
     $('#pf-voice').onclick = openVoiceSettings;
     bindSeg('pf-theme', 't', t => { S.theme = t; save(); applyTheme(); });
     bindSeg('pf-lang', 'l', l => { if (l !== LANG) setLang(l); });
+    const pa = $('#pf-avoid'); if (pa) pa.onclick = () => { S.avoid = []; save(); closeSheet(); toast('Ya no se cuida ninguna zona'); };
     $('#pf-backup').onclick = openBackup;
     renderInstallBlock();
   });
@@ -843,7 +845,7 @@ function show(view) {
 function openPreview(w, from) {
   // planes: el calendario y la lista traen el día sin calentamiento; se agrega según la última elección
   if (w.kind === 'plan' && !w.sessSet) { w.warm = S.planWarm ? shuffle(WARM).slice(0, 5) : []; w.cool = S.planCool ? shuffle(COOL).slice(0, 5) : []; }
-  W = w; previewFrom = from; renderPreview(); show('preview');
+  W = applyAvoid(w); previewFrom = from; renderPreview(); show('preview');
 }
 /* ---------- Opciones de esta sesión (antes de empezar) ---------- */
 // Calentamiento, estiramientos y pausa para acomodarse se eligen para cada sesión.
@@ -854,7 +856,8 @@ function sessHTML(w) {
     ${tg('warm', !!(w.warm && w.warm.length), 'Calentamiento', '5 movimientos suaves de 30 s antes')}
     ${tg('cool', !!(w.cool && w.cool.length), 'Estiramientos', '5 estiramientos de 30 s al final')}
     ${w.kind === 'plan' ? tg('auto', S.autoNext !== false, 'Pasar solo al siguiente', 'En ejercicios por repeticiones, cuando ya sé tu ritmo (3 series o más)') : ''}
-    <div class="tg-row"><span>Pausa para acomodarte<small>Antes de empezar y entre calentamiento o estiramientos</small></span>${accSegHTML('pv-acc')}</div></div>`;
+    <div class="tg-row"><span>Pausa para acomodarte<small>Antes de empezar y entre calentamiento o estiramientos</small></span>${accSegHTML('pv-acc')}</div></div>
+    ${(S.avoid || []).length ? `<p class="note">Cuidando: <b>${S.avoid.map(k => AREAS[k].n.toLowerCase()).join(', ')}</b>. Los ejercicios que cargan esas zonas ya están cambiados. <button class="linkbtn" id="pv-avoid">Dejar de cuidarlas</button></p>` : ''}`;
 }
 function bindSess(root, w, after) {
   root.querySelectorAll('[data-sess]').forEach(b => b.onclick = () => {
@@ -865,6 +868,7 @@ function bindSess(root, w, after) {
     w.sessSet = true; b.setAttribute('aria-checked', on); after && after();
   });
   bindSeg('pv-acc', 'v', v => { setAccSec(+v); after && after(); });
+  const av = root.querySelector('#pv-avoid'); if (av) av.onclick = () => { S.avoid = []; save(); toast('Ya no se cuida ninguna zona'); after && after(); };
 }
 $('#tabs').onclick = e => { const b = e.target.closest('[data-tab]'); if (!b) return; show(b.dataset.tab); };
 $('#gen').onclick = () => {
@@ -1234,12 +1238,13 @@ function cycleSound() {
 const cur = () => P.tl[P.i];
 
 function startWorkout(w, resume) {
+  if (!resume) w = applyAvoid(w);
   P.fromView = currentView === 'preview' ? previewFrom : currentView;
   P.w = clone(w); P.tl = buildTimeline(P.w); P.running = true; P.animId = null;
   P.startedAt = resume ? resume.startedAt : Date.now();
   P.activeMs = resume ? resume.activeMs : 0;
   P.hr = resume && resume.hr ? resume.hr : []; P.pauses = resume ? resume.pauses || 0 : 0;
-  P.log = resume && resume.log ? resume.log : []; P.logOpen = null;
+  P.log = resume && resume.log ? resume.log : []; P.logOpen = null; P.skips = resume && resume.skips ? resume.skips : [];
   try { P.pace = buildPaces(); (P.log || []).forEach(r => { if (r[1] && !r[2] && !r[5]) paceAdd(P.pace, r[0], r[1], r[3] / 1000); }); } catch (e) { P.pace = {}; }
   if (typeof hrUI === 'function') hrUI();
   P.last = performance.now(); P.lastSave = 0;
@@ -1351,7 +1356,7 @@ function tick() {
 function saveSession() {
   if (!P.running) return;
   P.lastSave = performance.now();
-  PS.set('session', { w: P.w, i: P.i, remain: P.remain, stepMs: P.stepMs, activeMs: P.activeMs, startedAt: P.startedAt, savedAt: Date.now(), hr: P.hr, pauses: P.pauses, log: P.log });
+  PS.set('session', { w: P.w, i: P.i, remain: P.remain, stepMs: P.stepMs, activeMs: P.activeMs, startedAt: P.startedAt, savedAt: Date.now(), hr: P.hr, pauses: P.pauses, log: P.log, skips: P.skips });
 }
 // versión más fácil de cada ejercicio (se puede cambiar en pleno entrenamiento)
 const EASIER = {
@@ -1496,10 +1501,121 @@ $('#p-play').onclick = () => {
   if (s && s.reps) { if (P.paused) { P.paused = false; } step(P.i + 1, false, 'done'); return; }
   togglePause();
 };
-$('#p-skip').onclick = () => {
+function skipNow() {
   if (P.i < P.tl.length - 1) { step(P.i + 1); if (P.paused && !cur().reps) { P.remain = cur().dur * 1000; render(); } }
   else finish(true);
+}
+// pasar al siguiente durante un ejercicio: pregunta el motivo para ajustar lo que queda
+$('#p-skip').onclick = () => { const s = cur(); if (s && s.k === 'work' && P.w.kind !== 'test') openSkipReason(); else skipNow(); };
+
+/* ---------- Motivo al saltar un ejercicio y zonas a cuidar ---------- */
+// Partes del cuerpo más comunes en molestias y lesiones, con los ejercicios que las cargan
+const AREAS = {
+  knees: { n: 'Rodillas', re: /squat|lunge|burpee|knee|skater|wall_sit|frog|high_knees|tuck|rockstar|plie|curtsy|scissor_switch|jog|quick_feet|thruster|goblet|quadruped|donkey|fire_hydrant|cat_cow|childs_pose|up_downs|hip_flexor|sl_balance|sl_reach/ },
+  wrists: { n: 'Muñecas y manos', re: /push_up|high_plank|high_side_plank|burpee|mountain|climber|crab|inchworm|down_dog|up_down|triceps_dip|quadruped|cat_cow|donkey|fire_hydrant|skier_abs|alligator|commander|reverse_plank|floor_press|mod_high_side/ },
+  ankles: { n: 'Tobillos y gemelos', re: /jump|jacks|calf|high_knees|jog|skater|quick_feet|burpee|tuck|rockstar|squat_stars|skier|scissor_switch|sl_balance|sl_reach/ },
+  shoulders: { n: 'Hombros', re: /push_up|plank|pike|arm_circles|overhead_squat|triceps_dip|burpee|mountain|climber|punches|shoulder|lateral_raise|thruster|inchworm|down_dog|crab|wall_lateral|superman_pull|up_down|commander|alligator|plie_squat_arm|squat_arm_swing|march_arm/ },
+  elbows: { n: 'Codos y bíceps', re: /push_up|triceps|db_curl|hammer|up_down|commander|alligator|db_row|floor_press|punches|crab|reverse_plank/ },
+  back: { n: 'Espalda baja', re: /sit_ups|v_up|leg_raises|superman|deadlift|db_rdl|russian|windshield|scissor_kicks|burpee|star_toe|prone_x|db_row|knee_tuck|reverse_crunch/ },
+  neck: { n: 'Cuello', re: /crunch|sit_ups|v_up|russian|star_toe|beetle|table_top/ },
+  hips: { n: 'Cadera', re: /lunge|plie|hip_|frog|curtsy|skater|kick|fire_hydrant|figure_4|cobblers|side_lunge|sumo|squat_side_kick/ },
 };
+const exBase = id => (id || '').replace(/_(l|r)$/, '');
+const exAreas = id => { const b = exBase(id), e = ex(id); return Object.keys(AREAS).filter(k => AREAS[k].re.test(b) || ((k === 'knees' || k === 'ankles') && e.j)); };
+const hurts = (id, areas) => areas.length && exAreas(id).some(k => areas.includes(k));
+// reemplazo para un ejercicio que carga una zona a cuidar: misma zona del cuerpo y nivel parecido
+function safeAlt(id, areas, used) {
+  const e = ex(id), soft = e.t !== 'x';
+  let pool = soft ? [...WARM, ...COOL].map(ex) : COACH_POOL.concat(typeof DB_POOL !== 'undefined' && (P.w.db || P.w.kind === 'db') ? DB_POOL : []);
+  pool = pool.filter(x => x.id !== exBase(id) && !hurts(x.id, areas) && x.t === e.t);
+  const same = pool.filter(x => [...(x.p || '')].some(p => (e.p || '').includes(p)));
+  const c = (same.length ? same : pool).filter(x => !(P.w.noJump && x.j));
+  if (!c.length) return null;
+  const lv = e.lv || 1;
+  const score = x => ((x.p || '')[0] === (e.p || '')[0] ? 0 : 2) + Math.abs((x.lv || 1) - lv) + (used.has(x.id) ? 1 : 0) + (!!x.j !== !!e.j ? 0.5 : 0) + Math.random() * 0.4;
+  c.sort((a, b) => score(a) - score(b));
+  return c[0].id;
+}
+// cambia los ejercicios que quedan (desde el siguiente paso) por reemplazos que no carguen esas zonas
+function avoidRemaining(areas) {
+  const from = P.i + 1, map = {}, used = new Set();
+  P.tl.slice(from).forEach(st => { if (st.k === 'work' && st.ex && !(st.ex in map) && hurts(st.ex, areas)) { const alt = safeAlt(st.ex, areas, used); map[st.ex] = alt; if (alt) used.add(alt); } });
+  const pairs = Object.entries(map).filter(([, v]) => v);
+  const swapAll = o => { let j = JSON.stringify(o); pairs.forEach(([a, b]) => { j = j.split(`"${a}"`).join(`"${b}"`); }); return JSON.parse(j); };
+  P.tl = P.tl.map((st, i) => i < P.i ? st : swapAll(st));
+  P.w = swapAll(P.w);
+  if (pairs.length && !isDbEx(pairs[0][1])) P.tl.forEach((st, i) => { if (i >= P.i && pairs.some(([, b]) => b === st.ex) && !isDbEx(st.ex)) st.kg = 0; });
+  return { changed: pairs.length, left: Object.values(map).filter(v => !v).length };
+}
+// en las próximas sesiones: los entrenamientos nuevos se ajustan al empezar
+function applyAvoid(w) {
+  const areas = S.avoid || []; if (!areas.length || !w || w.kind === 'test') return w;
+  const used = new Set(), map = {};
+  const fix = id => { if (!hurts(id, areas)) return id; if (!(id in map)) { const save = P.w; P.w = w; map[id] = safeAlt(id, areas, used) || id; P.w = save; used.add(map[id]); } return map[id]; };
+  if (w.kind === 'plan') w.rounds = w.rounds.map(r => r.map(it => it.id === 'pause' ? it : { ...it, id: fix(it.id) }));
+  else if (w.kind === 'db') w.items = w.items.map(it => { const id = fix(it.id); return id === it.id ? it : { ...it, id, kg: isDbEx(id) ? it.kg : 0 }; });
+  else if (w.rounds) w.rounds = w.rounds.map(r => r.map(fix));
+  if (w.warm) w.warm = w.warm.map(fix); if (w.cool) w.cool = w.cool.map(fix);
+  w.avoided = areas.slice();
+  return w;
+}
+function openSkipReason() {
+  const s = cur(); if (!s) return;
+  const wasPaused = P.paused; if (!wasPaused) togglePause();
+  const back = () => { closeSheet(); if (!wasPaused && P.paused) togglePause(); };
+  const name = ex(s.ex).n;
+  sheet(`<h3>¿Por qué lo pasas?</h3><p class="sub">${esc(name)}</p>
+    <div class="opts-col">
+      <button class="btn ghost" data-r="hard">Muy difícil<small>Lo cambio por una versión más fácil en lo que queda</small></button>
+      <button class="btn ghost" data-r="easy">Muy fácil<small>Lo cambio por una versión más difícil en lo que queda</small></button>
+      <button class="btn ghost" data-r="pain">Dolor o molestia<small>Elijo la zona y ajusto los ejercicios que quedan</small></button>
+      <button class="btn ghost" data-r="other">Otro motivo<small>Solo pasar al siguiente</small></button>
+    </div><div class="gap"></div><button class="btn" id="sk-back">▶ Seguir con este ejercicio</button>`, () => {
+    $('#sk-back').onclick = back;
+    $('#sheet-root').querySelectorAll('[data-r]').forEach(b => b.onclick = () => {
+      const r = b.dataset.r;
+      if (r === 'pain') { openPainAreas(s, wasPaused); return; }
+      (P.skips = P.skips || []).push({ ex: s.ex, r, at: P.i });
+      closeSheet();
+      let msg = '';
+      if (r === 'hard' || r === 'easy') {
+        const to = r === 'hard' ? easierOf(s.ex) : harderOf(s.ex, P.w.noJump);
+        const later = P.tl.slice(P.i + 1).some(x => x.ex === s.ex);
+        if (to && later) { swapEx(s.ex, to); msg = (r === 'hard' ? 'Más fácil: ' : 'Más difícil: ') + ex(to).n; }
+      }
+      if (!wasPaused && P.paused) togglePause();
+      skipNow(); if (msg) toast(msg);
+    });
+  }, true);
+}
+function openPainAreas(s, wasPaused) {
+  let sel = new Set(), keep = false; const load = exAreas(s.ex);
+  const draw = () => `<h3>¿Dónde te molesta?</h3>
+    <p class="sub">Cambio los ejercicios que quedan por otros que no carguen esa zona. Si el dolor es fuerte o no se va, para y consulta a un profesional.</p>
+    <div class="chips" id="pa-areas">${Object.entries(AREAS).map(([k, a]) => `<button class="chip" data-a="${k}" aria-pressed="${sel.has(k)}">${a.n}</button>`).join('')}</div>
+    ${load.length ? `<p class="note">${esc(ex(s.ex).n)} carga: ${load.map(k => AREAS[k].n.toLowerCase()).join(', ')}.</p>` : ''}
+    <div class="toggles" style="margin-top:14px"><button class="tg" id="pa-keep" role="switch" aria-checked="${keep}"><span>Cuidarla también en las próximas sesiones<small>Se puede quitar en Perfil → Zonas a cuidar</small></span><i class="sw"></i></button></div>
+    <div class="gap"></div><button class="btn" id="pa-go">Ajustar y pasar al siguiente</button><div class="gap"></div>
+    <button class="btn ghost small" id="pa-skip">Solo pasar al siguiente</button>`;
+  sheet(draw(), () => {
+    const bind = () => {
+      $('#pa-areas').onclick = e => { const b = e.target.closest('[data-a]'); if (!b) return; const k = b.dataset.a; sel.has(k) ? sel.delete(k) : sel.add(k); b.setAttribute('aria-pressed', sel.has(k)); };
+      $('#pa-keep').onclick = () => { keep = !keep; $('#pa-keep').setAttribute('aria-checked', keep); };
+      const done = () => { closeSheet(); if (!wasPaused && P.paused) togglePause(); };
+      $('#pa-skip').onclick = () => { (P.skips = P.skips || []).push({ ex: s.ex, r: 'pain', at: P.i }); done(); skipNow(); };
+      $('#pa-go').onclick = () => {
+        if (!sel.size) { toast('Elige al menos una zona'); return; }
+        const areas = [...sel];
+        (P.skips = P.skips || []).push({ ex: s.ex, r: 'pain', areas, at: P.i });
+        if (keep) { S.avoid = [...new Set([...(S.avoid || []), ...areas])]; save(); }
+        const res = avoidRemaining(areas);
+        done(); skipNow();
+        toast(res.changed ? `${res.changed === 1 ? 'Cambié 1 ejercicio' : 'Cambié ' + res.changed + ' ejercicios'} para cuidar: ${areas.map(k => AREAS[k].n.toLowerCase()).join(', ')}` : 'Ningún ejercicio de los que quedan carga esa zona');
+      };
+    };
+    bind();
+  }, true);
+}
 $('#p-prev').onclick = () => {
   const s = cur(); const elapsed = s.reps ? P.stepMs / 1000 : s.dur - P.remain / 1000;
   const j = elapsed < 3 && P.i > 0 ? P.i - 1 : P.i;
@@ -1593,6 +1709,7 @@ function finish(full, reason) {
   logClose();
   const entry = { at: Date.now(), start: P.startedAt, secs, full, w: P.w, pauses: P.pauses || 0 };
   if (P.log && P.log.length) entry.log = P.log;
+  if (P.skips && P.skips.length) entry.skips = P.skips;
   if (P.w.kind !== 'test') entry.reps = repsOf(entry, full ? undefined : P.i);
   const hrs = P.hr && P.hr.length ? hrSummary(P.hr) : null; if (hrs) { hrs.src = 'banda'; entry.hr = hrs; }
   const h = PS.get('history', []); h.unshift(entry); PS.set('history', h.slice(0, 400));
