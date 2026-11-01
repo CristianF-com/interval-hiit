@@ -114,14 +114,25 @@ function dbWorkout(st, kgs) {
 }
 
 /* ---------- Tarjeta en el Coach ---------- */
+// opciones que se despliegan en la tarjeta (las mismas que se eligen al empezar cada sesión)
+const dbOptsHTML = () => optFold('db-opts', `<div class="toggles">
+      <button class="tg" data-dbo="dbWarm" role="switch" aria-checked="${S.dbWarm !== false}"><span>Calentamiento<small>4 movimientos suaves de 30 s antes</small></span><i class="sw"></i></button>
+      <button class="tg" data-dbo="dbCool" role="switch" aria-checked="${!!S.dbCool}"><span>Estiramientos al final<small>4 estiramientos de 30 s</small></span><i class="sw"></i></button>
+      <div class="tg-row"><span>Pausa para acomodarte<small>Antes de empezar y entre calentamiento o estiramientos</small></span>${accSegHTML('db-acc')}</div></div>
+    <p class="note">También se pueden cambiar antes de cada sesión. El nivel y los pesos están en Ajustes.</p>`);
+function bindDbOpts(el) {
+  bindFolds(el); bindAcc('db-acc');
+  el.querySelectorAll('[data-dbo]').forEach(b => b.onclick = () => { const k = b.dataset.dbo, on = b.getAttribute('aria-checked') !== 'true'; S[k] = on; save(); b.setAttribute('aria-checked', on); });
+}
 function renderDumb() {
   const el = $('#dumb'); if (!el || !PROFILE) return;
   const st = getDumb();
   if (!st) {
     el.innerHTML = `<div class="now dumb"><div class="wk">Entrenador con mancuernas</div><b class="name">Fuerza en casa</b>
       <p class="sub">Arma dos sesiones que se alternan, una cada dos días, y las pone en el calendario. Al empezar eliges el peso de tus mancuernas y calcula las repeticiones para mantener el nivel.</p>
+      ${dbOptsHTML()}
       <div class="gap"></div><button class="btn" id="db-setup">Empezar con mancuernas</button></div>`;
-    $('#db-setup').onclick = () => openDbSetup();
+    $('#db-setup').onclick = () => openDbSetup(); bindDbOpts(el);
     return;
   }
   const s = DB_SESS[st.type || 'A'], due = Date.now() >= (st.nextAt || 0);
@@ -131,7 +142,9 @@ function renderDumb() {
     <p class="note">${due ? 'Toca hoy.' : 'Próxima: ' + esc(whenStr(st.nextAt)) + '.'} ${DB_SETS[(st.level || 1) - 1]} series por ejercicio.</p><div class="gap"></div>
     <div class="row"><button class="btn ${due ? '' : 'ghost'}" id="db-go">${due ? 'Empezar' : 'Entrenar igual'}</button><button class="btn ghost" id="db-cfg">Ajustes</button></div>
     ${tst ? `<p class="note">Prueba de fuerza del ${dateStr(tst.at)}${old ? ' · <b>conviene repetirla</b>' : ''}</p>` : '<p class="note">Sin prueba de fuerza: los pesos se estiman con tu peso corporal y se corrigen con tus respuestas.</p>'}
+    ${dbOptsHTML()}
     <button class="btn ghost small" id="db-test" style="margin-top:8px">${tst ? 'Repetir prueba de fuerza' : 'Medir mi nivel'}</button></div>`;
+  bindDbOpts(el);
   $('#db-go').onclick = () => openDbStart();
   $('#db-test').onclick = () => openDbTest();
   $('#db-cfg').onclick = () => openDbSetup(true);

@@ -1,7 +1,7 @@
 /* Service worker de Intervalo: estrategia «primero la caché».
    La app (HTML, JS, iconos) se sirve siempre desde el almacenamiento del teléfono,
    al instante y sin internet; si hay red, se actualiza en segundo plano para la próxima vez. */
-const VERSION = 'intervalo-v82';
+const VERSION = 'intervalo-v83';
 const SHELL = [
   './', './index.html', './app.js', './anim.js', './extras.js', './voice.js', './calendar.js', './retos_data.js', './retos.js', './dumbbells.js', './stats.js', './data.js', './i18n.js', './i18n/en.js', './manifest.webmanifest',
   './icons/icon-192.png', './icons/icon-512.png', './icons/maskable-512.png', './icons/apple-touch-icon.png'
@@ -13,6 +13,11 @@ const VOZ = 'intervalo-voz';
 self.addEventListener('install', e => {
   // cache:'reload' evita guardar copias viejas que el navegador tuviera en su caché HTTP
   e.waitUntil(caches.open(VERSION).then(c => c.addAll(SHELL.map(u => new Request(u, { cache: 'reload' })))).then(() => self.skipWaiting()));
+});
+
+// la pantalla de carga pregunta qué versión está funcionando
+self.addEventListener('message', e => {
+  if (e.data === 'version' && e.ports && e.ports[0]) e.ports[0].postMessage({ version: VERSION });
 });
 
 self.addEventListener('activate', e => {

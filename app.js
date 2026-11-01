@@ -349,6 +349,52 @@ function renderInstallBlock() {
 if ('serviceWorker' in navigator && /^https?:$/.test(location.protocol)) {
   navigator.serviceWorker.register('sw.js', { updateViaCache: 'none' }).catch(() => {});
 }
+/* ---------- Pantalla de carga ----------
+   Muestra el nombre y la versión. Se va cuando: no hay conexión, la versión del teléfono ya es
+   la última del servidor, o (si hay una nueva) cuando se instala y la app se recarga con ella. */
+(function splash() {
+  const el = document.getElementById('splash'); if (!el) return;
+  const t0 = performance.now(); let done = false;
+  const vn = v => String(v || '').replace(/^.*-v/, '');
+  const st = m => { const x = document.getElementById('sp-st'); if (x) x.textContent = m; };
+  const ver = v => { const x = document.getElementById('sp-ver'); if (x && v) x.textContent = t('Versión {0}', vn(v)); };
+  const hide = () => {
+    if (done) return; done = true;
+    setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 350); }, Math.max(0, 450 - (performance.now() - t0)));
+  };
+  window.hideSplash = hide;
+  setTimeout(hide, 12000);   // nunca más de 12 s
+  const swOk = 'serviceWorker' in navigator && /^https?:$/.test(location.protocol);
+  const askVer = () => new Promise(res => {
+    const c = swOk && navigator.serviceWorker.controller; if (!c) return res(null);
+    const ch = new MessageChannel(); ch.port1.onmessage = e => res(e.data && e.data.version);
+    try { c.postMessage('version', [ch.port2]); } catch (e) { res(null); }
+    setTimeout(() => res(null), 1500);
+  });
+  const serverVer = async () => {
+    const ac = new AbortController(); const tm = setTimeout(() => ac.abort(), 6000);
+    try { const r = await fetch('sw.js', { cache: 'no-store', signal: ac.signal }); if (!r.ok) throw 0; const m = (await r.text()).match(/VERSION\s*=\s*'([^']+)'/); return m && m[1]; }
+    finally { clearTimeout(tm); }
+  };
+  const offline = () => { st('Sin conexión: se abre la versión guardada'); hide(); };
+  window.addEventListener('offline', offline);
+  (async () => {
+    const cur = await askVer(); ver(cur);
+    if (!navigator.onLine) { offline(); return; }
+    let srv; try { srv = await serverVer(); } catch (e) { offline(); return; }
+    // sin service worker controlando, lo que se ve ya viene del servidor
+    if (!cur) { ver(srv); hide(); return; }
+    if (!srv || srv === cur) { hide(); return; }
+    // hay una versión nueva en el servidor: se instala y la app se recarga con ella (una vez)
+    let last = 0; try { last = +sessionStorage.getItem('inhiit.upd') || 0; } catch (e) {}
+    if (Date.now() - last < 30000) { hide(); return; }
+    st(t('Actualizando a la versión {0}…', vn(srv)));
+    const reload = () => { try { sessionStorage.setItem('inhiit.upd', Date.now()); } catch (e) {} location.reload(); };
+    navigator.serviceWorker.addEventListener('controllerchange', reload);
+    try { const reg = await navigator.serviceWorker.getRegistration(); if (!reg) { hide(); return; } await reg.update(); } catch (e) { hide(); return; }
+    if ((await askVer()) === srv) reload();   // ya se había activado antes de escuchar
+  })();
+})();
 function offlineStatus() {
   if (!('serviceWorker' in navigator) || !window.isSecureContext) return { ok: false, msg: 'Modo sin conexión NO disponible: la app está abierta por http. El teléfono solo lo permite con https (mira el LEEME: Netlify Drop o GitHub Pages).' };
   if (navigator.serviceWorker.controller) return { ok: true, msg: 'Modo sin conexión activo: la app abre desde el teléfono aunque no haya internet.' };
@@ -500,6 +546,11 @@ function smartOpts(sm) {
   const d = { warm: !!S.warmup, cool: !!S.cooldown, noJump: !!S.noJump, vary: false, db: false };
   return { ...d, ...(PS.get('smartOpts', null) || {}), ...((sm && sm.opts) || {}), ...(sm && sm.db != null && !(sm.opts && 'db' in sm.opts) ? { db: !!sm.db } : {}) };
 }
+// «Opciones» que se despliegan al tocarlas (cerradas por defecto)
+const optFold = (id, inner, title = 'Opciones') => `<button class="opt-tgl" data-fold="${id}" aria-expanded="false" aria-controls="${id}">${title}<i>▾</i></button><div class="opt-body hidden" id="${id}">${inner}</div>`;
+function bindFolds(root) {
+  (root || document).querySelectorAll('[data-fold]').forEach(b => b.onclick = () => { const open = b.getAttribute('aria-expanded') !== 'true'; b.setAttribute('aria-expanded', open); const x = document.getElementById(b.dataset.fold); if (x) x.classList.toggle('hidden', !open); });
+}
 const smartOptsHTML = o => `<div class="toggles">${SMART_OPTS.map(([k, t, d]) => `<button class="tg" data-so="${k}" role="switch" aria-checked="${!!o[k]}"><span>${t}<small>${d}</small></span><i class="sw"></i></button>`).join('')}</div>`;
 function bindSmartOpts(root, o, onChange) {
   root.querySelectorAll('[data-so]').forEach(b => b.onclick = () => { const k = b.dataset.so; o[k] = !o[k]; b.setAttribute('aria-checked', o[k]); onChange && onChange(o); });
@@ -544,11 +595,11 @@ function renderSmart() {
       <div class="wk">Entrenador inteligente</div>
       <b class="name">Prueba de capacidad</b>
       <p class="sub">3 minutos: sentadillas, flexiones y abdominales, 1 minuto cada uno. Con tus resultados armo sesiones progresivas, una cada dos días, y después de cada una me dices si fue fácil, bien o difícil para ajustar la siguiente.</p>
-      <h2>Opciones</h2>${smartOptsHTML(smartOpts(null))}
-      <p class="note">La duración, las zonas, el nivel y los tiempos los calculo yo según tus resultados. Estas opciones se pueden cambiar después en Ajustes, y el calentamiento y los estiramientos también antes de cada sesión.</p>
+      ${optFold('sm-opts', `${smartOptsHTML(smartOpts(null))}
+      <p class="note">La duración, las zonas, el nivel y los tiempos los calculo yo según tus resultados. Estas opciones se pueden cambiar después en Ajustes, y el calentamiento y los estiramientos también antes de cada sesión.</p>`)}
       <div class="gap"></div><button class="btn" id="sm-test">Hacer la prueba</button>
       <div class="gap"></div><button class="btn ghost small" id="sm-skip">Empezar sin prueba</button></div>`;
-    bindSmartOpts(el, smartOpts(null), o => PS.set('smartOpts', o));
+    bindSmartOpts(el, smartOpts(null), o => PS.set('smartOpts', o)); bindFolds(el);
     $('#sm-test').onclick = openTestSetup;
     $('#sm-skip').onclick = () => {
       const I = [2, 4.5, 7.5][S.level - 1];
@@ -571,7 +622,10 @@ function renderSmart() {
     <div class="gap"></div>
     <button class="btn ${due ? '' : 'ghost'}" id="sm-go">${due ? 'Empezar' : 'Entrenar igual'}</button>
     ${t ? `<p class="note">Prueba del ${dateStr(t.at)}: ${t.sq} sentadillas · ${t.pu} flexiones${t.puKnee ? ' (rodillas)' : ''} · ${t.ab} abdominales${old ? ' · <b>conviene repetirla</b>' : ''}</p>` : '<p class="note">Sin prueba de capacidad: empiezo por tu nivel y me guío por tus respuestas.</p>'}
+    ${optFold('sm-opts', smartOptsHTML(smartOpts(sm)) + '<p class="note">Al cambiarlas se vuelve a armar la próxima sesión. La duración máxima y la intensidad están en Ajustes.</p>')}
     <div class="row" style="margin-top:10px"><button class="btn ghost small" id="sm-retest">${t ? 'Repetir prueba' : 'Hacer la prueba'}</button><button class="btn ghost small" id="sm-set">Ajustes</button></div></div>`;
+    bindFolds(el);
+    bindSmartOpts(el, smartOpts(sm), o => { const s2 = getSmart(); s2.opts = { ...o }; delete s2.db; s2.next = genSmart(s2); setSmart(s2); const sub = el.querySelector('.now .sub'); if (sub) { const w2 = s2.next; sub.innerHTML = `${Date.now() >= (s2.nextAt || 0) ? '' : `Próxima sesión: <b>${whenStr(s2.nextAt)}</b>. `}${esc(FOCUS[w2.focus].n)} · ~${Math.round(total(buildTimeline(w2)) / 60)} min · ${LEVELS[w2.level - 1]} · ${w2.sk.w}s / ${w2.sk.r}s`; } });
   // antes de empezar se ve la sesión y se elige calentamiento, estiramientos y pausa de ese día
   $('#sm-go').onclick = () => openPreview(clone(getSmart().next), 'coach');
   $('#sm-retest').onclick = openTestSetup;

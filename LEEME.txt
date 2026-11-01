@@ -68,6 +68,9 @@ ENTRENADOR INTELIGENTE
   (normales o con rodillas) y abdominales. En cada descanso anotas cuántas hiciste.
 - Con esos resultados calcula una intensidad de 1 a 10 y el nivel de cada zona
   (piernas, tren superior, core) y prepara la próxima sesión.
+- Sus opciones (calentamiento, estiramientos, sin saltos, ejercicios distintos, mancuernas) y las
+  del entrenador con mancuernas (calentamiento, estiramientos, pausa para acomodarte) están en la
+  tarjeta, plegadas: se despliegan tocando «Opciones».
 - Las sesiones van alternando cuerpo completo, piernas y core, y tren superior y core,
   una cada dos días. Al terminar te pregunta Fácil / Bien / Difícil y ajusta la siguiente.
 - Si pasas más de una semana sin entrenar, baja un poco la intensidad.
@@ -139,6 +142,9 @@ IDIOMAS (español / inglés)
 SIN CONEXIÓN Y CIERRES DEL TELÉFONO
 - La app usa un service worker «primero la caché»: después de abrirla una vez con internet,
   se abre desde el teléfono al instante, sin red y sin pedir recargar la página.
+- Pantalla de carga: al abrir muestra INHIIT y la versión instalada. Si hay internet, compara
+  con la versión del servidor (la de sw.js); si hay una nueva, la instala y recarga una sola vez
+  con ella. Sin conexión, o si ya está al día, se va enseguida (como máximo 12 s).
 - IMPORTANTE: el teléfono solo activa esto si la app se abre por https (Netlify Drop o GitHub Pages).
   Abierta por http desde la PC (http://192.168...) NO funciona sin conexión.
   En Perfil se ve si el «Modo sin conexión» está activo.

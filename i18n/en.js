@@ -1255,7 +1255,15 @@ I18N = {
 "asistidas": "assisted",
 "Sube a la barra con un salto o desde una silla, con la barbilla por encima, y baja lo más lento que puedas (unos 5 segundos) hasta tener los brazos estirados. Cuenta una al llegar abajo.": "Get up to the bar with a jump or from a chair, chin above it, and lower as slowly as you can (about 5 seconds) until your arms are straight. Count one when you reach the bottom.",
 "Con una banda elástica enganchada a la barra bajo las rodillas o los pies, o con un pie apoyado en una silla para ayudarte lo justo. Sube hasta pasar la barbilla por encima de la barra y baja controlando.": "With a resistance band hooked on the bar under your knees or feet, or with one foot on a chair to help just enough. Pull up until your chin clears the bar and lower with control.",
-"Una dominada completa por serie, con descansos largos para llegar fresco a cada una. Si una no sale, haz una negativa lenta en su lugar, pero no la cuentes.": "One full pull-up per set, with long rests so you're fresh for each one. If one doesn't come, do a slow negative instead, but don't count it."
+"Una dominada completa por serie, con descansos largos para llegar fresco a cada una. Si una no sale, haz una negativa lenta en su lugar, pero no la cuentes.": "One full pull-up per set, with long rests so you're fresh for each one. If one doesn't come, do a slow negative instead, but don't count it.",
+"Versión {0}": "Version {0}",
+"Actualizando a la versión {0}…": "Updating to version {0}…",
+"Buscando actualizaciones…": "Checking for updates…",
+"Sin conexión: se abre la versión guardada": "Offline: opening the saved version",
+"Tu coach HIIT": "Your HIIT coach",
+"4 estiramientos de 30 s": "4 stretches of 30 s",
+"Al cambiarlas se vuelve a armar la próxima sesión. La duración máxima y la intensidad están en Ajustes.": "Changing them rebuilds the next session. Maximum duration and intensity are in Settings.",
+"También se pueden cambiar antes de cada sesión. El nivel y los pesos están en Ajustes.": "They can also be changed before each session. Level and weights are in Settings."
 };
 I18N_PAT = [
 [
