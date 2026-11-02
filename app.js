@@ -229,11 +229,13 @@ function sheet(html, onMount, locked, top) {
     root.innerHTML = `<div class="scrim" id="scrim"><div class="sheet locked" role="dialog" aria-modal="true">${html}</div></div>`;
     onMount && onMount(root); return;
   }
+  // top: la hoja baja desde arriba (para hojas con campos); la X queda arriba y la barra para cerrar, abajo
   root.innerHTML = `<div class="scrim${top ? ' top' : ''}" id="scrim"><div class="sheet${top ? ' top' : ''}" role="dialog"><div class="sh-bar" id="sh-bar"><div class="grab"></div>
-    <button class="icon-btn sh-x" id="sh-x" aria-label="Cerrar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>${html}</div></div>`;
+    <button class="icon-btn sh-x" id="sh-x" aria-label="Cerrar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>${html}${top ? '<div class="sh-foot" id="sh-foot"><div class="grab"></div></div>' : ''}</div></div>`;
   $('#scrim').onclick = e => { if (e.target.id === 'scrim') closeSheet(); };
-  // la barra superior cierra: tocándola o deslizándola hacia abajo
-  const bar = $('#sh-bar'), sh = root.querySelector('.sheet');
+  // la barra cierra tocándola o deslizándola hacia afuera (abajo en las hojas normales, arriba en las de arriba)
+  const bar = top ? $('#sh-foot') : $('#sh-bar'), sh = root.querySelector('.sheet');
+  $('#sh-x').onclick = e => { e.stopPropagation(); closeSheet(); };
   bar.onclick = closeSheet;
   let y0 = null, dy = 0;
   bar.addEventListener('touchstart', e => { y0 = e.touches[0].clientY; dy = 0; sh.style.transition = 'none'; }, { passive: true });

@@ -230,6 +230,10 @@ nav.tabs button[aria-current=true] svg{color:var(--work)}
 .scrim.top{align-items:flex-start}
 .sheet.top{border-radius:0 0 22px 22px;border:1px solid var(--line);border-top:0;padding-top:calc(10px + env(safe-area-inset-top));max-height:var(--vv-h,100dvh);animation:shtop .22s ease}
 .sheet.top .sh-bar{top:calc(-10px - env(safe-area-inset-top))}
+.sheet.top{padding-bottom:0}
+.sheet.top .sh-bar .grab{visibility:hidden}
+.sheet .sh-foot{position:sticky;bottom:0;margin:10px -16px 0;padding:12px 16px 12px;background:var(--bg);display:flex;justify-content:center;cursor:pointer;touch-action:none}
+.sheet .sh-foot .grab{width:48px;height:5px;margin:0;background:var(--muted);opacity:.55}
 @keyframes shtop{from{transform:translateY(-30px);opacity:.4}to{transform:none;opacity:1}}
 .onboard .app{padding-top:calc(40px + env(safe-area-inset-top))}
 
