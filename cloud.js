@@ -134,8 +134,8 @@ importBackup = function (j, replace) {
 
 /* --- ventana «Cuenta y guardado automático» --- */
 const CL_ERR = {
-  'auth/email-already-in-use': 'Ese correo ya tiene una cuenta: usa «Ya tengo una cuenta: entrar».',
-  'auth/credential-already-in-use': 'Esa cuenta de Google ya está en uso: usa «Ya tengo una cuenta: entrar».',
+  'auth/email-already-in-use': 'Ese correo ya tiene una cuenta: usa «Ya tengo cuenta».',
+  'auth/credential-already-in-use': 'Esa cuenta de Google ya está en uso: usa «Ya tengo cuenta».',
   'auth/provider-already-linked': 'Esta cuenta ya está vinculada.',
   'auth/weak-password': 'La contraseña debe tener al menos 6 caracteres.',
   'auth/invalid-email': 'Ese correo no es válido.',
@@ -162,13 +162,17 @@ function cloudStatusHTML() {
     : `Cuenta: <b data-noi18n>${esc(u.email || 'Google')}</b>`;
   return `<div class="bk-card" id="cl-st"><div class="t">${CLOUD.busy ? 'Guardando…' : last ? 'Guardado en la nube: ' + clWhen(last) : 'Todavía no se guardó nada en la nube'}</div><small>${who}</small>${CLOUD.err && !CLOUD.busy ? `<small style="color:var(--work)">No se pudo guardar la última vez</small>` : ''}</div>`;
 }
+// ¿tiene cuenta (correo o Google)? se recuerda para decidir los avisos aunque Firebase todavía no haya cargado
+const hasAcct = () => !!LS.get('cloud.acct', '');
 function cloudUI() {
+  const u = CLOUD.user;
+  if (u) { const was = hasAcct(); if (u.anon) LS.del('cloud.acct'); else LS.set('cloud.acct', u.email || 'google'); if (was !== hasAcct()) { try { renderBkRemind(); } catch (e) {} } }
   const st = $('#cl-st'); if (st) st.outerHTML = cloudStatusHTML();
   const pn = $('#pf-cloud-note'); if (pn) pn.innerHTML = cloudNote();
 }
 function cloudNote() {
   const u = CLOUD.user, last = LS.get('cloud.last', 0);
-  return (last ? 'Guardado automático: ' + clWhen(last) + '. ' : 'Guardado automático en la nube. ') + (u && !u.anon ? '' : 'Vincula un correo para recuperarlo en otro teléfono.');
+  return (last ? 'Guardado automático: ' + clWhen(last) + '. ' : 'Guardado automático en la nube. ') + (u && !u.anon ? '' : 'Crea una cuenta para recuperarlo en otro teléfono.');
 }
 function openCloud() {
   cloudStart();
@@ -179,18 +183,18 @@ function openCloud() {
     <button class="btn ghost small" id="cl-now">Guardar ahora</button>
     ${linked ? `
       <h2>Tu cuenta</h2>
-      <p class="note">Para recuperar todo en otro teléfono: Perfil → Cuenta y guardado automático → «Ya tengo una cuenta: entrar», con <b data-noi18n>${esc(u.email || 'Google')}</b>.</p>
+      <p class="note">Para recuperar todo en otro teléfono: Perfil → Cuenta y guardado automático → «Ya tengo cuenta», con <b data-noi18n>${esc(u.email || 'Google')}</b>.</p>
       <button class="btn ghost small" id="cl-out">Cerrar sesión</button>`
     : `
-      <h2>Protege tu progreso</h2>
-      <p class="note">Ahora se guarda con un usuario anónimo de este teléfono: si borras la app o cambias de teléfono, no hay forma de recuperarlo. Vincula un correo y tus datos quedan en tu cuenta.</p>
+      <h2>Crea tu cuenta</h2>
+      <p class="note">Ahora se guarda con un usuario anónimo de este teléfono: si borras la app o cambias de teléfono, no hay forma de recuperarlo. Crea una cuenta y todo queda sincronizado entre tus dispositivos.</p>
       <div class="field"><input id="cl-mail" type="email" inputmode="email" autocomplete="email" placeholder="Correo"></div><div class="gap"></div>
       <div class="field"><input id="cl-pass" type="password" autocomplete="new-password" placeholder="Contraseña (mínimo 6)"></div><div class="gap"></div>
-      <button class="btn" id="cl-link">Vincular correo</button><div class="gap"></div>
-      <button class="btn ghost" id="cl-g">Vincular con Google</button>
+      <button class="btn" id="cl-link">Crear cuenta con correo</button><div class="gap"></div>
+      <button class="btn ghost" id="cl-g">Crear cuenta con Google</button>
       <p class="note">Si Google no abre dentro de la app instalada, usa correo y contraseña.</p>
-      <h2>¿Ya tienes una cuenta?</h2>
-      <button class="btn ghost small" id="cl-in">Ya tengo una cuenta: entrar</button>`}
+      <h2>¿Ya tienes cuenta?</h2>
+      <button class="btn ghost small" id="cl-in">Ya tengo cuenta</button>`}
     </div>`, () => {
     $('#cl-now').onclick = async () => { if (!navigator.onLine) { toast('Sin conexión'); return; } if (await cloudPush('now')) toast('Guardado en la nube'); else if (CLOUD.err) toast('No se pudo guardar'); };
     const out = $('#cl-out');
@@ -204,13 +208,13 @@ function openCloud() {
       if (!e || !p) { toast('Escribe correo y contraseña'); return; }
       if (!(await cloudUser())) { toast('Sin conexión'); return; }
       lk.disabled = true;
-      try { CLOUD.user = await FBA.linkEmail(e, p); closeSheet(); toast('Listo: tus datos quedan en tu cuenta'); cloudPush('now'); }
+      try { CLOUD.user = await FBA.linkEmail(e, p); closeSheet(); toast('Listo: cuenta creada'); cloudUI(); cloudPush('now'); }
       catch (err) { toast(clErr(err)); lk.disabled = false; }
     };
     const g = $('#cl-g');
     if (g) g.onclick = async () => {
       if (!(await cloudUser())) { toast('Sin conexión'); return; }
-      try { CLOUD.user = await FBA.linkGoogle(); closeSheet(); toast('Listo: tus datos quedan en tu cuenta'); cloudPush('now'); }
+      try { CLOUD.user = await FBA.linkGoogle(); closeSheet(); toast('Listo: cuenta creada'); cloudUI(); cloudPush('now'); }
       catch (err) { toast(clErr(err)); }
     };
     const inn = $('#cl-in'); if (inn) inn.onclick = openCloudLogin;
@@ -226,7 +230,7 @@ function openCloudLogin() {
     <button class="btn" id="cli-go">Entrar</button><div class="gap"></div>
     <button class="btn ghost" id="cli-g">Entrar con Google</button><div class="gap"></div>
     <button class="btn ghost small" id="cli-forgot">Olvidé mi contraseña</button>`, () => {
-    const done = u => { CLOUD.user = u; LS.del('cloud.hash'); closeSheet(); toast('Sesión iniciada'); CLOUD.wantRestore = true; cloudCheck(); };
+    const done = u => { CLOUD.user = u; cloudUI(); LS.del('cloud.hash'); closeSheet(); toast('Sesión iniciada'); CLOUD.wantRestore = true; cloudCheck(); };
     $('#cli-go').onclick = async () => {
       const e = $('#cli-mail').value.trim(), p = $('#cli-pass').value;
       if (!e || !p) { toast('Escribe correo y contraseña'); return; }
@@ -249,7 +253,37 @@ const _finishCl = finish;
 finish = function (...a) { _finishCl(...a); setTimeout(() => cloudPush(), 1500); };
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') cloudPush(); });
 window.addEventListener('online', () => setTimeout(cloudCheck, 1500));
-// con el guardado automático al día, no hace falta recordar la copia en archivo
-const _bkDue = bkDue;
-bkDue = function () { const l = LS.get('cloud.last', 0); if (l && Date.now() - l < 3 * 864e5) return false; return _bkDue(); };
+/* --- avisos para crear la cuenta (reemplazan el recordatorio de la copia en archivo) --- */
+bkDue = () => false;
+const acctDue = () => !!PROFILE && !hasAcct() && Date.now() > LS.get('cloud.snooze', 0);
+const acctBanner = (id, closable) => `<div class="banner acct" id="${id}" role="button" tabindex="0"><div class="t"><b>Crea tu cuenta</b><small>Para mantener todo sincronizado entre tus dispositivos</small></div>
+  <button class="btn small" data-acct>Crear cuenta</button>${closable ? `<button class="icon-btn acct-x" data-snooze aria-label="Ahora no"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>` : ''}</div>`;
+function bindAcct(el) {
+  if (!el) return;
+  el.onclick = e => {
+    if (e.target.closest('[data-snooze]')) { LS.set('cloud.snooze', Date.now() + 3 * 864e5); renderBkRemind(); toast('Te lo recuerdo en unos días'); return; }
+    openCloud();
+  };
+}
+renderBkRemind = function () {
+  const el = $('#bk-remind'); if (!el) return;
+  if (!acctDue()) { el.innerHTML = ''; return; }
+  el.innerHTML = acctBanner('acct-home', true); bindAcct($('#acct-home'));
+};
+// al terminar un entrenamiento (también mancuernas y entrenador inteligente)
+const _finishAcct = finish;
+finish = function (...a) {
+  _finishAcct(...a);
+  const d = $('#d-bk'); if (!d) return;
+  d.innerHTML = PROFILE && !hasAcct() ? acctBanner('acct-done') + '<div class="gap"></div>' : '';
+  bindAcct($('#acct-done'));
+};
+// al terminar un reto
+const _rFinishAcct = rFinish;
+rFinish = function (...a) {
+  _rFinishAcct(...a);
+  const ok = $('#rf-ok'); if (!ok || hasAcct()) return;
+  ok.insertAdjacentHTML('beforebegin', acctBanner('acct-reto') + '<div class="gap"></div>');
+  bindAcct($('#acct-reto'));
+};
 if (!window.NO_CLOUD) setTimeout(() => { if (navigator.onLine) cloudCheck(); else cloudStart(); }, 2500);

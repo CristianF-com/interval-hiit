@@ -500,8 +500,6 @@ function openBackup() {
     <p class="note">Se abre Compartir: elige <b>Guardar en Archivos → iCloud Drive</b> (iPhone) o <b>Drive</b> (Android). Guárdala siempre en la misma carpeta y, si pregunta, elige <b>Reemplazar</b>.</p>
     <button class="btn ghost" id="bk-file">Restaurar desde la nube</button>
     <p class="note">Elige el archivo ${BK_NAME} en iCloud Drive o Drive. Antes de restaurar te muestro qué contiene.</p>
-    <h2>Recordatorio</h2>
-    <div class="seg" id="bk-f">${Object.entries(BK_FREQ).map(([k, n]) => `<button data-v="${k}" aria-pressed="${f === k}">${n}</button>`).join('')}</div>
     <h2>Otras opciones</h2>
     <div class="row"><button class="btn ghost small" id="bk-me">Solo este perfil</button><button class="btn ghost small" id="bk-copy">Copiar como texto</button></div>
     <div class="gap"></div>
@@ -509,7 +507,6 @@ function openBackup() {
     <div class="gap"></div><button class="btn ghost small" id="bk-paste">Leer el texto pegado</button>`, () => {
     $('#bk-save').onclick = saveCloud;
     $('#bk-file').onclick = pickBackup;
-    bindSeg('bk-f', 'v', x => { LS.set('bkFreq', x); renderBkRemind(); });
     $('#bk-me').onclick = () => deliverJSON({ app: 'intervalo', v: 4, exportedAt: Date.now(), profile: PROFILE, data: profileData(PROFILE.id) }, `inhiit-${slugName}-${stamp}.json`);
     $('#bk-copy').onclick = () => copyText(JSON.stringify(backupAll()));
     $('#bk-paste').onclick = () => { try { readBackup(JSON.parse($('#bk-text').value.trim())); } catch (e) { toast('Ese texto no es una copia válida'); } };

@@ -1330,7 +1330,22 @@ I18N = {
 "Restaurar desde un archivo": "Restore from a file",
 "Copia en archivo (iCloud Drive / Google Drive)": "Backup file (iCloud Drive / Google Drive)",
 "Un archivo que guardas tú, por si quieres una copia aparte.": "A file you save yourself, in case you want a separate copy.",
-"Se cerró la sesión de tu cuenta: vuelve a entrar desde Perfil": "Your account was signed out: sign in again from Profile"
+"Se cerró la sesión de tu cuenta: vuelve a entrar desde Perfil": "Your account was signed out: sign in again from Profile",
+"Ya tengo cuenta": "I already have an account",
+"Crea tu cuenta": "Create your account",
+"Ahora se guarda con un usuario anónimo de este teléfono: si borras la app o cambias de teléfono, no hay forma de recuperarlo. Crea una cuenta y todo queda sincronizado entre tus dispositivos.": "Right now it's saved with an anonymous user on this phone: if you delete the app or change phones, there's no way to get it back. Create an account and everything stays in sync across your devices.",
+"Crear cuenta con correo": "Create account with email",
+"Crear cuenta con Google": "Create account with Google",
+"¿Ya tienes cuenta?": "Already have an account?",
+"Crea una cuenta para recuperarlo en otro teléfono.": "Create an account to get it back on another phone.",
+"Listo: cuenta creada": "Done: account created",
+"Para mantener todo sincronizado entre tus dispositivos": "To keep everything in sync across your devices",
+"Crear cuenta": "Create account",
+"Te lo recuerdo en unos días": "I'll remind you in a few days",
+"Ahora no": "Not now",
+"Ese correo ya tiene una cuenta: usa «Ya tengo cuenta».": "That email already has an account: use “I already have an account”.",
+"Esa cuenta de Google ya está en uso: usa «Ya tengo cuenta».": "That Google account is already in use: use “I already have an account”.",
+"Para recuperar todo en otro teléfono: Perfil → Cuenta y guardado automático → «Ya tengo cuenta», con": "To get everything back on another phone: Profile → Account and auto-save → “I already have an account”, with"
 };
 I18N_PAT = [
 [

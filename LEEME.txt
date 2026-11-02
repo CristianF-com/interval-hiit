@@ -157,7 +157,11 @@ CUENTA Y GUARDADO AUTOMÁTICO (Firebase)
 - Al abrir la app con internet se crea un usuario anónimo (sin pedir nada) y todos los perfiles se
   suben solos a la nube después de cada entrenamiento y al salir de la app (cloud.js).
 - Perfil → «Cuenta y guardado automático»: estado, «Guardar ahora», vincular correo (o Google) y
-  «Ya tengo una cuenta: entrar». En un teléfono nuevo, la bienvenida tiene «Ya tengo una cuenta: entrar».
+  «Ya tengo cuenta». En un teléfono nuevo, la bienvenida tiene «Ya tengo cuenta».
+- Sin cuenta creada, el inicio muestra el aviso «Crea tu cuenta» (la X lo oculta 3 días) y también aparece
+  al terminar un entrenamiento o un reto; tocarlo abre la pantalla para crear la cuenta. Crear perfil no
+  pide cuenta: se puede seguir con el usuario anónimo todo lo que se quiera.
+- La copia en archivo sigue en Perfil → «Copia en archivo», pero ya no tiene recordatorio.
 - Nunca pisa lo del teléfono sin preguntar: si en la nube hay algo más nuevo de otro teléfono,
   ofrece «Ver y restaurar» (muestra qué contiene) o «Quedarme con lo de este teléfono».
 - En el iPhone, Google puede no abrir dentro de la app instalada: correo y contraseña siempre funciona.

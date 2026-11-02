@@ -171,7 +171,7 @@ function showOnboarding() {
     <div style="height:24px"></div>
     <button class="btn" id="ob-go">Crear perfil</button>
     <div class="gap"></div>
-    <button class="btn ghost" id="ob-login">☁ Ya tengo una cuenta: entrar<small>Recupera lo que guardaste en la nube</small></button>
+    <button class="btn ghost" id="ob-login">Ya tengo cuenta<small>Recupera lo que guardaste en la nube</small></button>
     <div class="gap"></div>
     <button class="btn ghost" id="ob-restore">Restaurar desde un archivo<small>Desde iCloud Drive, Google Drive o Archivos</small></button>`;
   bindSeg('ob-var', 'v', x => v = x);
