@@ -1388,7 +1388,8 @@ I18N = {
 "Restaurar el respaldo": "Restore the backup",
 "Antes de cambiar nada te muestro qué contiene la que elijas.": "Before changing anything I'll show you what the one you choose contains.",
 "Todavía no hay nada guardado en la nube": "Nothing saved in the cloud yet",
-"No se pudo leer esa copia: prueba con la otra": "Couldn't read that copy: try the other one"
+"No se pudo leer esa copia: prueba con la otra": "Couldn't read that copy: try the other one",
+"Abriendo la foto…": "Opening the photo…"
 };
 I18N_PAT = [
 [

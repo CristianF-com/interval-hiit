@@ -347,16 +347,46 @@ function openProfiles() {
    y se guarda como JPEG de 128 × 128 px (≈ 5-10 KB): nítida en el avatar más grande (40 pt en pantallas 3×)
    y tan liviana que viaja dentro de la copia en la nube y del archivo sin costo. */
 const AV_PX = 128;
+// El selector queda dentro de la página mientras está abierta la fototeca: en el iPhone, si el campo no está
+// en la página, a veces se pierde la foto elegida (la primera vez, mientras pide permiso a Fotos) y no pasa nada.
 function pickPhoto(done) {
-  const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*';
-  inp.onchange = async () => { const f = inp.files && inp.files[0]; if (!f) return; const ph = await cropPhoto(f); if (ph) done(ph); };
+  let inp = document.getElementById('ph-input');
+  if (!inp) {
+    inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*'; inp.id = 'ph-input';
+    inp.setAttribute('aria-hidden', 'true'); inp.tabIndex = -1;
+    inp.style.cssText = 'position:fixed;left:-200vw;top:0;width:1px;height:1px;opacity:0';
+    document.body.appendChild(inp);
+  }
+  inp.value = '';
+  inp.onchange = async () => {
+    const f = inp.files && inp.files[0]; if (!f) return;
+    toast('Abriendo la foto…');
+    const ph = await cropPhoto(f); inp.value = '';
+    if (ph) done(ph);
+  };
   inp.click();
 }
-function cropPhoto(file) {
-  return new Promise(res => {
+// fotos del iPhone (12 a 48 megapíxeles): se achican a 1600 px antes de recortar, para no quedarse sin memoria
+function loadPhoto(file) {
+  return new Promise((res, rej) => {
     const url = URL.createObjectURL(file), img = new Image();
-    img.onerror = () => { URL.revokeObjectURL(url); toast('No se pudo abrir esa imagen'); res(null); };
+    img.onerror = () => { URL.revokeObjectURL(url); rej(new Error('img')); };
     img.onload = () => {
+      const W = img.naturalWidth, H = img.naturalHeight, k = Math.min(1, 1600 / Math.max(W, H));
+      if (k === 1) { res({ img, url }); return; }
+      const c = document.createElement('canvas'); c.width = Math.round(W * k); c.height = Math.round(H * k);
+      const g = c.getContext('2d'); g.imageSmoothingQuality = 'high'; g.drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url);
+      c.toBlob(b => { if (!b) { rej(new Error('blob')); return; } const u2 = URL.createObjectURL(b), i2 = new Image(); i2.onload = () => res({ img: i2, url: u2 }); i2.onerror = () => rej(new Error('img2')); i2.src = u2; }, 'image/jpeg', 0.9);
+    };
+    img.src = url;
+  });
+}
+function cropPhoto(file) {
+  return new Promise(async res => {
+    let img, url;
+    try { ({ img, url } = await loadPhoto(file)); } catch (e) { toast('No se pudo abrir esa imagen'); res(null); return; }
+    {
       const box = Math.min(280, Math.round(innerWidth * 0.72)), W0 = img.naturalWidth, H0 = img.naturalHeight;
       const ov = document.createElement('div'); ov.className = 'crop-ov';
       ov.innerHTML = `<div class="crop-card" role="dialog" aria-modal="true"><h3>${t('Acomoda tu foto')}</h3>
@@ -397,8 +427,7 @@ function cropPhoto(file) {
         const out = document.createElement('canvas'); out.width = out.height = AV_PX; const ox = out.getContext('2d'); ox.imageSmoothingQuality = 'high'; ox.drawImage(mid, 0, 0, AV_PX, AV_PX);
         close(out.toDataURL('image/jpeg', 0.85));
       };
-    };
-    img.src = url;
+    }
   });
 }
 function profileForm(p) {
