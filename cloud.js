@@ -204,6 +204,7 @@ function openCloud() {
       <p class="note">Ahora se guarda con un usuario anónimo de este teléfono: si borras la app o cambias de teléfono, no hay forma de recuperarlo. Crea una cuenta y todo queda sincronizado entre tus dispositivos.</p>
       <div class="field"><input id="cl-mail" type="email" inputmode="email" autocomplete="email" placeholder="Correo"></div><div class="gap"></div>
       <div class="field"><input id="cl-pass" type="password" autocomplete="new-password" placeholder="Contraseña (mínimo 6)"></div><div class="gap"></div>
+      <div class="field"><input id="cl-pass2" type="password" autocomplete="new-password" placeholder="Repite la contraseña"></div><div class="gap"></div>
       <button class="btn" id="cl-link">Crear cuenta con correo</button><div class="gap"></div>
       ${IOS_APP ? '' : `<button class="btn ghost" id="cl-g">Crear cuenta con Google</button>
       <p class="note">Si Google no abre dentro de la app instalada, usa correo y contraseña.</p>`}
@@ -220,6 +221,7 @@ function openCloud() {
     if (lk) lk.onclick = async () => {
       const e = $('#cl-mail').value.trim(), p = $('#cl-pass').value;
       if (!e || !p) { toast('Escribe correo y contraseña'); return; }
+      if (p !== $('#cl-pass2').value) { toast('Las contraseñas no coinciden'); $('#cl-pass2').focus(); return; }
       if (!(await cloudUser())) { toast('Sin conexión'); return; }
       lk.disabled = true;
       try { CLOUD.user = await FBA.linkEmail(e, p); closeSheet(); toast('Listo: cuenta creada'); cloudUI(); cloudPush('now'); }

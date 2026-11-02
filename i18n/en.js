@@ -1350,7 +1350,9 @@ I18N = {
 "Falta crear la base de datos Firestore en Firebase.": "The Firestore database hasn't been created in Firebase.",
 "Falta activar el acceso «Anónimo» en Firebase.": "The “Anonymous” sign-in isn't enabled in Firebase.",
 "No hay conexión con Firebase. Prueba de nuevo.": "Can't reach Firebase. Try again.",
-"La sesión venció: cierra y vuelve a abrir la app.": "The session expired: close and reopen the app."
+"La sesión venció: cierra y vuelve a abrir la app.": "The session expired: close and reopen the app.",
+"Repite la contraseña": "Repeat the password",
+"Las contraseñas no coinciden": "The passwords don't match"
 };
 I18N_PAT = [
 [
