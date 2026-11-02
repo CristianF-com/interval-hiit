@@ -1370,7 +1370,14 @@ I18N = {
 "s por repetición": "s per rep",
 "igual que al principio": "same as at the start",
 "Minutos que duró cada sesión completa (las últimas 20).": "Minutes each full session took (last 20).",
-"Segundos por repetición en cada sesión, según cuándo tocas ✓ (las últimas 20). Más bajo es más rápido.": "Seconds per rep in each session, based on when you tap ✓ (last 20). Lower is faster."
+"Segundos por repetición en cada sesión, según cuándo tocas ✓ (las últimas 20). Más bajo es más rápido.": "Seconds per rep in each session, based on when you tap ✓ (last 20). Lower is faster.",
+"Elegir foto": "Choose photo",
+"Quitar": "Remove",
+"Acomoda tu foto": "Adjust your photo",
+"Arrastra para moverla; acércala con el control o con dos dedos.": "Drag to move it; zoom with the slider or two fingers.",
+"Acercar": "Zoom",
+"Usar foto": "Use photo",
+"No se pudo abrir esa imagen": "Couldn't open that image"
 };
 I18N_PAT = [
 [

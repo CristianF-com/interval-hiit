@@ -33,6 +33,9 @@ Contenido de la carpeta
    iPhone: ábrela en Safari → Compartir → "Añadir a pantalla de inicio".
 
 Datos y perfiles
+   - Foto de perfil: Perfil → Editar actual → «Elegir foto». Se acomoda en un círculo (arrastrar y acercar)
+     y se guarda como JPEG de 128 × 128 px (unos pocos KB) dentro del perfil, así viaja en la copia en la
+     nube y en el archivo. Sin foto, el botón de la cabecera muestra la inicial con el acento del tema.
    - Cada perfil guarda por separado: ajustes, plan elegido, progreso,
      historial, guardados y el entrenamiento a medias.
    - Todo se guarda en el navegador de ese dispositivo (localStorage). El historial guarda hasta 2000

@@ -44,6 +44,19 @@ header.top h1{font-family:var(--display);font-size:28px;letter-spacing:.5px;marg
 :root{--av0:#ff5a36;--av1:#35d0bf;--av2:#ffc23d;--av3:#9d8cff;--av4:#7bd88f;--av5:#ff7eb6;--av6:#5fb3ff;--avt0:#111;--avt1:#111;--avt2:#111;--avt3:#111;--avt4:#111;--avt5:#111;--avt6:#111}
 [data-theme=naranja]{--av0:#ff9500;--av1:#2b2c31;--av2:#ffb347;--av3:#14a39a;--av4:#c96a00;--av5:#5d636d;--av6:#ffd08a;--avt0:#1c1d21;--avt1:#fff;--avt2:#1c1d21;--avt3:#fff;--avt4:#fff;--avt5:#fff;--avt6:#1c1d21}
 .av.lg{width:40px;height:40px;font-size:18px}
+.av.ph{background:var(--surface2);overflow:hidden}.av img{width:100%;height:100%;object-fit:cover;border-radius:50%;display:block}
+/* botón de perfil de la cabecera: la inicial siempre con el acento del tema */
+.who .av:not(.ph){background:var(--work);color:#111}
+.ph-row{display:flex;align-items:center;gap:10px;margin-top:12px}.ph-row .btn{width:auto;flex:none}
+.av.ph-big{width:56px;height:56px;background:var(--surface2);color:var(--muted);overflow:hidden;border:1px solid var(--line)}
+.crop-ov{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.78);display:grid;place-items:center;padding:16px}
+.crop-card{width:100%;max-width:400px;background:var(--bg);border:1px solid var(--line);border-radius:22px;padding:18px 16px 16px;text-align:center}
+.crop-card .sub{margin-bottom:14px}
+.crop{position:relative;margin:0 auto;border-radius:50%;overflow:hidden;touch-action:none;cursor:grab;background:#000;user-select:none;-webkit-user-select:none}
+.crop img{position:absolute;left:0;top:0;max-width:none;transform-origin:0 0;pointer-events:none}
+.crop-ring{position:absolute;inset:0;border-radius:50%;box-shadow:inset 0 0 0 2px var(--work);pointer-events:none}
+.crop-zr{display:flex;align-items:center;gap:10px;margin:16px 4px 14px;color:var(--muted)}.crop-zr input{flex:1;accent-color:var(--work)}
+.crop-card .row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 h2{font-family:var(--display);text-transform:uppercase;letter-spacing:.6px;font-size:15px;color:var(--muted);margin:26px 0 10px;font-weight:700}
 .hero{font-family:var(--display);font-size:40px;line-height:1;text-transform:uppercase;margin:14px 0 4px}
 .hero em{font-style:normal;color:var(--work)}

@@ -48,6 +48,10 @@ const PS = {
 const COLORS = ['#ff5a36', '#35d0bf', '#ffc23d', '#9d8cff', '#7bd88f', '#ff7eb6', '#5fb3ff'];
 // el color de cada perfil es un tono de la paleta del tema activo (cambia con el tema)
 const avStyle = p => { const i = Math.max(0, COLORS.indexOf(p.color)); return `background:var(--av${i});color:var(--avt${i})`; };
+// avatar: la foto del perfil (si tiene) o la inicial. own = el botón de la cabecera, que va siempre con el acento del tema
+const avHTML = (p, cls = '', own = false) => p.photo
+  ? `<span class="av ph ${cls}"><img src="${p.photo}" alt=""></span>`
+  : `<span class="av ${cls}"${own ? '' : ` style="${avStyle(p)}"`}>${esc(p.name[0].toUpperCase())}</span>`;
 const profiles = () => LS.get('profiles', []);
 const saveProfiles = p => LS.set('profiles', p);
 // Pedir al navegador que no borre los datos por falta de espacio
@@ -163,7 +167,7 @@ function deleteProfile(id) {
   saveProfiles(profiles().filter(p => p.id !== id));
 }
 function renderWho() {
-  $('#who').innerHTML = `<span class="av" style="${avStyle(PROFILE)}">${esc(PROFILE.name[0].toUpperCase())}</span><span>${esc(PROFILE.name)}</span>`;
+  $('#who').innerHTML = `${avHTML(PROFILE, '', true)}<span>${esc(PROFILE.name)}</span>`;
 }
 function variantSeg(id, cur, opts = ['f', 'm']) {
   return `<div class="seg" id="${id}">${opts.map(v => `<button data-v="${v}" aria-pressed="${cur === v}">${VARIANTS[v]}</button>`).join('')}</div>`;
@@ -305,7 +309,7 @@ function openProfiles() {
     <p class="sub">Cada perfil guarda su plan, progreso e historial por separado.</p>
     <div class="gap"></div>
     <div class="block">${list.map(p => `
-      <button class="prof" data-id="${p.id}"><span class="av lg" style="${avStyle(p)}">${esc(p.name[0].toUpperCase())}</span>
+      <button class="prof" data-id="${p.id}">${avHTML(p, 'lg')}
         <span class="t"><b data-noi18n>${esc(p.name)}</b><small>Planes: ${VARIANTS[p.variant]}${LS.get(`p.${p.id}.plan`, null) ? ' · ' + esc(FAM[LS.get(`p.${p.id}.plan`).fam]?.n || '') : ''}</small></span>
         ${p.id === PROFILE.id ? '<span class="ck"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span>' : ''}
       </button>`).join('')}</div>
@@ -338,12 +342,74 @@ function openProfiles() {
     renderInstallBlock();
   });
 }
+/* ---------- Foto de perfil ----------
+   Se elige una imagen, se acomoda dentro del círculo (arrastrar para mover; control o dos dedos para acercar)
+   y se guarda como JPEG de 128 × 128 px (≈ 5-10 KB): nítida en el avatar más grande (40 pt en pantallas 3×)
+   y tan liviana que viaja dentro de la copia en la nube y del archivo sin costo. */
+const AV_PX = 128;
+function pickPhoto(done) {
+  const inp = document.createElement('input'); inp.type = 'file'; inp.accept = 'image/*';
+  inp.onchange = async () => { const f = inp.files && inp.files[0]; if (!f) return; const ph = await cropPhoto(f); if (ph) done(ph); };
+  inp.click();
+}
+function cropPhoto(file) {
+  return new Promise(res => {
+    const url = URL.createObjectURL(file), img = new Image();
+    img.onerror = () => { URL.revokeObjectURL(url); toast('No se pudo abrir esa imagen'); res(null); };
+    img.onload = () => {
+      const box = Math.min(280, Math.round(innerWidth * 0.72)), W0 = img.naturalWidth, H0 = img.naturalHeight;
+      const ov = document.createElement('div'); ov.className = 'crop-ov';
+      ov.innerHTML = `<div class="crop-card" role="dialog" aria-modal="true"><h3>${t('Acomoda tu foto')}</h3>
+        <p class="sub">${t('Arrastra para moverla; acércala con el control o con dos dedos.')}</p>
+        <div class="crop" style="width:${box}px;height:${box}px"><img alt="" draggable="false"><i class="crop-ring"></i></div>
+        <div class="crop-zr"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="6"/><path d="M8 11h6"/></svg>
+          <input type="range" class="crop-z" min="1" max="4" step="0.01" value="1" aria-label="${t('Acercar')}">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="6"/><path d="M8 11h6M11 8v6"/></svg></div>
+        <div class="row"><button class="btn ghost small" data-x>${t('Cancelar')}</button><button class="btn small" data-ok>${t('Usar foto')}</button></div></div>`;
+      document.body.appendChild(ov);
+      const el = ov.querySelector('.crop'), im = ov.querySelector('img'), z = ov.querySelector('.crop-z');
+      im.src = url;
+      const base = box / Math.min(W0, H0); let sc = 1, x = 0, y = 0;   // escala sobre «cubrir el círculo» y corrimiento del centro
+      const geo = () => { const w = W0 * base * sc, h = H0 * base * sc, mx = (w - box) / 2, my = (h - box) / 2; x = Math.max(-mx, Math.min(mx, x)); y = Math.max(-my, Math.min(my, y)); return { w, h, l: (box - w) / 2 + x, t: (box - h) / 2 + y }; };
+      const draw = () => { const g = geo(); im.style.width = g.w + 'px'; im.style.height = g.h + 'px'; im.style.transform = `translate(${g.l}px,${g.t}px)`; };
+      const zoom = (ns, cx = 0, cy = 0) => { ns = Math.max(1, Math.min(4, ns)); x = cx + (x - cx) * ns / sc; y = cy + (y - cy) * ns / sc; sc = ns; z.value = sc; draw(); };
+      draw();
+      const pts = new Map(); let pinch = null;
+      el.addEventListener('pointerdown', e => { el.setPointerCapture(e.pointerId); pts.set(e.pointerId, { x: e.clientX, y: e.clientY }); if (pts.size === 2) { const [a, b] = [...pts.values()]; pinch = { d: Math.hypot(a.x - b.x, a.y - b.y), sc }; } });
+      el.addEventListener('pointermove', e => {
+        const prev = pts.get(e.pointerId); if (!prev) return; const cur = { x: e.clientX, y: e.clientY }; pts.set(e.pointerId, cur);
+        if (pts.size === 2 && pinch) { const [a, b] = [...pts.values()]; zoom(pinch.sc * Math.hypot(a.x - b.x, a.y - b.y) / pinch.d); }
+        else if (pts.size === 1) { x += cur.x - prev.x; y += cur.y - prev.y; draw(); }
+      });
+      const up = e => { pts.delete(e.pointerId); if (pts.size < 2) pinch = null; };
+      el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
+      el.addEventListener('wheel', e => { e.preventDefault(); zoom(sc * (e.deltaY < 0 ? 1.08 : 1 / 1.08)); }, { passive: false });
+      z.oninput = () => zoom(+z.value);
+      const close = v => { ov.remove(); URL.revokeObjectURL(url); res(v); };
+      ov.querySelector('[data-x]').onclick = () => close(null);
+      ov.querySelector('[data-ok]').onclick = () => {
+        // se recorta en dos pasos (512 → 128) para que la reducción quede suave
+        const g = geo(), big = document.createElement('canvas'); big.width = big.height = AV_PX * 4;
+        const k = big.width / box, bx = big.getContext('2d'); bx.imageSmoothingQuality = 'high';
+        bx.fillStyle = '#000'; bx.fillRect(0, 0, big.width, big.height);
+        bx.drawImage(img, g.l * k, g.t * k, g.w * k, g.h * k);
+        const mid = document.createElement('canvas'); mid.width = mid.height = AV_PX * 2; const mx = mid.getContext('2d'); mx.imageSmoothingQuality = 'high'; mx.drawImage(big, 0, 0, mid.width, mid.height);
+        const out = document.createElement('canvas'); out.width = out.height = AV_PX; const ox = out.getContext('2d'); ox.imageSmoothingQuality = 'high'; ox.drawImage(mid, 0, 0, AV_PX, AV_PX);
+        close(out.toDataURL('image/jpeg', 0.85));
+      };
+    };
+    img.src = url;
+  });
+}
 function profileForm(p) {
-  let v = p ? p.variant : 'f';
+  let v = p ? p.variant : 'f', photo;            // photo: undefined = sin cambios · null = quitar · texto = foto nueva
+  const phPrev = () => { const ph = photo === undefined ? p && p.photo : photo; $('#pf-ph').innerHTML = ph ? `<img src="${ph}" alt="">` : `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8.5" r="3.6"/><path d="M5 20c1.2-3.6 4-5.4 7-5.4s5.8 1.8 7 5.4"/></svg>`; $('#pf-ph-del').classList.toggle('hidden', !ph); };
   const ps = p ? (p.id === PROFILE.id ? S : { ...DEFAULTS, ...LS.get(`p.${p.id}.settings`, {}) }) : {};
   $('#pf-form').innerHTML = `
     <h2>${p ? 'Editar perfil' : 'Nuevo perfil'}</h2>
     <div class="field"><input id="pf-name" maxlength="24" placeholder="Nombre" value="${p ? esc(p.name) : ''}"></div>
+    <div class="ph-row"><span class="av ph-big" id="pf-ph"></span>
+      <button class="btn ghost small" id="pf-ph-add">Elegir foto</button><button class="btn ghost small" id="pf-ph-del">Quitar</button></div>
     <div class="gap"></div>${variantSeg('pf-var', v)}
     <h2>Datos personales</h2>
     <div class="adv" style="grid-template-columns:1fr 1fr 1fr;padding:0">
@@ -356,6 +422,9 @@ function profileForm(p) {
     <button class="btn small" id="pf-save">${p ? 'Guardar' : 'Crear y cambiar'}</button>
     ${p && profiles().length > 1 ? '<div class="gap"></div><button class="btn danger" id="pf-del">Eliminar este perfil y sus datos</button>' : ''}`;
   bindSeg('pf-var', 'v', x => v = x);
+  phPrev();
+  $('#pf-ph-add').onclick = () => pickPhoto(ph => { photo = ph; phPrev(); });
+  $('#pf-ph-del').onclick = () => { photo = null; phPrev(); };
   $('#pf-save').onclick = () => {
     const name = $('#pf-name').value.trim(); if (!name) { toast('Escribe un nombre'); return; }
     const num = (sel, lo, hi) => { const x = parseFloat(String($(sel).value).replace(',', '.')); return isFinite(x) && x >= lo && x <= hi ? Math.round(x * 10) / 10 : null; };
@@ -363,9 +432,10 @@ function profileForm(p) {
     const putPD = id => { if (id === PROFILE.id) { Object.assign(S, pd); save(); } else { const st = LS.get(`p.${id}.settings`, {}); LS.set(`p.${id}.settings`, { ...st, ...pd }); } };
     if (p) {
       putPD(p.id);
-      const list = profiles(); const q = list.find(x => x.id === p.id); q.name = name.slice(0, 24); q.variant = v; saveProfiles(list);
+      const list = profiles(); const q = list.find(x => x.id === p.id); q.name = name.slice(0, 24); q.variant = v; if (photo) q.photo = photo; else if (photo === null) delete q.photo; saveProfiles(list);
       PROFILE = q; renderWho(); closeSheet(); show(currentView); toast('Perfil actualizado');
-    } else { const n = createProfile(name, v); putPD(n.id); closeSheet(); switchProfile(n.id); toast('Perfil creado: ' + n.name); }
+      if (photo !== undefined && typeof cloudPush === 'function') setTimeout(() => cloudPush(), 600);   // la foto nueva sube enseguida
+    } else { const n = createProfile(name, v); putPD(n.id); if (photo) { const l2 = profiles(); l2.find(x => x.id === n.id).photo = photo; saveProfiles(l2); } closeSheet(); switchProfile(n.id); toast('Perfil creado: ' + n.name); }
   };
   const del = $('#pf-del');
   if (del) del.onclick = async () => {
