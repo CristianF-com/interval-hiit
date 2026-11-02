@@ -153,6 +153,22 @@ SIN CONEXIÓN Y CIERRES DEL TELÉFONO
 - Si el sistema cierra la app en pleno entrenamiento o reto, al volver a abrirla (antes de 30 min)
   se retoma en pausa donde quedó.
 
+CUENTA Y GUARDADO AUTOMÁTICO (Firebase)
+- Al abrir la app con internet se crea un usuario anónimo (sin pedir nada) y todos los perfiles se
+  suben solos a la nube después de cada entrenamiento y al salir de la app (cloud.js).
+- Perfil → «Cuenta y guardado automático»: estado, «Guardar ahora», vincular correo (o Google) y
+  «Ya tengo una cuenta: entrar». En un teléfono nuevo, la bienvenida tiene «Ya tengo una cuenta: entrar».
+- Nunca pisa lo del teléfono sin preguntar: si en la nube hay algo más nuevo de otro teléfono,
+  ofrece «Ver y restaurar» (muestra qué contiene) o «Quedarme con lo de este teléfono».
+- En el iPhone, Google puede no abrir dentro de la app instalada: correo y contraseña siempre funciona.
+- Datos: Firestore, users/{uid} (resumen) y users/{uid}/parts/{n} (la copia en gzip+base64, en partes).
+- Reglas de seguridad: firestore.rules (pegarlas en Firebase → Firestore → Reglas → Publicar).
+- En Firebase → Authentication → Método de acceso: Anónimo, Correo/contraseña y Google activados;
+  para Google, agregar la dirección de la app en Authentication → Configuración → Dominios autorizados.
+- fb.js es el SDK de Firebase empaquetado (no depende de internet para cargar). Se regenera con:
+    npm i firebase esbuild && npx esbuild build/fb-entry.js --bundle --minify --format=iife --target=safari15 --outfile=fb.js
+- La configuración de Firebase (FB_CFG en cloud.js) no es secreta: la seguridad la dan las reglas.
+
 COPIA EN LA NUBE (iCloud Drive / Google Drive)
 - Perfil → «Guardar o restaurar» → «Guardar copia en la nube». Se abre Compartir:
   iPhone: «Guardar en Archivos» → iCloud Drive. Android: «Drive».

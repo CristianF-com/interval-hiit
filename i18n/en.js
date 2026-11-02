@@ -1263,7 +1263,73 @@ I18N = {
 "Tu coach HIIT": "Your HIIT coach",
 "4 estiramientos de 30 s": "4 stretches of 30 s",
 "Al cambiarlas se vuelve a armar la próxima sesión. La duración máxima y la intensidad están en Ajustes.": "Changing them rebuilds the next session. Maximum duration and intensity are in Settings.",
-"También se pueden cambiar antes de cada sesión. El nivel y los pesos están en Ajustes.": "They can also be changed before each session. Level and weights are in Settings."
+"También se pueden cambiar antes de cada sesión. El nivel y los pesos están en Ajustes.": "They can also be changed before each session. Level and weights are in Settings.",
+"Ahora se guarda con un usuario anónimo de este teléfono: si borras la app o cambias de teléfono, no hay forma de recuperarlo. Vincula un correo y tus datos quedan en tu cuenta.": "Right now it's saved with an anonymous user on this phone: if you delete the app or change phones, there's no way to get it back. Link an email and your data stays in your account.",
+"Antes de cambiar nada te muestro qué contiene": "Before changing anything I'll show you what it contains",
+"Cerrar sesión": "Sign out",
+"Conectando…": "Connecting…",
+"Correo o contraseña incorrectos.": "Wrong email or password.",
+"Cuenta y guardado automático": "Account and auto-save",
+"Demasiados intentos. Espera unos minutos.": "Too many attempts. Wait a few minutes.",
+"Después te muestro lo que tienes guardado y eliges si restaurarlo.": "Then I'll show you what you have saved and you choose whether to restore it.",
+"Entrar": "Sign in",
+"Entrar con Google": "Sign in with Google",
+"Entrar con tu cuenta": "Sign in to your account",
+"Esa cuenta de Google ya está en uso: usa «Ya tengo una cuenta: entrar».": "That Google account is already in use: use “I already have an account: sign in”.",
+"Esa cuenta todavía no tiene nada guardado": "That account has nothing saved yet",
+"Escribe correo y contraseña": "Enter email and password",
+"Escribe la contraseña.": "Enter the password.",
+"Escribe tu correo arriba": "Enter your email above",
+"Ese correo no es válido.": "That email isn't valid.",
+"Ese correo ya tiene una cuenta: usa «Ya tengo una cuenta: entrar».": "That email already has an account: use “I already have an account: sign in”.",
+"Ese método de acceso no está activado en Firebase.": "That sign-in method isn't enabled in Firebase.",
+"Esta cuenta ya está vinculada.": "This account is already linked.",
+"Falta autorizar esta dirección en Firebase para entrar con Google. Usa correo y contraseña.": "This address isn't authorized in Firebase for Google sign-in yet. Use email and password.",
+"Guardado automático en la nube.": "Automatic cloud save.",
+"Guardado en la nube": "Saved to the cloud",
+"Guardando…": "Saving…",
+"Guardar ahora": "Save now",
+"Hay datos más nuevos en tu cuenta": "There's newer data in your account",
+"La contraseña debe tener al menos 6 caracteres.": "The password must be at least 6 characters.",
+"Listo: la nube tiene lo de este teléfono": "Done: the cloud now has this phone's data",
+"Listo: tus datos quedan en tu cuenta": "Done: your data is now in your account",
+"Lo de la nube se reemplaza por lo de aquí": "The cloud data is replaced with this phone's",
+"Los datos de este teléfono no se borran. Se seguirán guardando con un usuario anónimo nuevo hasta que vuelvas a entrar.": "This phone's data isn't deleted. It will keep saving with a new anonymous user until you sign in again.",
+"No hay ninguna cuenta con ese correo.": "There's no account with that email.",
+"No se pudo abrir Google aquí. Usa correo y contraseña.": "Google couldn't open here. Use email and password.",
+"No se pudo completar. Prueba de nuevo.": "Couldn't finish. Try again.",
+"No se pudo guardar": "Couldn't save",
+"No se pudo guardar la última vez": "The last save failed",
+"No se pudo leer lo guardado en la nube": "Couldn't read the cloud data",
+"Olvidé mi contraseña": "I forgot my password",
+"Para recuperar todo en otro teléfono: Perfil → Cuenta y guardado automático → «Ya tengo una cuenta: entrar», con": "To get everything back on another phone: Profile → Account and auto-save → “I already have an account: sign in”, with",
+"Protege tu progreso": "Protect your progress",
+"Quedarme con lo de este teléfono": "Keep this phone's data",
+"Se cerró la ventana de Google antes de terminar.": "The Google window closed before finishing.",
+"Se guardaron desde otro teléfono el": "It was saved from another phone on",
+"Sesión cerrada": "Signed out",
+"Sesión iniciada": "Signed in",
+"Si Google no abre dentro de la app instalada, usa correo y contraseña.": "If Google doesn't open inside the installed app, use email and password.",
+"Sin conexión. Prueba de nuevo con internet.": "Offline. Try again with internet.",
+"Sin conexión: se guardará cuando vuelva internet": "Offline: it will save when internet is back",
+"Te enviamos un correo para cambiar la contraseña": "We sent you an email to change your password",
+"Todavía no se guardó nada en la nube": "Nothing saved to the cloud yet",
+"Todos los perfiles (historial, pulso, planes, retos, entrenador y logros) se guardan solos en la nube después de cada entrenamiento.": "All profiles (history, heart rate, plans, challenges, coach and achievements) are saved to the cloud automatically after each workout.",
+"Tu cuenta": "Your account",
+"Usuario anónimo de este teléfono": "Anonymous user on this phone",
+"Ver y restaurar": "View and restore",
+"Vincula un correo para recuperarlo en otro teléfono.": "Link an email to get it back on another phone.",
+"Vincular con Google": "Link with Google",
+"Vincular correo": "Link email",
+"Ya tengo una cuenta: entrar": "I already have an account: sign in",
+"¿Ya tienes una cuenta?": "Already have an account?",
+"Correo": "Email",
+"Contraseña": "Password",
+"Contraseña (mínimo 6)": "Password (at least 6)",
+"Recupera lo que guardaste en la nube": "Get back what you saved in the cloud",
+"Restaurar desde un archivo": "Restore from a file",
+"Copia en archivo (iCloud Drive / Google Drive)": "Backup file (iCloud Drive / Google Drive)",
+"Un archivo que guardas tú, por si quieres una copia aparte.": "A file you save yourself, in case you want a separate copy."
 };
 I18N_PAT = [
 [
@@ -2201,6 +2267,18 @@ I18N_PAT = [
 [
 "Para quien todavía no puede hacer más de una dominada seguida. Etapa 1: negativas (solo la bajada, lenta). Etapa 2: asistidas con banda elástica o un pie en una silla. Etapa 3: dominadas sueltas con descansos largos. Al hacer {0} seguidas pasas al rango {1}.",
 "For those who can't yet do more than one pull-up in a row. Stage 1: negatives (just the slow lowering). Stage 2: assisted with a resistance band or one foot on a chair. Stage 3: single pull-ups with long rests. When you can do {0} in a row you move up to range {1}."
+],
+[
+"Guardado en la nube: {0}",
+"Saved to the cloud: {0}"
+],
+[
+"Guardado automático: {0}",
+"Auto-saved: {0}"
+],
+[
+"Última copia en archivo: {0}",
+"Last backup file: {0}"
 ]
 ];
 // catálogo de ejercicios y planes en inglés (búsqueda, voz y textos armados en el código)

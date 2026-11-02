@@ -171,10 +171,13 @@ function showOnboarding() {
     <div style="height:24px"></div>
     <button class="btn" id="ob-go">Crear perfil</button>
     <div class="gap"></div>
-    <button class="btn ghost" id="ob-restore">☁ Ya tengo una copia: restaurar<small>Desde iCloud Drive, Google Drive o Archivos</small></button>`;
+    <button class="btn ghost" id="ob-login">☁ Ya tengo una cuenta: entrar<small>Recupera lo que guardaste en la nube</small></button>
+    <div class="gap"></div>
+    <button class="btn ghost" id="ob-restore">Restaurar desde un archivo<small>Desde iCloud Drive, Google Drive o Archivos</small></button>`;
   bindSeg('ob-var', 'v', x => v = x);
   $('#onboard').classList.remove('hidden');
   $('#ob-restore').onclick = () => $('#import-file').click();
+  $('#ob-login').onclick = () => openCloudLogin();
   $('#ob-go').onclick = () => {
     const name = $('#ob-name').value.trim();
     if (!name) { $('#ob-name').focus(); toast('Escribe un nombre'); return; }
@@ -247,8 +250,10 @@ function openProfiles() {
     <h2>Voz y pulso</h2>
     <div class="row"><button class="btn ghost small" id="pf-voice">Voz del entrenador</button><button class="btn ghost small" id="pf-hr">Pulsómetro y zonas</button></div>
     <h2>Copia en la nube</h2>
-    <button class="btn ghost small" id="pf-backup">☁ Guardar o restaurar (iCloud Drive / Google Drive)</button>
-    <p class="note">${LS.get('bkLast', 0) ? 'Última copia: ' + dateStr(LS.get('bkLast', 0)) + '. ' : ''}Los datos viven en este teléfono; con la copia en la nube los recuperas si cambias de móvil o se borra el navegador.</p>
+    <button class="btn ghost small" id="pf-cloud">☁ Cuenta y guardado automático</button>
+    <p class="note" id="pf-cloud-note">${typeof cloudNote === 'function' ? cloudNote() : ''}</p>
+    <button class="btn ghost small" id="pf-backup">Copia en archivo (iCloud Drive / Google Drive)</button>
+    <p class="note">${LS.get('bkLast', 0) ? 'Última copia en archivo: ' + dateStr(LS.get('bkLast', 0)) + '. ' : ''}Un archivo que guardas tú, por si quieres una copia aparte.</p>
     <div id="pf-install"></div>`, () => {
     document.querySelectorAll('.prof').forEach(b => b.onclick = () => { closeSheet(); if (b.dataset.id !== PROFILE.id) { switchProfile(b.dataset.id); toast('Perfil: ' + PROFILE.name); } });
     $('#pf-add').onclick = () => profileForm(null);
@@ -259,6 +264,7 @@ function openProfiles() {
     bindSeg('pf-lang', 'l', l => { if (l !== LANG) setLang(l); });
     const pa = $('#pf-avoid'); if (pa) pa.onclick = () => { S.avoid = []; save(); closeSheet(); toast('Ya no se cuida ninguna zona'); };
     $('#pf-backup').onclick = openBackup;
+    $('#pf-cloud').onclick = () => openCloud();
     renderInstallBlock();
   });
 }
