@@ -205,6 +205,7 @@ function openCloud() {
       <div class="field"><input id="cl-mail" type="email" inputmode="email" autocomplete="email" placeholder="Correo"></div><div class="gap"></div>
       <div class="field"><input id="cl-pass" type="password" autocomplete="new-password" placeholder="Contraseña (mínimo 6)"></div><div class="gap"></div>
       <div class="field"><input id="cl-pass2" type="password" autocomplete="new-password" placeholder="Repite la contraseña"></div><div class="gap"></div>
+      <p class="note auth-msg" id="auth-msg" role="alert"></p>
       <button class="btn" id="cl-link">Crear cuenta con correo</button><div class="gap"></div>
       ${IOS_APP ? '' : `<button class="btn ghost" id="cl-g">Crear cuenta con Google</button>
       <p class="note">Si Google no abre dentro de la app instalada, usa correo y contraseña.</p>`}
@@ -220,12 +221,10 @@ function openCloud() {
     const lk = $('#cl-link');
     if (lk) lk.onclick = async () => {
       const e = $('#cl-mail').value.trim(), p = $('#cl-pass').value;
-      if (!e || !p) { toast('Escribe correo y contraseña'); return; }
-      if (p !== $('#cl-pass2').value) { toast('Las contraseñas no coinciden'); $('#cl-pass2').focus(); return; }
-      if (!(await cloudUser())) { toast('Sin conexión'); return; }
-      lk.disabled = true;
-      try { CLOUD.user = await FBA.linkEmail(e, p); closeSheet(); toast('Listo: cuenta creada'); cloudUI(); cloudPush('now'); }
-      catch (err) { toast(clErr(err)); lk.disabled = false; }
+      if (!e || !p) { authMsg('Escribe correo y contraseña'); return; }
+      if (p !== $('#cl-pass2').value) { authMsg('Las contraseñas no coinciden'); $('#cl-pass2').focus(); return; }
+      const u = await authTry(lk, 'Creando cuenta…', () => FBA.linkEmail(e, p), x => x && !x.anon);
+      if (u) { CLOUD.user = u; closeSheet(); toast('Listo: cuenta creada'); cloudUI(); cloudPush('now'); }
     };
     const g = $('#cl-g');
     if (g) g.onclick = async () => {
@@ -236,6 +235,28 @@ function openCloud() {
     const inn = $('#cl-in'); if (inn) inn.onclick = openCloudLogin;
   });
 }
+// mensaje que queda a la vista debajo de los campos (el aviso flotante dura poco y se pierde)
+function authMsg(m) { const el = $('#auth-msg'); if (el) { el.textContent = t(m); el.classList.toggle('on', !!m); } if (m) toast(m); }
+// crear cuenta / entrar: muestra que está trabajando, reintenta una vez si falla la red (en el iPhone el
+// primer pedido al volver de segundo plano suele fallar) y, si la respuesta se perdió pero Firebase sí lo
+// hizo, lo da por bueno en lugar de pedir que se toque otra vez
+async function authTry(btn, busy, fn, okUser) {
+  authMsg('');
+  if (!(await cloudStart()) && !window.FBA) { authMsg('Sin conexión'); return null; }
+  const label = btn.innerHTML; btn.disabled = true; btn.textContent = t(busy);
+  const retry = c => !c || c === 'auth/network-request-failed' || c === 'auth/internal-error' || c === 'auth/timeout';
+  try {
+    for (let i = 0; ; i++) {
+      try { return await fn(); }
+      catch (err) {
+        const now = FBA.user && FBA.user(); if (okUser(now)) return now;
+        if (i === 0 && retry(err && err.code)) { await new Promise(r => setTimeout(r, 900)); continue; }
+        authMsg(err && err.code && !CL_ERR[err.code] ? t('No se pudo completar ({0})', err.code) : clErr(err));
+        return null;
+      }
+    }
+  } finally { if (btn.isConnected) { btn.disabled = false; btn.innerHTML = label; } }
+}
 // entrar con una cuenta existente (teléfono nuevo o después de borrar la app)
 function openCloudLogin() {
   cloudStart();
@@ -243,15 +264,16 @@ function openCloudLogin() {
     <p class="sub">Después te muestro lo que tienes guardado y eliges si restaurarlo.</p>
     <div class="field"><input id="cli-mail" type="email" inputmode="email" autocomplete="email" placeholder="Correo"></div><div class="gap"></div>
     <div class="field"><input id="cli-pass" type="password" autocomplete="current-password" placeholder="Contraseña"></div><div class="gap"></div>
+    <p class="note auth-msg" id="auth-msg" role="alert"></p>
     <button class="btn" id="cli-go">Entrar</button><div class="gap"></div>
     ${IOS_APP ? '' : '<button class="btn ghost" id="cli-g">Entrar con Google</button><div class="gap"></div>'}
     <button class="btn ghost small" id="cli-forgot">Olvidé mi contraseña</button>`, () => {
     const done = u => { CLOUD.user = u; cloudUI(); LS.del('cloud.hash'); closeSheet(); toast('Sesión iniciada'); CLOUD.wantRestore = true; cloudCheck(); };
     $('#cli-go').onclick = async () => {
       const e = $('#cli-mail').value.trim(), p = $('#cli-pass').value;
-      if (!e || !p) { toast('Escribe correo y contraseña'); return; }
-      if (!(await cloudStart()) && !window.FBA) { toast('Sin conexión'); return; }
-      try { done(await FBA.signInEmail(e, p)); } catch (err) { toast(clErr(err)); }
+      if (!e || !p) { authMsg('Escribe correo y contraseña'); return; }
+      const u = await authTry($('#cli-go'), 'Entrando…', () => FBA.signInEmail(e, p), x => x && !x.anon && (x.email || '').toLowerCase() === e.toLowerCase());
+      if (u) done(u);
     };
     if ($('#cli-g')) $('#cli-g').onclick = async () => {
       if (!(await cloudStart()) && !window.FBA) { toast('Sin conexión'); return; }

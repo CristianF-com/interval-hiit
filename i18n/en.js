@@ -1352,7 +1352,9 @@ I18N = {
 "No hay conexión con Firebase. Prueba de nuevo.": "Can't reach Firebase. Try again.",
 "La sesión venció: cierra y vuelve a abrir la app.": "The session expired: close and reopen the app.",
 "Repite la contraseña": "Repeat the password",
-"Las contraseñas no coinciden": "The passwords don't match"
+"Las contraseñas no coinciden": "The passwords don't match",
+"Creando cuenta…": "Creating account…",
+"Entrando…": "Signing in…"
 };
 I18N_PAT = [
 [
@@ -2306,6 +2308,10 @@ I18N_PAT = [
 [
 "No se pudo guardar ({0})",
 "Couldn't save ({0})"
+],
+[
+"No se pudo completar ({0})",
+"Couldn't finish ({0})"
 ]
 ];
 // catálogo de ejercicios y planes en inglés (búsqueda, voz y textos armados en el código)
