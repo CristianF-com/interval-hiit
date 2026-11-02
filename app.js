@@ -314,7 +314,6 @@ function openProfiles() {
         ${p.id === PROFILE.id ? '<span class="ck"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span>' : ''}
       </button>`).join('')}</div>
     <div class="row"><button class="btn ghost small" id="pf-add">+ Nuevo perfil</button><button class="btn ghost small" id="pf-edit">Editar actual</button></div>
-    <div id="pf-form"></div>
     <h2>Apariencia</h2>
     <div class="theme-pick" id="pf-theme">${Object.entries(THEMES).map(([k, t]) => `<button data-t="${k}" aria-pressed="${(S.theme || 'oscuro') === k}"><span class="sw4">${t.sw.map(c => `<i style="background:${c}"></i>`).join('')}</span>${t.n}</button>`).join('')}</div>
     ${(S.avoid || []).length ? `<h2>Zonas a cuidar</h2><p class="note">Los entrenamientos evitan los ejercicios que cargan: <b>${S.avoid.map(k => AREAS[k].n.toLowerCase()).join(', ')}</b>.</p><button class="btn ghost small" id="pf-avoid">Dejar de cuidarlas</button>` : ''}
@@ -330,8 +329,8 @@ function openProfiles() {
     <p class="note">${LS.get('bkLast', 0) ? 'Última copia en archivo: ' + dateStr(LS.get('bkLast', 0)) + '. ' : ''}Un archivo que guardas tú, por si quieres una copia aparte.</p>
     <div id="pf-install"></div>`, () => {
     document.querySelectorAll('.prof').forEach(b => b.onclick = () => { closeSheet(); if (b.dataset.id !== PROFILE.id) { switchProfile(b.dataset.id); toast('Perfil: ' + PROFILE.name); } });
-    $('#pf-add').onclick = () => profileForm(null);
-    $('#pf-edit').onclick = () => profileForm(PROFILE);
+    $('#pf-add').onclick = sheetFrom(openProfiles, () => profileForm(null));
+    $('#pf-edit').onclick = sheetFrom(openProfiles, () => profileForm(PROFILE));
     $('#pf-hr').onclick = sheetFrom(openProfiles, openHRSettings);
     $('#pf-voice').onclick = sheetFrom(openProfiles, openVoiceSettings);
     bindSeg('pf-theme', 't', t => { S.theme = t; save(); applyTheme(); });
@@ -430,12 +429,14 @@ function cropPhoto(file) {
     }
   });
 }
-function profileForm(p) {
+// editar o crear perfil: ventana propia (se abre desde arriba por los campos), con «Cancelar» y flecha para volver a Perfiles
+function profileForm(p) { sheet('<div id="pf-form"></div>', () => profileFormFill(p), false, true); }
+function profileFormFill(p) {
   let v = p ? p.variant : 'f', photo;            // photo: undefined = sin cambios · null = quitar · texto = foto nueva
   const phPrev = () => { const ph = photo === undefined ? p && p.photo : photo; $('#pf-ph').innerHTML = ph ? `<img src="${ph}" alt="">` : `<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8.5" r="3.6"/><path d="M5 20c1.2-3.6 4-5.4 7-5.4s5.8 1.8 7 5.4"/></svg>`; $('#pf-ph-del').classList.toggle('hidden', !ph); };
   const ps = p ? (p.id === PROFILE.id ? S : { ...DEFAULTS, ...LS.get(`p.${p.id}.settings`, {}) }) : {};
   $('#pf-form').innerHTML = `
-    <h2>${p ? 'Editar perfil' : 'Nuevo perfil'}</h2>
+    <h3>${p ? 'Editar perfil' : 'Nuevo perfil'}</h3>
     <div class="field"><input id="pf-name" maxlength="24" placeholder="Nombre" value="${p ? esc(p.name) : ''}"></div>
     <div class="ph-row"><span class="av ph-big" id="pf-ph"></span>
       <button class="btn ghost small" id="pf-ph-add">Elegir foto</button><button class="btn ghost small" id="pf-ph-del">Quitar</button></div>
@@ -448,10 +449,11 @@ function profileForm(p) {
     </div>
     <p class="note">Se usan para calcular las calorías, tus zonas de pulso y los pesos sugeridos con mancuernas.</p>
     <div class="gap"></div>
-    <button class="btn small" id="pf-save">${p ? 'Guardar' : 'Crear y cambiar'}</button>
+    <div class="row"><button class="btn ghost small" id="pf-cancel">Cancelar</button><button class="btn small" id="pf-save">${p ? 'Guardar' : 'Crear y cambiar'}</button></div>
     ${p && profiles().length > 1 ? '<div class="gap"></div><button class="btn danger" id="pf-del">Eliminar este perfil y sus datos</button>' : ''}`;
   bindSeg('pf-var', 'v', x => v = x);
   phPrev();
+  $('#pf-cancel').onclick = () => { if (SHEET_BACK.length) sheetBack(); else closeSheet(); };
   $('#pf-ph-add').onclick = () => pickPhoto(ph => { photo = ph; phPrev(); });
   $('#pf-ph-del').onclick = () => { photo = null; phPrev(); };
   $('#pf-save').onclick = () => {
@@ -462,7 +464,7 @@ function profileForm(p) {
     if (p) {
       putPD(p.id);
       const list = profiles(); const q = list.find(x => x.id === p.id); q.name = name.slice(0, 24); q.variant = v; if (photo) q.photo = photo; else if (photo === null) delete q.photo; saveProfiles(list);
-      PROFILE = q; renderWho(); closeSheet(); show(currentView); toast('Perfil actualizado');
+      PROFILE = q; renderWho(); show(currentView); if (SHEET_BACK.length) sheetBack(); else closeSheet(); toast('Perfil actualizado');
       if (photo !== undefined && typeof cloudPush === 'function') setTimeout(() => cloudPush(), 600);   // la foto nueva sube enseguida
     } else { const n = createProfile(name, v); putPD(n.id); if (photo) { const l2 = profiles(); l2.find(x => x.id === n.id).photo = photo; saveProfiles(l2); } closeSheet(); switchProfile(n.id); toast('Perfil creado: ' + n.name); }
   };
