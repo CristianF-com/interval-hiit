@@ -231,11 +231,13 @@ function sheet(html, onMount, locked, top) {
   }
   // top: la hoja baja desde arriba (para hojas con campos); la X queda arriba y la barra para cerrar, abajo
   root.innerHTML = `<div class="scrim${top ? ' top' : ''}" id="scrim"><div class="sheet${top ? ' top' : ''}" role="dialog"><div class="sh-bar" id="sh-bar"><div class="grab"></div>
+    ${SHEET_BACK.length ? '<button class="icon-btn sh-back" id="sh-back" aria-label="Volver"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>' : ''}
     <button class="icon-btn sh-x" id="sh-x" aria-label="Cerrar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>${html}${top ? '<div class="sh-foot" id="sh-foot"><div class="grab"></div></div>' : ''}</div></div>`;
   $('#scrim').onclick = e => { if (e.target.id === 'scrim') closeSheet(); };
   // la barra cierra tocándola o deslizándola hacia afuera (abajo en las hojas normales, arriba en las de arriba)
   const bar = top ? $('#sh-foot') : $('#sh-bar'), sh = root.querySelector('.sheet');
   $('#sh-x').onclick = e => { e.stopPropagation(); closeSheet(); };
+  const bk = $('#sh-back'); if (bk) bk.onclick = e => { e.stopPropagation(); sheetBack(); };
   bar.onclick = closeSheet;
   let y0 = null, dy = 0;
   bar.addEventListener('touchstart', e => { y0 = e.touches[0].clientY; dy = 0; sh.style.transition = 'none'; }, { passive: true });
@@ -243,7 +245,20 @@ function sheet(html, onMount, locked, top) {
   bar.addEventListener('touchend', () => { if (y0 == null) return; y0 = null; sh.style.transition = 'transform .18s'; if (Math.abs(dy) > 70) closeSheet(); else sh.style.transform = ''; });
   onMount && onMount(root);
 }
-const closeSheet = () => { $('#sheet-root').innerHTML = ''; };
+const closeSheet = () => { $('#sheet-root').innerHTML = ''; SHEET_BACK = []; };
+/* Ventanas que se abren desde otra (p. ej. Perfil → Cuenta → Crear cuenta): la nueva muestra «‹» para volver
+   a la anterior, en el mismo lugar donde estaba (misma posición de desplazamiento). */
+let SHEET_BACK = [];
+const sheetFrom = (parent, child) => (...a) => {
+  const sh = $('#sheet-root .sheet');
+  SHEET_BACK.push({ open: parent, y: sh ? sh.scrollTop : 0 });
+  child(...a);
+};
+function sheetBack() {
+  const prev = SHEET_BACK.pop(); if (!prev) { closeSheet(); return; }
+  prev.open();
+  const sh = $('#sheet-root .sheet'); if (sh) sh.scrollTop = prev.y;
+}
 // confirmación con el estilo de la app (en lugar del cuadro del navegador)
 function askApp(title, msg, ok, danger) {
   return new Promise(res => sheet(`<h3>${esc(title)}</h3><p class="sub">${esc(msg)}</p><div style="height:18px"></div>
@@ -283,13 +298,13 @@ function openProfiles() {
     document.querySelectorAll('.prof').forEach(b => b.onclick = () => { closeSheet(); if (b.dataset.id !== PROFILE.id) { switchProfile(b.dataset.id); toast('Perfil: ' + PROFILE.name); } });
     $('#pf-add').onclick = () => profileForm(null);
     $('#pf-edit').onclick = () => profileForm(PROFILE);
-    $('#pf-hr').onclick = openHRSettings;
-    $('#pf-voice').onclick = openVoiceSettings;
+    $('#pf-hr').onclick = sheetFrom(openProfiles, openHRSettings);
+    $('#pf-voice').onclick = sheetFrom(openProfiles, openVoiceSettings);
     bindSeg('pf-theme', 't', t => { S.theme = t; save(); applyTheme(); });
     bindSeg('pf-lang', 'l', l => { if (l !== LANG) setLang(l); });
     const pa = $('#pf-avoid'); if (pa) pa.onclick = () => { S.avoid = []; save(); closeSheet(); toast('Ya no se cuida ninguna zona'); };
-    $('#pf-backup').onclick = openBackup;
-    $('#pf-cloud').onclick = () => openCloud();
+    $('#pf-backup').onclick = sheetFrom(openProfiles, openBackup);
+    $('#pf-cloud').onclick = sheetFrom(openProfiles, () => openCloud());
     renderInstallBlock();
   });
 }

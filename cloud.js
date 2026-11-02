@@ -211,8 +211,8 @@ function openCloud() {
       if (!(await askApp('Cerrar sesión', 'Los datos de este teléfono no se borran. Se seguirán guardando con un usuario anónimo nuevo hasta que vuelvas a entrar.', 'Cerrar sesión'))) return;
       try { CLOUD.signingOut = true; await FBA.signOut(); CLOUD.user = await FBA.signInAnon(); CLOUD.signingOut = false; LS.del('cloud.hash'); cloudPush(); toast('Sesión cerrada'); } catch (e) { CLOUD.signingOut = false; toast(clErr(e)); }
     };
-    const nw = $('#cl-new'); if (nw) nw.onclick = openCloudSignup;
-    const inn = $('#cl-in'); if (inn) inn.onclick = openCloudLogin;
+    const nw = $('#cl-new'); if (nw) nw.onclick = sheetFrom(openCloud, openCloudSignup);
+    const inn = $('#cl-in'); if (inn) inn.onclick = sheetFrom(openCloud, openCloudLogin);
   });
 }
 // crear cuenta: ventana que se abre desde arriba con los campos primero, así el teclado del iPhone
@@ -235,7 +235,7 @@ function openCloudSignup() {
       if (!e || !p) { authMsg('Escribe correo y contraseña'); return; }
       if (p !== $('#cl-pass2').value) { authMsg('Las contraseñas no coinciden'); $('#cl-pass2').focus(); return; }
       const u = await authTry(lk, 'Creando cuenta…', () => FBA.linkEmail(e, p), x => x && !x.anon);
-      if (u) { CLOUD.user = u; closeSheet(); toast('Listo: cuenta creada'); cloudUI(); cloudPush('now'); }
+      if (u) { CLOUD.user = u; cloudUI(); if (SHEET_BACK.length) sheetBack(); else closeSheet(); toast('Listo: cuenta creada'); cloudUI(); cloudPush('now'); }
     };
     const g = $('#cl-g');
     if (g) g.onclick = async () => {
@@ -243,7 +243,7 @@ function openCloudSignup() {
       try { CLOUD.user = await FBA.linkGoogle(); closeSheet(); toast('Listo: cuenta creada'); cloudUI(); cloudPush('now'); }
       catch (err) { toast(clErr(err)); }
     };
-    $('#cl-in').onclick = openCloudLogin;
+    $('#cl-in').onclick = sheetFrom(openCloudSignup, openCloudLogin);
   }, false, true);
 }
 // mensaje que queda a la vista debajo de los campos (el aviso flotante dura poco y se pierde)
