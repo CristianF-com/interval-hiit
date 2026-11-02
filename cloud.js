@@ -202,15 +202,8 @@ function openCloud() {
     : `
       <h2>Crea tu cuenta</h2>
       <p class="note">Ahora se guarda con un usuario anónimo de este teléfono: si borras la app o cambias de teléfono, no hay forma de recuperarlo. Crea una cuenta y todo queda sincronizado entre tus dispositivos.</p>
-      <div class="field"><input id="cl-mail" type="email" inputmode="email" autocomplete="email" placeholder="Correo"></div><div class="gap"></div>
-      <div class="field"><input id="cl-pass" type="password" autocomplete="new-password" placeholder="Contraseña (mínimo 6)"></div><div class="gap"></div>
-      <div class="field"><input id="cl-pass2" type="password" autocomplete="new-password" placeholder="Repite la contraseña"></div><div class="gap"></div>
-      <p class="note auth-msg" id="auth-msg" role="alert"></p>
-      <button class="btn" id="cl-link">Crear cuenta con correo</button><div class="gap"></div>
-      ${IOS_APP ? '' : `<button class="btn ghost" id="cl-g">Crear cuenta con Google</button>
-      <p class="note">Si Google no abre dentro de la app instalada, usa correo y contraseña.</p>`}
-      <h2>¿Ya tienes cuenta?</h2>
-      <button class="btn ghost small" id="cl-in">Ya tengo cuenta</button>`}
+      <button class="btn" id="cl-new">Crear cuenta</button><div class="gap"></div>
+      <button class="btn ghost" id="cl-in">Ya tengo cuenta</button>`}
     </div>`, () => {
     $('#cl-now').onclick = async () => { if (!navigator.onLine) { toast('Sin conexión'); return; } if (await cloudPush('now')) toast('Guardado en la nube'); else toast(CLOUD.err ? saveErr(CLOUD.err) : 'No se pudo guardar'); };
     const out = $('#cl-out');
@@ -218,8 +211,26 @@ function openCloud() {
       if (!(await askApp('Cerrar sesión', 'Los datos de este teléfono no se borran. Se seguirán guardando con un usuario anónimo nuevo hasta que vuelvas a entrar.', 'Cerrar sesión'))) return;
       try { CLOUD.signingOut = true; await FBA.signOut(); CLOUD.user = await FBA.signInAnon(); CLOUD.signingOut = false; LS.del('cloud.hash'); cloudPush(); toast('Sesión cerrada'); } catch (e) { CLOUD.signingOut = false; toast(clErr(e)); }
     };
+    const nw = $('#cl-new'); if (nw) nw.onclick = openCloudSignup;
+    const inn = $('#cl-in'); if (inn) inn.onclick = openCloudLogin;
+  });
+}
+// crear cuenta: ventana que se abre desde arriba con los campos primero, así el teclado del iPhone
+// (que sube desde abajo) nunca los tapa
+function openCloudSignup() {
+  cloudStart();
+  sheet(`<h3>Crea tu cuenta</h3>
+    <div class="field"><input id="cl-mail" type="email" inputmode="email" autocomplete="email" placeholder="Correo"></div><div class="gap"></div>
+    <div class="field"><input id="cl-pass" type="password" autocomplete="new-password" placeholder="Contraseña (mínimo 6)"></div><div class="gap"></div>
+    <div class="field"><input id="cl-pass2" type="password" autocomplete="new-password" placeholder="Repite la contraseña"></div><div class="gap"></div>
+    <p class="note auth-msg" id="auth-msg" role="alert"></p>
+    <button class="btn" id="cl-link">Crear cuenta</button><div class="gap"></div>
+    ${IOS_APP ? '' : `<button class="btn ghost" id="cl-g">Crear cuenta con Google</button>
+    <p class="note">Si Google no abre dentro de la app instalada, usa correo y contraseña.</p>`}
+    <p class="note">Tus datos se pasan a la cuenta y quedan sincronizados entre tus dispositivos.</p>
+    <button class="btn ghost small" id="cl-in">Ya tengo cuenta</button>`, () => {
     const lk = $('#cl-link');
-    if (lk) lk.onclick = async () => {
+    lk.onclick = async () => {
       const e = $('#cl-mail').value.trim(), p = $('#cl-pass').value;
       if (!e || !p) { authMsg('Escribe correo y contraseña'); return; }
       if (p !== $('#cl-pass2').value) { authMsg('Las contraseñas no coinciden'); $('#cl-pass2').focus(); return; }
@@ -232,8 +243,8 @@ function openCloud() {
       try { CLOUD.user = await FBA.linkGoogle(); closeSheet(); toast('Listo: cuenta creada'); cloudUI(); cloudPush('now'); }
       catch (err) { toast(clErr(err)); }
     };
-    const inn = $('#cl-in'); if (inn) inn.onclick = openCloudLogin;
-  });
+    $('#cl-in').onclick = openCloudLogin;
+  }, false, true);
 }
 // mensaje que queda a la vista debajo de los campos (el aviso flotante dura poco y se pierde)
 function authMsg(m) { const el = $('#auth-msg'); if (el) { el.textContent = t(m); el.classList.toggle('on', !!m); } if (m) toast(m); }
@@ -261,13 +272,13 @@ async function authTry(btn, busy, fn, okUser) {
 function openCloudLogin() {
   cloudStart();
   sheet(`<h3>Entrar con tu cuenta</h3>
-    <p class="sub">Después te muestro lo que tienes guardado y eliges si restaurarlo.</p>
     <div class="field"><input id="cli-mail" type="email" inputmode="email" autocomplete="email" placeholder="Correo"></div><div class="gap"></div>
     <div class="field"><input id="cli-pass" type="password" autocomplete="current-password" placeholder="Contraseña"></div><div class="gap"></div>
     <p class="note auth-msg" id="auth-msg" role="alert"></p>
     <button class="btn" id="cli-go">Entrar</button><div class="gap"></div>
     ${IOS_APP ? '' : '<button class="btn ghost" id="cli-g">Entrar con Google</button><div class="gap"></div>'}
-    <button class="btn ghost small" id="cli-forgot">Olvidé mi contraseña</button>`, () => {
+    <button class="btn ghost small" id="cli-forgot">Olvidé mi contraseña</button>
+    <p class="note">Después te muestro lo que tienes guardado y eliges si restaurarlo.</p>`, () => {
     const done = u => { CLOUD.user = u; cloudUI(); LS.del('cloud.hash'); closeSheet(); toast('Sesión iniciada'); CLOUD.wantRestore = true; cloudCheck(); };
     $('#cli-go').onclick = async () => {
       const e = $('#cli-mail').value.trim(), p = $('#cli-pass').value;
@@ -283,7 +294,7 @@ function openCloudLogin() {
       const e = $('#cli-mail').value.trim(); if (!e) { toast('Escribe tu correo arriba'); return; }
       try { await FBA.resetPass(e); toast('Te enviamos un correo para cambiar la contraseña'); } catch (err) { toast(clErr(err)); }
     };
-  });
+  }, false, true);
 }
 
 /* --- cuándo se guarda --- */
@@ -300,7 +311,7 @@ function bindAcct(el) {
   if (!el) return;
   el.onclick = e => {
     if (e.target.closest('[data-snooze]')) { LS.set('cloud.snooze', Date.now() + 3 * 864e5); renderBkRemind(); toast('Te lo recuerdo en unos días'); return; }
-    openCloud();
+    openCloudSignup();
   };
 }
 renderBkRemind = function () {

@@ -199,40 +199,37 @@ function applyTheme() {
 }
 
 /* ---------- Teclado del iPhone ----------
-   Safari no achica la pantalla al abrir el teclado: lo tapa. Se sigue la parte visible (visualViewport)
-   para que las hojas y la bienvenida queden encima del teclado y el campo enfocado a la vista. */
+   Safari no achica la pantalla al abrir el teclado: lo tapa. Las hojas con campos se abren desde arriba
+   (sheet(..., top)); además se guarda la altura visible para que esas hojas no pasen por debajo del teclado
+   y, si un campo igual quedara tapado, se desplaza solo el contenido de la hoja (no la página). */
 (function () {
   const vv = window.visualViewport; if (!vv) return;
   const root = document.documentElement; let raf = 0;
   const keep = () => {
     const a = document.activeElement;
-    if (!a || !/^(INPUT|TEXTAREA)$/.test(a.tagName) || !a.closest('.sheet,.onboard')) return;
-    const r = a.getBoundingClientRect(), top = vv.offsetTop, bot = vv.offsetTop + vv.height;
-    if (r.bottom > bot - 12 || r.top < top + 8) a.scrollIntoView({ block: 'center' });
+    if (!a || !/^(INPUT|TEXTAREA)$/.test(a.tagName)) return;
+    const sh = a.closest('.sheet'); if (!sh) return;
+    const r = a.getBoundingClientRect(), bot = vv.height - 16;
+    if (r.bottom > bot) sh.scrollTop += r.bottom - bot;
   };
   const fit = () => {
     cancelAnimationFrame(raf);
-    raf = requestAnimationFrame(() => {
-      root.style.setProperty('--vv-h', Math.round(vv.height) + 'px');
-      root.style.setProperty('--vv-top', Math.round(vv.offsetTop) + 'px');
-      requestAnimationFrame(keep);
-    });
+    raf = requestAnimationFrame(() => { root.style.setProperty('--vv-h', Math.round(vv.height) + 'px'); requestAnimationFrame(keep); });
   };
-  vv.addEventListener('resize', fit); vv.addEventListener('scroll', fit);
-  // el teclado tarda en terminar de subir: se vuelve a acomodar un poco después de tocar el campo
-  document.addEventListener('focusin', e => { if (/^(INPUT|TEXTAREA)$/.test(e.target.tagName)) { setTimeout(fit, 120); setTimeout(fit, 450); } });
+  vv.addEventListener('resize', fit);
+  document.addEventListener('focusin', e => { if (/^(INPUT|TEXTAREA)$/.test(e.target.tagName)) setTimeout(fit, 400); });
   fit();
 })();
 
 /* ---------- Hojas modales ---------- */
 // locked: sin X, sin deslizar y sin cerrar tocando fuera (solo se cierra con sus propios botones)
-function sheet(html, onMount, locked) {
+function sheet(html, onMount, locked, top) {
   const root = $('#sheet-root');
   if (locked) {
     root.innerHTML = `<div class="scrim" id="scrim"><div class="sheet locked" role="dialog" aria-modal="true">${html}</div></div>`;
     onMount && onMount(root); return;
   }
-  root.innerHTML = `<div class="scrim" id="scrim"><div class="sheet" role="dialog"><div class="sh-bar" id="sh-bar"><div class="grab"></div>
+  root.innerHTML = `<div class="scrim${top ? ' top' : ''}" id="scrim"><div class="sheet${top ? ' top' : ''}" role="dialog"><div class="sh-bar" id="sh-bar"><div class="grab"></div>
     <button class="icon-btn sh-x" id="sh-x" aria-label="Cerrar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>${html}</div></div>`;
   $('#scrim').onclick = e => { if (e.target.id === 'scrim') closeSheet(); };
   // la barra superior cierra: tocándola o deslizándola hacia abajo
@@ -240,8 +237,8 @@ function sheet(html, onMount, locked) {
   bar.onclick = closeSheet;
   let y0 = null, dy = 0;
   bar.addEventListener('touchstart', e => { y0 = e.touches[0].clientY; dy = 0; sh.style.transition = 'none'; }, { passive: true });
-  bar.addEventListener('touchmove', e => { if (y0 == null) return; dy = Math.max(0, e.touches[0].clientY - y0); sh.style.transform = `translateY(${dy}px)`; }, { passive: true });
-  bar.addEventListener('touchend', () => { if (y0 == null) return; y0 = null; sh.style.transition = 'transform .18s'; if (dy > 70) closeSheet(); else sh.style.transform = ''; });
+  bar.addEventListener('touchmove', e => { if (y0 == null) return; dy = e.touches[0].clientY - y0; dy = top ? Math.min(0, dy) : Math.max(0, dy); sh.style.transform = `translateY(${dy}px)`; }, { passive: true });
+  bar.addEventListener('touchend', () => { if (y0 == null) return; y0 = null; sh.style.transition = 'transform .18s'; if (Math.abs(dy) > 70) closeSheet(); else sh.style.transform = ''; });
   onMount && onMount(root);
 }
 const closeSheet = () => { $('#sheet-root').innerHTML = ''; };

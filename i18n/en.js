@@ -1354,7 +1354,8 @@ I18N = {
 "Repite la contraseña": "Repeat the password",
 "Las contraseñas no coinciden": "The passwords don't match",
 "Creando cuenta…": "Creating account…",
-"Entrando…": "Signing in…"
+"Entrando…": "Signing in…",
+"Tus datos se pasan a la cuenta y quedan sincronizados entre tus dispositivos.": "Your data moves to the account and stays in sync across your devices."
 };
 I18N_PAT = [
 [
