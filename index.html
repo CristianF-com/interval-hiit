@@ -225,6 +225,10 @@ nav.tabs button[aria-current=true] svg{color:var(--work)}
 
 /* onboarding */
 .onboard{position:fixed;inset:0;z-index:50;background:var(--bg);overflow:auto}
+/* teclado del iPhone: las hojas y la bienvenida ocupan solo la parte visible de la pantalla (encima del
+   teclado), así el campo donde se escribe no queda tapado (--vv-h y --vv-top los pone app.js) */
+.scrim,.onboard{bottom:auto;top:var(--vv-top,0px);height:var(--vv-h,100dvh)}
+.sheet{max-height:calc(var(--vv-h,100dvh) * .92)}
 .onboard .app{padding-top:calc(40px + env(safe-area-inset-top))}
 
 /* ---------- Reproductor ---------- */

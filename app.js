@@ -198,6 +198,32 @@ function applyTheme() {
   try { localStorage.setItem('intervalo.theme', t); } catch (e) {}
 }
 
+/* ---------- Teclado del iPhone ----------
+   Safari no achica la pantalla al abrir el teclado: lo tapa. Se sigue la parte visible (visualViewport)
+   para que las hojas y la bienvenida queden encima del teclado y el campo enfocado a la vista. */
+(function () {
+  const vv = window.visualViewport; if (!vv) return;
+  const root = document.documentElement; let raf = 0;
+  const keep = () => {
+    const a = document.activeElement;
+    if (!a || !/^(INPUT|TEXTAREA)$/.test(a.tagName) || !a.closest('.sheet,.onboard')) return;
+    const r = a.getBoundingClientRect(), top = vv.offsetTop, bot = vv.offsetTop + vv.height;
+    if (r.bottom > bot - 12 || r.top < top + 8) a.scrollIntoView({ block: 'center' });
+  };
+  const fit = () => {
+    cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(() => {
+      root.style.setProperty('--vv-h', Math.round(vv.height) + 'px');
+      root.style.setProperty('--vv-top', Math.round(vv.offsetTop) + 'px');
+      requestAnimationFrame(keep);
+    });
+  };
+  vv.addEventListener('resize', fit); vv.addEventListener('scroll', fit);
+  // el teclado tarda en terminar de subir: se vuelve a acomodar un poco después de tocar el campo
+  document.addEventListener('focusin', e => { if (/^(INPUT|TEXTAREA)$/.test(e.target.tagName)) { setTimeout(fit, 120); setTimeout(fit, 450); } });
+  fit();
+})();
+
 /* ---------- Hojas modales ---------- */
 // locked: sin X, sin deslizar y sin cerrar tocando fuera (solo se cierra con sus propios botones)
 function sheet(html, onMount, locked) {
