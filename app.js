@@ -23,6 +23,21 @@ const LS = {
   del(k) { try { localStorage.removeItem(NS + k); } catch (e) {} },
   keys() { try { return Object.keys(localStorage).filter(k => k.startsWith(NS)).map(k => k.slice(NS.length)); } catch (e) { return []; } }
 };
+/* Historial: hasta 2000 sesiones por perfil (todos los tipos juntos). Si el teléfono se queda sin lugar,
+   las sesiones más viejas pierden primero el detalle (tiempos serie por serie y la gráfica de pulso),
+   pero conservan fecha, tipo, duración, pulso medio y calorías. */
+const HIST_MAX = 2000;
+function saveHistory(h) {
+  h = h.slice(0, HIST_MAX);
+  const key = NS + `p.${PROFILE.id}.history`;
+  const put = v => { try { localStorage.setItem(key, JSON.stringify(v)); return true; } catch (e) { return false; } };
+  if (put(h)) return true;
+  for (const keep of [1000, 600, 400, 200]) {
+    h = h.map((x, i) => { if (i < keep || (!x.log && !(x.hr && x.hr.pts))) return x; const y = { ...x }; delete y.log; if (y.hr && y.hr.pts) { y.hr = { ...y.hr }; delete y.hr.pts; } return y; });
+    if (put(h)) return true;
+  }
+  return LS.set(`p.${PROFILE.id}.history`, h.slice(0, 400));
+}
 const PROFILE_KEYS = ['settings', 'favs', 'history', 'plan', 'plansDone', 'session', 'smart', 'awards', 'retos', 'dumb'];
 let PROFILE = null;
 const PS = {
@@ -190,13 +205,28 @@ function showOnboarding() {
 
 /* ---------- Tema de colores ---------- */
 const THEMES = { oscuro: { n: 'INHIIT (oscuro)', meta: '#0e0f12', sw: ['#0e0f12', '#17191e', '#ff5a36', '#35d0bf'] },
-  naranja: { n: 'Naranja clásico', meta: '#2b2c31', sw: ['#2b2c31', '#d5d8dd', '#ff9500', '#eceef1'] } };
+  naranja: { n: 'Naranja clásico', meta: '#2b2c31', sw: ['#2b2c31', '#d5d8dd', '#ff9500', '#eceef1'] },
+  lima: { n: 'Verde lima', meta: '#0a0c0b', sw: ['#0a0c0b', '#1c201d', '#c6f135', '#5fd4c4'] } };
 function applyTheme() {
   const t = THEMES[S.theme] ? S.theme : 'oscuro';
   document.documentElement.dataset.theme = t;
   const m = document.querySelector('meta[name=theme-color]'); if (m) m.setAttribute('content', THEMES[t].meta);
   try { localStorage.setItem('intervalo.theme', t); } catch (e) {}
 }
+
+/* ---------- Logo de la cabecera con el color del tema ----------
+   Se carga el SVG dentro de la página (no como imagen) para que sus colores sigan el acento del tema (CSS .logo-svg). */
+(async function () {
+  try {
+    const img = document.querySelector('header.top img.logo'); if (!img) return;
+    const txt = await (await fetch(img.getAttribute('src'))).text();
+    const svg = new DOMParser().parseFromString(txt, 'image/svg+xml').documentElement;
+    if (!svg || svg.nodeName !== 'svg') return;
+    svg.querySelectorAll('style').forEach(x => x.remove());
+    svg.setAttribute('class', 'logo logo-svg'); svg.setAttribute('role', 'img'); svg.setAttribute('aria-label', 'INHIIT');
+    img.replaceWith(document.importNode(svg, true));
+  } catch (e) {}
+})();
 
 /* ---------- Teclado del iPhone ----------
    Safari no achica la pantalla al abrir el teclado: lo tapa. Las hojas con campos se abren desde arriba
@@ -1812,7 +1842,7 @@ function finish(full, reason) {
   if (P.skips && P.skips.length) entry.skips = P.skips;
   if (P.w.kind !== 'test') entry.reps = repsOf(entry, full ? undefined : P.i);
   const hrs = P.hr && P.hr.length ? hrSummary(P.hr) : null; if (hrs) { hrs.src = 'banda'; entry.hr = hrs; }
-  const h = PS.get('history', []); h.unshift(entry); PS.set('history', h.slice(0, 400));
+  const h = PS.get('history', []); h.unshift(entry); saveHistory(h);
   let planMsg = '';
   const isPlan = P.w.kind === 'plan';
   const mode = P.endMode; P.endMode = null;

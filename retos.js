@@ -463,7 +463,7 @@ function rFinish(partial) {
   const h = PS.get('history', []);
   const rp = { sq: 0, pu: 0, ab: 0, bu: 0, pl: 0, dm: 0 }; if (!(RP.pre && RP.pre < 3)) rp[R.rep] = total;
   h.unshift({ at: Date.now(), start: RP.t0, secs, full: !partial, w: { kind: 'reto', reto: key, ...(RP.kg ? { kg: RP.kg } : {}), ...(RP.pre ? { pre: RP.pre } : {}), title: `${RP.ps ? RP.ps.n : R.n}${RP.kg ? ' ' + fmtKg(RP.kg) + ' kg' : ''} · ${RP.initial ? 'prueba inicial' : d.test ? 'prueba' : 'día ' + ((s.log.slice(-1)[0] || {}).day + 1)}`, sets: reps, times: (RP.times || []).slice(0, reps.length), rounds: [] }, reps: rp });
-  PS.set('history', h.slice(0, 400));
+  saveHistory(h);
   beep(784, 150, .25); setTimeout(() => beep(1046, 350, .3), 170);
   if (!partial) say(RP.pre && RP.pre < 3 ? `¡Terminaste! ${total} repeticiones. Buen trabajo.` : `¡Terminaste! ${total} ${R.n.toLowerCase()}. Buen trabajo.`);
   sheet(`<div class="big-check" style="margin:8px auto 10px"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></div>

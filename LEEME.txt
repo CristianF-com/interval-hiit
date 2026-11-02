@@ -35,7 +35,9 @@ Contenido de la carpeta
 Datos y perfiles
    - Cada perfil guarda por separado: ajustes, plan elegido, progreso,
      historial, guardados y el entrenamiento a medias.
-   - Todo se guarda en el navegador de ese dispositivo (localStorage).
+   - Todo se guarda en el navegador de ese dispositivo (localStorage). El historial guarda hasta 2000
+     sesiones por perfil (todos los tipos juntos); si falta lugar, las más viejas pierden el detalle serie
+     por serie pero conservan fecha, tipo, duración y pulso medio.
      Si borras los datos del sitio o cambias de dirección (otro puerto u
      otro dominio), empezarás de cero. Usa "Exportar perfil" (toca tu nombre
      arriba a la derecha) para hacer copias e "Importar" para recuperarlas.

@@ -1355,7 +1355,22 @@ I18N = {
 "Las contraseñas no coinciden": "The passwords don't match",
 "Creando cuenta…": "Creating account…",
 "Entrando…": "Signing in…",
-"Tus datos se pasan a la cuenta y quedan sincronizados entre tus dispositivos.": "Your data moves to the account and stays in sync across your devices."
+"Tus datos se pasan a la cuenta y quedan sincronizados entre tus dispositivos.": "Your data moves to the account and stays in sync across your devices.",
+"Constancia semanal": "Weekly consistency",
+"Últimas 8 semanas": "Last 8 weeks",
+"Minutos": "Minutes",
+"Esta": "This wk",
+"Tipo de entrenamiento": "Workout type",
+"Entrenamiento libre": "Free workout",
+"Pruebas de capacidad": "Fitness tests",
+"en total": "in total",
+"Verde lima": "Lime green",
+"Progreso de tiempos": "Time progress",
+"Duración de cada sesión": "Length of each session",
+"s por repetición": "s per rep",
+"igual que al principio": "same as at the start",
+"Minutos que duró cada sesión completa (las últimas 20).": "Minutes each full session took (last 20).",
+"Segundos por repetición en cada sesión, según cuándo tocas ✓ (las últimas 20). Más bajo es más rápido.": "Seconds per rep in each session, based on when you tap ✓ (last 20). Lower is faster."
 };
 I18N_PAT = [
 [
@@ -2313,6 +2328,22 @@ I18N_PAT = [
 [
 "No se pudo completar ({0})",
 "Couldn't finish ({0})"
+],
+[
+"Promedio {0} · {1} sesiones",
+"Average {0} · {1} sessions"
+],
+[
+"Al principio {0} por repetición",
+"At the start {0} per rep"
+],
+[
+"{0} % más rápido",
+"{0}% faster"
+],
+[
+"{0} % más lento",
+"{0}% slower"
 ]
 ];
 // catálogo de ejercicios y planes en inglés (búsqueda, voz y textos armados en el código)

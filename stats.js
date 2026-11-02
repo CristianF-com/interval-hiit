@@ -78,6 +78,7 @@ function statsHTML() {
     ${tile(fmtDur(st.secs), 'tiempo total')}${tile(fmtN(st.reps), 'repeticiones')}
     ${tile(fmtN(st.kcal), 'kcal aprox.')}${tile(st.curStreak ? `${st.curStreak} / ${st.best}` : st.best, 'racha / mejor racha (días)')}
     ${tile(fmtN(st.wkN), st.wkN === 1 ? 'entrenamiento esta semana' : 'entrenamientos esta semana')}${tile(fmtDur(st.wkSecs), 'tiempo esta semana')}</div>`;
+  h += weekChartHTML(st.H) + kindChartHTML(st.H) + progChartHTML();
   // partes del cuerpo
   const tot = Object.values(st.parts).reduce((a, b) => a + b, 0);
   if (tot) h += `<h3 class="st-h">Partes del cuerpo trabajadas</h3><div class="zbars">${Object.entries(ST_PARTS).map(([c, n]) => { const v = st.parts[c] || 0, p = Math.round(v / tot * 100);
@@ -116,9 +117,100 @@ function statsHTML() {
   h += `<h3 class="st-h">Otros datos</h3><div class="block st-list">${items.map(([k, v]) => `<div class="kv"><span>${k}</span><b>${esc(String(v))}</b></div>`).join('')}</div>`;
   return h;
 }
+/* ---------- Gráficos: constancia semanal (barras) y tipo de entrenamiento (dona) ---------- */
+let wkMode = 'n';                                    // 'n' entrenamientos · 'm' minutos
+const secsOf = x => x.secs || stItems(x).reduce((a, it) => a + it.secs, 0);
+function weekChartHTML(H) {
+  const now = weekKey(Date.now()), weeks = [];
+  for (let i = 7; i >= 0; i--) { const d = new Date(now); d.setDate(d.getDate() - 7 * i); weeks.push({ k: weekKey(d.getTime()), n: 0, s: 0 }); }
+  H.forEach(x => { const w = weeks.find(y => y.k === weekKey(x.at)); if (w) { w.n++; w.s += secsOf(x); } });
+  const val = w => wkMode === 'm' ? Math.round(w.s / 60) : w.n, max = Math.max(1, ...weeks.map(val));
+  const tot = weeks.reduce((a, w) => a + val(w), 0);
+  const lbl = k => new Date(k).toLocaleDateString(LOC, { day: 'numeric', month: 'short' }).replace('.', '');
+  return `<h3 class="st-h">Constancia semanal</h3><div class="chart">
+    <div class="ch-top"><div><b>${wkMode === 'm' ? t('{0} min', fmtN(tot)) : t(tot === 1 ? '{0} entrenamiento' : '{0} entrenamientos', tot)}</b><small>Últimas 8 semanas</small></div>
+      <div class="seg" id="wk-mode"><button data-m="n" aria-pressed="${wkMode === 'n'}">Sesiones</button><button data-m="m" aria-pressed="${wkMode === 'm'}">Minutos</button></div></div>
+    <div class="wkbars">${weeks.map(w => `<div class="wb${w.k === now ? ' on' : ''}" title="${lbl(w.k)}"><span>${val(w)}</span><i style="height:${Math.round(val(w) / max * 100)}%"></i><small data-noi18n>${w.k === now ? t('Esta') : lbl(w.k)}</small></div>`).join('')}</div>
+  </div>`;
+}
+// los dos primeros siguen los colores del tema; el resto son fijos para que no se repitan en ningún tema
+const KINDS = [['plan', 'Planes', 'var(--work)'], ['smart', 'Entrenador inteligente', 'var(--rest)'], ['libre', 'Entrenamiento libre', '#9d8cff'],
+  ['db', 'Mancuernas', '#5fb3ff'], ['reto', 'Retos', '#ff7eb6'], ['test', 'Pruebas de capacidad', '#8a93a3']];
+const kindOf = w => w.kind === 'reto' ? 'reto' : w.kind === 'test' ? 'test' : w.kind === 'db' ? 'db' : w.kind === 'plan' ? 'plan' : w.smart ? 'smart' : 'libre';
+// tiempo corto para el centro de la dona: «8 h 22 m», «45 m», «125 h» (que entre aunque pase las 10 horas)
+const fmtDurS = s => { s = Math.round(s / 60); const h = Math.floor(s / 60), m = s % 60; return h >= 100 ? `${h} h` : h ? `${h} h ${m} m` : `${m} m`; };
+function kindChartHTML(H) {
+  const sum = {}; let tot = 0;
+  H.forEach(x => { const k = kindOf(x.w), v = secsOf(x); sum[k] = (sum[k] || 0) + v; tot += v; });
+  if (!tot) return '';
+  const r = 52, C = 2 * Math.PI * r, list = KINDS.filter(([k]) => sum[k] > 0);
+  let off = 0;
+  const arcs = list.map(([k, , c]) => {
+    const len = sum[k] / tot * C, gap = list.length > 1 ? Math.min(3, len / 3) : 0;
+    const a = `<circle cx="66" cy="66" r="${r}" fill="none" style="stroke:${c}" stroke-width="16" stroke-linecap="butt" stroke-dasharray="${(len - gap).toFixed(2)} ${(C - len + gap).toFixed(2)}" stroke-dashoffset="${(-off).toFixed(2)}" transform="rotate(-90 66 66)"/>`;
+    off += len; return a;
+  }).join('');
+  return `<h3 class="st-h">Tipo de entrenamiento</h3><div class="chart donut">
+    <svg viewBox="0 0 132 132" role="img" aria-label="${esc(t('Tipo de entrenamiento'))}"><circle cx="66" cy="66" r="${r}" fill="none" style="stroke:var(--surface2)" stroke-width="16"/>${arcs}
+      <text x="66" y="63" text-anchor="middle" style="fill:var(--text);font-weight:700;font-size:15px" data-noi18n>${fmtDurS(tot)}</text>
+      <text x="66" y="81" text-anchor="middle" style="fill:var(--muted);font-size:11px">${t('en total')}</text></svg>
+    <div class="dn-leg">${list.map(([k, n, c]) => `<div><i style="background:${c}"></i><span>${n}</span><b>${Math.round(sum[k] / tot * 100)}%</b></div>`).join('')}</div>
+  </div>`;
+}
+/* ---------- Progreso de tiempos: segundos por repetición de cada ejercicio, sesión a sesión, o duración de las sesiones ---------- */
+let progSel = null;
+function progData() {
+  const H = PS.get('history', []).slice(0, 300).reverse(), ex = {}, sess = [];
+  H.forEach(x => {
+    if (x.secs && x.full !== false) sess.push({ at: x.at, v: x.secs / 60 });
+    const per = {}, add = (id, reps, secs) => { if (!reps || !secs) return; const v = secs / reps; if (v < 0.6 || v > 12) return; const k = paceKey(id); (per[k] = per[k] || []).push(v); };
+    if (x.log) x.log.forEach(r => { if (r[1] && !r[2] && !r[5]) add(r[0], r[1], r[3] / 1000); });
+    else if (x.w && x.w.kind === 'reto' && x.w.times && !x.w.pre && RETOS[x.w.reto]) (x.w.sets || []).forEach((n, i) => { const tt = x.w.times[i]; if (tt) add(RETOS[x.w.reto].ex, n, tt); });
+    Object.entries(per).forEach(([k, a]) => (ex[k] = ex[k] || []).push({ at: x.at, v: median(a) }));
+  });
+  return { ex, sess };
+}
+const nf1 = v => v.toFixed(1).replace('.', LANG === 'es' ? ',' : '.');
+function lineSVG(pts, fmt) {
+  const W = 320, H = 150, L = 40, R = 12, T = 14, B = 24;
+  let lo = Math.min(...pts.map(p => p.v)), hi = Math.max(...pts.map(p => p.v));
+  if (hi - lo < 0.2) { hi += 0.3; lo = Math.max(0, lo - 0.3); } const pad = (hi - lo) * 0.12; lo = Math.max(0, lo - pad); hi += pad;
+  const X = i => L + (pts.length === 1 ? (W - L - R) / 2 : i * (W - L - R) / (pts.length - 1)), Y = v => T + (hi - v) / (hi - lo) * (H - T - B);
+  const line = pts.map((p, i) => `${i ? 'L' : 'M'}${X(i).toFixed(1)} ${Y(p.v).toFixed(1)}`).join('');
+  const area = `${line}L${X(pts.length - 1).toFixed(1)} ${H - B}L${X(0).toFixed(1)} ${H - B}Z`;
+  const dl = t => new Date(t).toLocaleDateString(LOC, { day: 'numeric', month: 'short' }).replace('.', '');
+  const grid = [hi, (hi + lo) / 2, lo].map(v => `<line x1="${L}" x2="${W - R}" y1="${Y(v).toFixed(1)}" y2="${Y(v).toFixed(1)}" style="stroke:var(--line)" stroke-dasharray="3 4"/><text x="${L - 6}" y="${(Y(v) + 4).toFixed(1)}" text-anchor="end" style="fill:var(--muted);font-size:10.5px">${fmt(v)}</text>`).join('');
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" data-noi18n>
+    <defs><linearGradient id="pgfill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--work);stop-opacity:.28"/><stop offset="1" style="stop-color:var(--work);stop-opacity:0"/></linearGradient></defs>
+    ${grid}<path d="${area}" fill="url(#pgfill)"/><path d="${line}" fill="none" style="stroke:var(--work)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
+    ${pts.map((p, i) => `<circle cx="${X(i).toFixed(1)}" cy="${Y(p.v).toFixed(1)}" r="${i === pts.length - 1 ? 5 : 3}" style="fill:${i === pts.length - 1 ? 'var(--work)' : 'var(--bg)'};stroke:var(--work)" stroke-width="2"/>`).join('')}
+    <text x="${L}" y="${H - 6}" style="fill:var(--muted);font-size:10.5px">${dl(pts[0].at)}</text><text x="${W - R}" y="${H - 6}" text-anchor="end" style="fill:var(--muted);font-size:10.5px">${dl(pts[pts.length - 1].at)}</text></svg>`;
+}
+function progChartHTML() {
+  const { ex: E, sess } = progData();
+  const opts = Object.entries(E).filter(([k, a]) => a.length >= 2 && CATALOG[k]).sort((a, b) => b[1].length - a[1].length);
+  const keys = opts.map(o => o[0]).concat(sess.length >= 2 ? ['__s'] : []);
+  if (!keys.length) return '';
+  if (!keys.includes(progSel)) progSel = keys[0];
+  const isS = progSel === '__s', pts = (isS ? sess : E[progSel]).slice(-20);
+  const first = median(pts.slice(0, 3).map(p => p.v)), last = pts[pts.length - 1].v, now = median(pts.slice(-3).map(p => p.v));
+  const d = first ? Math.round((first - now) / first * 100) : 0;
+  const fmt = isS ? (v => Math.round(v) + ' min') : (v => nf1(v) + ' s');
+  const sub = isS
+    ? t('Promedio {0} · {1} sesiones', fmt(pts.reduce((a, p) => a + p.v, 0) / pts.length), pts.length)
+    : (pts.length < 3 ? t('Al principio {0} por repetición', fmt(first)) : `${t('Al principio {0} por repetición', fmt(first))} · <span class="${d > 2 ? 'pg-up' : d < -2 ? 'pg-down' : ''}">${d > 2 ? t('{0} % más rápido', d) : d < -2 ? t('{0} % más lento', -d) : t('igual que al principio')}</span>`);
+  return `<h3 class="st-h">Progreso de tiempos</h3><div class="chart pgc">
+    <select id="pg-sel" aria-label="${esc(t('Progreso de tiempos'))}">${opts.map(([k, a]) => `<option value="${k}" ${k === progSel ? 'selected' : ''}>${esc(ex(k).n)} · ${a.length} ${t('sesiones')}</option>`).join('')}${sess.length >= 2 ? `<option value="__s" ${isS ? 'selected' : ''}>${t('Duración de cada sesión')}</option>` : ''}</select>
+    <div class="pg-v" data-noi18n>${isS ? fmt(last) : nf1(last) + ' ' + t('s por repetición')}</div><div class="pg-s">${sub}</div>
+    ${lineSVG(pts, fmt)}
+    <p class="note" style="margin:6px 0 0">${isS ? 'Minutos que duró cada sesión completa (las últimas 20).' : 'Segundos por repetición en cada sesión, según cuándo tocas ✓ (las últimas 20). Más bajo es más rápido.'}</p>
+  </div>`;
+}
 function renderStats() {
   const el = $('#hist-kpi'); if (!el) return;
   el.innerHTML = statsHTML();
+  bindSeg('wk-mode', 'm', m => { wkMode = m; renderStats(); });
+  const pg = $('#pg-sel'); if (pg) pg.onchange = () => { progSel = pg.value; renderStats(); };
   const b = $('#st-all'); if (b) b.onclick = () => { statsAll = !statsAll; renderStats(); };
 }
 const _renderHist = renderHist;
