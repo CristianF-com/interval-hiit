@@ -170,7 +170,11 @@ CUENTA Y GUARDADO AUTOMÁTICO (Firebase)
 - Nunca pisa lo del teléfono sin preguntar: si en la nube hay algo más nuevo de otro teléfono,
   ofrece «Ver y restaurar» (muestra qué contiene) o «Quedarme con lo de este teléfono».
 - En el iPhone, Google puede no abrir dentro de la app instalada: correo y contraseña siempre funciona.
-- Datos: Firestore, users/{uid} (resumen) y users/{uid}/parts/{n} (la copia en gzip+base64, en partes).
+- Dos copias en la nube: la «última copia» (se actualiza en cada guardado) y un «respaldo». Cada 3 días se
+  empieza una copia nueva y la anterior pasa a ser el respaldo. Al restaurar (Cuenta → «Restaurar desde la
+  nube», o en un teléfono nuevo) se elige cuál; restaurar el respaldo no lo pisa.
+- Datos: Firestore, users/{uid} (resumen de las dos copias) y users/{uid}/parts/a0, a1… y b0, b1… (cada
+  copia en gzip+base64, en partes).
 - Reglas de seguridad: firestore.rules (pegarlas en Firebase → Firestore → Reglas → Publicar).
 - En Firebase → Authentication → Método de acceso: Anónimo, Correo/contraseña y Google activados;
   para Google, agregar la dirección de la app en Authentication → Configuración → Dominios autorizados.

@@ -29,16 +29,17 @@ window.FBA = {
   resetPass: e => sendPasswordResetEmail(auth, e),
   signOut: () => signOut(auth),
   async getMeta(uid) { const s = await getDoc(doc(db, 'users', uid)); return s.exists() ? s.data() : null; },
-  async getParts(uid, n) {
+  // cada copia se guarda en partes: users/{uid}/parts/{pre}{i} (pre = '' en las copias viejas, 'a' o 'b' en las nuevas)
+  async getParts(uid, n, pre = '') {
     const out = [];
-    for (let i = 0; i < n; i++) { const s = await getDoc(doc(db, 'users', uid, 'parts', String(i))); out.push(s.exists() ? s.data().d : ''); }
+    for (let i = 0; i < n; i++) { const s = await getDoc(doc(db, 'users', uid, 'parts', pre + i)); out.push(s.exists() ? s.data().d : ''); }
     return out;
   },
-  // escribe todas las partes y el resumen juntos (o todo o nada); borra partes sobrantes de una copia anterior más grande
-  async putAll(uid, meta, parts, oldN) {
+  // escribe todas las partes y el resumen juntos (o todo o nada); borra partes sobrantes de una copia anterior más grande en ese mismo lugar
+  async putAll(uid, meta, parts, oldN, pre = '') {
     const b = writeBatch(db);
-    parts.forEach((d, i) => b.set(doc(db, 'users', uid, 'parts', String(i)), { d }));
-    for (let i = parts.length; i < (oldN || 0); i++) b.delete(doc(db, 'users', uid, 'parts', String(i)));
+    parts.forEach((d, i) => b.set(doc(db, 'users', uid, 'parts', pre + i), { d }));
+    for (let i = parts.length; i < (oldN || 0); i++) b.delete(doc(db, 'users', uid, 'parts', pre + i));
     b.set(doc(db, 'users', uid), meta);
     await b.commit();
   }

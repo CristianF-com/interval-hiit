@@ -1377,7 +1377,18 @@ I18N = {
 "Arrastra para moverla; acércala con el control o con dos dedos.": "Drag to move it; zoom with the slider or two fingers.",
 "Acercar": "Zoom",
 "Usar foto": "Use photo",
-"No se pudo abrir esa imagen": "Couldn't open that image"
+"No se pudo abrir esa imagen": "Couldn't open that image",
+"¿Qué copia restauras?": "Which backup do you restore?",
+"En la nube hay dos copias. Usa el respaldo si la última quedó mal o le falta algo.": "There are two copies in the cloud. Use the backup if the latest one went wrong or is missing something.",
+"Última copia": "Latest copy",
+"Respaldo": "Backup",
+"Lo más reciente que se guardó.": "The most recent save.",
+"Una copia anterior, de hasta unos días antes.": "An earlier copy, from up to a few days before.",
+"Restaurar la última copia": "Restore the latest copy",
+"Restaurar el respaldo": "Restore the backup",
+"Antes de cambiar nada te muestro qué contiene la que elijas.": "Before changing anything I'll show you what the one you choose contains.",
+"Todavía no hay nada guardado en la nube": "Nothing saved in the cloud yet",
+"No se pudo leer esa copia: prueba con la otra": "Couldn't read that copy: try the other one"
 };
 I18N_PAT = [
 [
@@ -2351,6 +2362,14 @@ I18N_PAT = [
 [
 "{0} % más lento",
 "{0}% slower"
+],
+[
+"Guardada el {0}",
+"Saved on {0}"
+],
+[
+"Respaldo: {0}",
+"Backup: {0}"
 ]
 ];
 // catálogo de ejercicios y planes en inglés (búsqueda, voz y textos armados en el código)

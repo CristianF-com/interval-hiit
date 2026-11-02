@@ -71,10 +71,23 @@ async function ungz64(b64) {
   for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
   return new Response(new Blob([u]).stream().pipeThrough(new DecompressionStream('gzip'))).text();
 }
-async function cloudFetch(u, m) {
-  const body = (await FBA.getParts(u.uid, m.n)).join('');
-  const j = JSON.parse(m.enc === 'gz' ? await ungz64(body) : body);
-  j.__cloud = { uid: u.uid, rev: m.updated };
+/* --- dos copias en la nube: la última y un respaldo ---
+   Cada guardado actualiza la «última copia». Cada 3 días se empieza una copia nueva y la anterior queda
+   como «respaldo» (con lo que había justo antes), así si la última se daña o se guardó algo mal, se puede
+   volver al respaldo. Cada copia ocupa su lugar: parts/a0, a1… y parts/b0, b1… (las copias viejas, sin letra). */
+const BAK_MS = 3 * 864e5;
+const slotPre = k => k === 'x' ? '' : k;
+// lee el resumen de la nube en formato nuevo (cur/bak/s) o viejo (una sola copia)
+function metaSlots(m) {
+  if (!m) return null;
+  if (m.cur && m.s && m.s[m.cur]) return { cur: m.cur, bak: m.bak && m.s[m.bak] ? m.bak : null, s: m.s };
+  return { cur: 'x', bak: null, s: { x: { updated: m.updated, since: m.updated, device: m.device, n: m.n, enc: m.enc, size: m.size, perfiles: m.perfiles, resumen: m.resumen } } };
+}
+async function cloudFetch(u, m, slot) {
+  const sl = metaSlots(m), k = slot || sl.cur, info = sl.s[k];
+  const body = (await FBA.getParts(u.uid, info.n, slotPre(k))).join('');
+  const j = JSON.parse(info.enc === 'gz' ? await ungz64(body) : body);
+  j.__cloud = { uid: u.uid, rev: m.updated, bak: k !== sl.cur };
   return j;
 }
 
@@ -93,8 +106,21 @@ async function cloudPush(mode) {
     let enc = 'gz', body = await gz64(text).catch(() => null);
     if (!body) { enc = 'json'; body = text; }
     const parts = []; for (let i = 0; i < body.length; i += CL_PART) parts.push(body.slice(i, i + CL_PART));
-    const now = Date.now();
-    await FBA.putAll(u.uid, { app: 'inhiit', v: 1, updated: now, device: cDev(), n: parts.length, enc, size: text.length, perfiles: b.profiles.length, resumen: b.resumen }, parts, m0 ? m0.n : 0);
+    const now = Date.now(), sl = metaSlots(m0);
+    // ¿toca empezar una copia nueva y dejar la actual como respaldo? (no justo después de restaurar el respaldo)
+    let cur, bak, since;
+    if (!sl) { cur = 'a'; bak = null; since = now; }
+    else {
+      const ci = sl.s[sl.cur], due = !CLOUD.keepBak && (sl.bak == null || now - (ci.since || ci.updated || 0) > BAK_MS);
+      if (due) { cur = sl.bak != null && sl.bak !== 'x' ? sl.bak : (sl.cur === 'a' ? 'b' : 'a'); bak = sl.cur; since = now; }
+      else { cur = sl.cur === 'x' ? 'a' : sl.cur; bak = sl.bak; since = ci.since || ci.updated || now; }
+    }
+    const info = { updated: now, since, device: cDev(), n: parts.length, enc, size: text.length, perfiles: b.profiles.length, resumen: b.resumen };
+    const S2 = { [cur]: info }; if (bak != null && sl && sl.s[bak]) S2[bak] = sl.s[bak];
+    const meta = { app: 'inhiit', v: 2, updated: now, device: cDev(), n: parts.length, enc, size: text.length, perfiles: b.profiles.length, resumen: b.resumen, cur, bak: bak != null && S2[bak] ? bak : null, s: S2 };
+    const oldN = sl && sl.s[cur] ? sl.s[cur].n : 0;
+    await FBA.putAll(u.uid, meta, parts, oldN, slotPre(cur));
+    CLOUD.keepBak = false; CLOUD.meta = meta;
     LS.set('cloud.hash', h); LS.set('cloud.rev', { uid: u.uid, rev: now }); LS.set('cloud.last', now);
     return true;
   } catch (e) { CLOUD.err = e && e.code || String(e); return false; }
@@ -104,32 +130,54 @@ async function cloudPush(mode) {
 async function cloudCheck() {
   const u = await cloudUser(); if (!u || !navigator.onLine) return;
   try {
-    const m = await FBA.getMeta(u.uid), r = cRev();
+    const m = await FBA.getMeta(u.uid), r = cRev(); CLOUD.meta = m; cloudUI();
     if (m && m.device !== cDev() && (r.uid !== u.uid || m.updated > (r.rev || 0))) { cloudOffer(u, m); return; }
     if (!m && !PROFILE && CLOUD.wantRestore) { CLOUD.wantRestore = false; toast('Esa cuenta todavía no tiene nada guardado'); }
     cloudPush();
   } catch (e) { CLOUD.err = e && e.code || String(e); cloudUI(); }
 }
 const clWhen = t => dateStr(t) + ' a las ' + new Date(t).toLocaleTimeString(LOC, { hour: '2-digit', minute: '2-digit' });
+// muestra la última copia y el respaldo (si hay) y deja elegir cuál restaurar
+function cloudChoose(u, m) {
+  const sl = metaSlots(m), open = async k => { try { readBackup(await cloudFetch(u, m, k)); } catch (e) { toast('No se pudo leer esa copia: prueba con la otra'); } };
+  if (sl.bak == null) { open(sl.cur); return; }
+  const card = (k, title, note) => { const i = sl.s[k]; return `<div class="bk-card cl-slot"><div class="t">${title}</div><small>${t('Guardada el {0}', clWhen(i.updated))}</small>
+    ${(i.resumen || []).map(x => `<small data-noi18n>${esc(x)}</small>`).join('')}<small>${note}</small></div>
+    <button class="btn ${k === sl.cur ? '' : 'ghost'}" data-slot="${k}">${k === sl.cur ? 'Restaurar la última copia' : 'Restaurar el respaldo'}</button><div class="gap"></div>`; };
+  sheet(`<h3>¿Qué copia restauras?</h3>
+    <p class="sub">En la nube hay dos copias. Usa el respaldo si la última quedó mal o le falta algo.</p>
+    ${card(sl.cur, 'Última copia', 'Lo más reciente que se guardó.')}
+    ${card(sl.bak, 'Respaldo', 'Una copia anterior, de hasta unos días antes.')}
+    <p class="note">Antes de cambiar nada te muestro qué contiene la que elijas.</p>`, root => {
+    root.querySelectorAll('[data-slot]').forEach(b => b.onclick = () => open(b.dataset.slot));
+  });
+}
 async function cloudOffer(u, m) {
   CLOUD.offer = m;
-  // sin perfiles (teléfono nuevo): directo a ver qué contiene y restaurar
-  if (!PROFILE) { try { readBackup(await cloudFetch(u, m)); } catch (e) { toast('No se pudo leer lo guardado en la nube'); } return; }
+  // sin perfiles (teléfono nuevo): directo a elegir qué copia restaurar
+  if (!PROFILE) { if (!$('#sheet-root').innerHTML) cloudChoose(u, m); return; }   // si ya hay una ventana abierta (p. ej. la misma pregunta), no se repite
   if ($('#sheet-root').innerHTML && !$('#cl-acc')) return;   // no tapar otra ventana abierta: se vuelve a ofrecer más tarde
   sheet(`<h3>Hay datos más nuevos en tu cuenta</h3>
     <p class="sub">Se guardaron desde otro teléfono el <b>${clWhen(m.updated)}</b>.</p>
     ${(m.resumen || []).length ? `<div class="bk-card">${m.resumen.map(x => `<div class="t" data-noi18n>${esc(x)}</div>`).join('')}</div>` : ''}
     <button class="btn" id="co-see">Ver y restaurar<small>Antes de cambiar nada te muestro qué contiene</small></button><div class="gap"></div>
     <button class="btn ghost" id="co-mine">Quedarme con lo de este teléfono<small>Lo de la nube se reemplaza por lo de aquí</small></button>`, () => {
-    $('#co-see').onclick = async () => { try { readBackup(await cloudFetch(u, m)); } catch (e) { toast('No se pudo leer lo guardado en la nube'); } };
+    $('#co-see').onclick = () => cloudChoose(u, m);
     $('#co-mine').onclick = async () => { closeSheet(); toast('Guardando…'); if (await cloudPush('over')) toast('Listo: la nube tiene lo de este teléfono'); };
   });
 }
+// restaurar desde la nube cuando el usuario quiera (Cuenta → «Restaurar desde la nube»)
+async function cloudRestore() {
+  const u = await cloudUser(); if (!u || !navigator.onLine) { toast('Sin conexión'); return; }
+  try { const m = await FBA.getMeta(u.uid); if (!m) { toast('Todavía no hay nada guardado en la nube'); return; } CLOUD.meta = m; cloudChoose(u, m); }
+  catch (e) { toast(saveErr(e && e.code || 'x')); }
+}
 // al restaurar desde la nube, se marca como sincronizado y se vuelve a subir ya combinado
+// (si se restauró el respaldo, esa subida no lo pisa: actualiza la última copia y el respaldo queda igual)
 const _importBackup = importBackup;
 importBackup = function (j, replace) {
   _importBackup(j, replace);
-  if (j && j.__cloud) { LS.set('cloud.rev', j.__cloud); CLOUD.offer = null; setTimeout(() => cloudPush('now'), 800); }
+  if (j && j.__cloud) { LS.set('cloud.rev', { uid: j.__cloud.uid, rev: j.__cloud.rev }); if (j.__cloud.bak) CLOUD.keepBak = true; CLOUD.offer = null; setTimeout(() => cloudPush('now'), 800); }
 };
 
 /* --- ventana «Cuenta y guardado automático» --- */
@@ -174,7 +222,8 @@ function cloudStatusHTML() {
   const who = !u ? (navigator.onLine ? 'Conectando…' : 'Sin conexión: se guardará cuando vuelva internet')
     : u.anon ? 'Usuario anónimo de este teléfono'
     : `Cuenta: <b data-noi18n>${esc(u.email || 'Google')}</b>`;
-  return `<div class="bk-card" id="cl-st"><div class="t">${CLOUD.busy ? 'Guardando…' : last ? 'Guardado en la nube: ' + clWhen(last) : 'Todavía no se guardó nada en la nube'}</div><small>${who}</small>${CLOUD.err && !CLOUD.busy ? `<small style="color:var(--work)">${esc(saveErr(CLOUD.err))}</small>` : ''}</div>`;
+  const sl = metaSlots(CLOUD.meta), bk = sl && sl.bak != null ? sl.s[sl.bak] : null;
+  return `<div class="bk-card" id="cl-st"><div class="t">${CLOUD.busy ? 'Guardando…' : last ? 'Guardado en la nube: ' + clWhen(last) : 'Todavía no se guardó nada en la nube'}</div><small>${who}</small>${bk ? `<small>${t('Respaldo: {0}', clWhen(bk.updated))}</small>` : ''}${CLOUD.err && !CLOUD.busy ? `<small style="color:var(--work)">${esc(saveErr(CLOUD.err))}</small>` : ''}</div>`;
 }
 // ¿tiene cuenta (correo o Google)? se recuerda para decidir los avisos aunque Firebase todavía no haya cargado
 const hasAcct = () => !!LS.get('cloud.acct', '');
@@ -194,7 +243,7 @@ function openCloud() {
   sheet(`<div id="cl-acc"><h3>Cuenta y guardado automático</h3>
     <p class="sub">Todos los perfiles (historial, pulso, planes, retos, entrenador y logros) se guardan solos en la nube después de cada entrenamiento.</p>
     ${cloudStatusHTML()}
-    <button class="btn ghost small" id="cl-now">Guardar ahora</button>
+    <div class="row"><button class="btn ghost small" id="cl-now">Guardar ahora</button><button class="btn ghost small" id="cl-rest">Restaurar desde la nube</button></div>
     ${linked ? `
       <h2>Tu cuenta</h2>
       <p class="note">Para recuperar todo en otro teléfono: Perfil → Cuenta y guardado automático → «Ya tengo cuenta», con <b data-noi18n>${esc(u.email || 'Google')}</b>.</p>
@@ -205,6 +254,7 @@ function openCloud() {
       <button class="btn" id="cl-new">Crear cuenta</button><div class="gap"></div>
       <button class="btn ghost" id="cl-in">Ya tengo cuenta</button>`}
     </div>`, () => {
+    $('#cl-rest').onclick = () => cloudRestore();
     $('#cl-now').onclick = async () => { if (!navigator.onLine) { toast('Sin conexión'); return; } if (await cloudPush('now')) toast('Guardado en la nube'); else toast(CLOUD.err ? saveErr(CLOUD.err) : 'No se pudo guardar'); };
     const out = $('#cl-out');
     if (out) out.onclick = async () => {
