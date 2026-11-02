@@ -336,6 +336,8 @@ code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.92em;backgroun
 .pm-card .btn{flex-direction:column;gap:2px}
 .pm-card .btn small{font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;text-transform:none;letter-spacing:0;font-size:12.5px;font-weight:500;color:var(--muted)}
 .sheet .btn small,.onboard .btn small{display:block;font-family:system-ui,-apple-system,Roboto,sans-serif;text-transform:none;letter-spacing:0;font-size:12.5px;font-weight:500;color:var(--muted)}
+/* subtítulo dentro de un botón de color: mismo color del texto del botón, algo más suave */
+.sheet .btn:not(.ghost):not(.danger) small,.onboard .btn:not(.ghost):not(.danger) small{color:inherit;opacity:.72}
 .sheet .btn:has(small),.onboard .btn:has(small){flex-direction:column;gap:2px}
 .pm-chg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .pm-chg .btn{font-size:15px;padding:12px 4px}

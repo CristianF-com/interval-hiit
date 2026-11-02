@@ -34,11 +34,17 @@ function cloudStart() {
   cloudReady = loadFBA().then(() => new Promise(res => {
     let first = true;
     FBA.init(FB_CFG, async u => {
+      const prev = CLOUD.user;
       CLOUD.user = u;
       if (first) {
         first = false;
         if (!u && navigator.onLine) { try { CLOUD.user = await FBA.signInAnon(); } catch (e) { CLOUD.err = e && e.code || 'auth'; } }
         res(CLOUD.user);
+      } else if (!u && !CLOUD.signingOut) {
+        // el usuario dejó de existir (p. ej. Firebase borró el anónimo a los 30 días): se crea otro
+        // y se vuelve a subir todo desde este teléfono, que es donde viven los datos
+        if (prev && !prev.anon) toast('Se cerró la sesión de tu cuenta: vuelve a entrar desde Perfil');
+        if (navigator.onLine) { try { CLOUD.user = await FBA.signInAnon(); LS.del('cloud.hash'); setTimeout(() => cloudPush(), 500); } catch (e) {} }
       }
       cloudUI();
     });
@@ -190,7 +196,7 @@ function openCloud() {
     const out = $('#cl-out');
     if (out) out.onclick = async () => {
       if (!(await askApp('Cerrar sesión', 'Los datos de este teléfono no se borran. Se seguirán guardando con un usuario anónimo nuevo hasta que vuelvas a entrar.', 'Cerrar sesión'))) return;
-      try { await FBA.signOut(); CLOUD.user = await FBA.signInAnon(); LS.del('cloud.hash'); cloudPush(); toast('Sesión cerrada'); } catch (e) { toast(clErr(e)); }
+      try { CLOUD.signingOut = true; await FBA.signOut(); CLOUD.user = await FBA.signInAnon(); CLOUD.signingOut = false; LS.del('cloud.hash'); cloudPush(); toast('Sesión cerrada'); } catch (e) { CLOUD.signingOut = false; toast(clErr(e)); }
     };
     const lk = $('#cl-link');
     if (lk) lk.onclick = async () => {

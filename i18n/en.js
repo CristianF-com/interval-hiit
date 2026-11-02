@@ -1329,7 +1329,8 @@ I18N = {
 "Recupera lo que guardaste en la nube": "Get back what you saved in the cloud",
 "Restaurar desde un archivo": "Restore from a file",
 "Copia en archivo (iCloud Drive / Google Drive)": "Backup file (iCloud Drive / Google Drive)",
-"Un archivo que guardas tú, por si quieres una copia aparte.": "A file you save yourself, in case you want a separate copy."
+"Un archivo que guardas tú, por si quieres una copia aparte.": "A file you save yourself, in case you want a separate copy.",
+"Se cerró la sesión de tu cuenta: vuelve a entrar desde Perfil": "Your account was signed out: sign in again from Profile"
 };
 I18N_PAT = [
 [
