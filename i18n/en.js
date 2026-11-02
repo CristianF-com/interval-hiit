@@ -1345,7 +1345,12 @@ I18N = {
 "Ahora no": "Not now",
 "Ese correo ya tiene una cuenta: usa «Ya tengo cuenta».": "That email already has an account: use “I already have an account”.",
 "Esa cuenta de Google ya está en uso: usa «Ya tengo cuenta».": "That Google account is already in use: use “I already have an account”.",
-"Para recuperar todo en otro teléfono: Perfil → Cuenta y guardado automático → «Ya tengo cuenta», con": "To get everything back on another phone: Profile → Account and auto-save → “I already have an account”, with"
+"Para recuperar todo en otro teléfono: Perfil → Cuenta y guardado automático → «Ya tengo cuenta», con": "To get everything back on another phone: Profile → Account and auto-save → “I already have an account”, with",
+"Firebase rechazó el guardado: falta publicar las reglas de Firestore.": "Firebase rejected the save: the Firestore rules aren't published.",
+"Falta crear la base de datos Firestore en Firebase.": "The Firestore database hasn't been created in Firebase.",
+"Falta activar el acceso «Anónimo» en Firebase.": "The “Anonymous” sign-in isn't enabled in Firebase.",
+"No hay conexión con Firebase. Prueba de nuevo.": "Can't reach Firebase. Try again.",
+"La sesión venció: cierra y vuelve a abrir la app.": "The session expired: close and reopen the app."
 };
 I18N_PAT = [
 [
@@ -2295,6 +2300,10 @@ I18N_PAT = [
 [
 "Última copia en archivo: {0}",
 "Last backup file: {0}"
+],
+[
+"No se pudo guardar ({0})",
+"Couldn't save ({0})"
 ]
 ];
 // catálogo de ejercicios y planes en inglés (búsqueda, voz y textos armados en el código)

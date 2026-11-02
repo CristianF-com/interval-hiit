@@ -55,7 +55,7 @@ function cloudStart() {
 async function cloudUser() {
   await cloudStart(); if (CLOUD.user) return CLOUD.user;
   if (!window.FBA || !navigator.onLine) return null;
-  try { CLOUD.user = await FBA.signInAnon(); return CLOUD.user; } catch (e) { return null; }
+  try { CLOUD.user = await FBA.signInAnon(); return CLOUD.user; } catch (e) { CLOUD.err = e && e.code || 'auth'; cloudUI(); return null; }
 }
 
 /* --- empaquetado: JSON → gzip → base64, en partes --- */
@@ -155,12 +155,26 @@ const CL_ERR = {
   'auth/admin-restricted-operation': 'Ese método de acceso no está activado en Firebase.'
 };
 const clErr = e => CL_ERR[e && e.code] || 'No se pudo completar. Prueba de nuevo.';
+// por qué no se pudo guardar (para saber qué falta configurar en Firebase)
+const SAVE_ERR = {
+  'permission-denied': 'Firebase rechazó el guardado: falta publicar las reglas de Firestore.',
+  'not-found': 'Falta crear la base de datos Firestore en Firebase.',
+  'failed-precondition': 'Falta crear la base de datos Firestore en Firebase.',
+  'auth/admin-restricted-operation': 'Falta activar el acceso «Anónimo» en Firebase.',
+  'auth/operation-not-allowed': 'Falta activar el acceso «Anónimo» en Firebase.',
+  'unavailable': 'No hay conexión con Firebase. Prueba de nuevo.',
+  'auth/network-request-failed': 'No hay conexión con Firebase. Prueba de nuevo.',
+  'unauthenticated': 'La sesión venció: cierra y vuelve a abrir la app.'
+};
+const saveErr = c => SAVE_ERR[c] || t('No se pudo guardar ({0})', c);
+// app instalada en el iPhone: ahí el acceso con Google no puede volver a la app, así que no se ofrece
+const IOS_APP = navigator.standalone === true;
 function cloudStatusHTML() {
   const u = CLOUD.user, last = LS.get('cloud.last', 0);
   const who = !u ? (navigator.onLine ? 'Conectando…' : 'Sin conexión: se guardará cuando vuelva internet')
     : u.anon ? 'Usuario anónimo de este teléfono'
     : `Cuenta: <b data-noi18n>${esc(u.email || 'Google')}</b>`;
-  return `<div class="bk-card" id="cl-st"><div class="t">${CLOUD.busy ? 'Guardando…' : last ? 'Guardado en la nube: ' + clWhen(last) : 'Todavía no se guardó nada en la nube'}</div><small>${who}</small>${CLOUD.err && !CLOUD.busy ? `<small style="color:var(--work)">No se pudo guardar la última vez</small>` : ''}</div>`;
+  return `<div class="bk-card" id="cl-st"><div class="t">${CLOUD.busy ? 'Guardando…' : last ? 'Guardado en la nube: ' + clWhen(last) : 'Todavía no se guardó nada en la nube'}</div><small>${who}</small>${CLOUD.err && !CLOUD.busy ? `<small style="color:var(--work)">${esc(saveErr(CLOUD.err))}</small>` : ''}</div>`;
 }
 // ¿tiene cuenta (correo o Google)? se recuerda para decidir los avisos aunque Firebase todavía no haya cargado
 const hasAcct = () => !!LS.get('cloud.acct', '');
@@ -191,12 +205,12 @@ function openCloud() {
       <div class="field"><input id="cl-mail" type="email" inputmode="email" autocomplete="email" placeholder="Correo"></div><div class="gap"></div>
       <div class="field"><input id="cl-pass" type="password" autocomplete="new-password" placeholder="Contraseña (mínimo 6)"></div><div class="gap"></div>
       <button class="btn" id="cl-link">Crear cuenta con correo</button><div class="gap"></div>
-      <button class="btn ghost" id="cl-g">Crear cuenta con Google</button>
-      <p class="note">Si Google no abre dentro de la app instalada, usa correo y contraseña.</p>
+      ${IOS_APP ? '' : `<button class="btn ghost" id="cl-g">Crear cuenta con Google</button>
+      <p class="note">Si Google no abre dentro de la app instalada, usa correo y contraseña.</p>`}
       <h2>¿Ya tienes cuenta?</h2>
       <button class="btn ghost small" id="cl-in">Ya tengo cuenta</button>`}
     </div>`, () => {
-    $('#cl-now').onclick = async () => { if (!navigator.onLine) { toast('Sin conexión'); return; } if (await cloudPush('now')) toast('Guardado en la nube'); else if (CLOUD.err) toast('No se pudo guardar'); };
+    $('#cl-now').onclick = async () => { if (!navigator.onLine) { toast('Sin conexión'); return; } if (await cloudPush('now')) toast('Guardado en la nube'); else toast(CLOUD.err ? saveErr(CLOUD.err) : 'No se pudo guardar'); };
     const out = $('#cl-out');
     if (out) out.onclick = async () => {
       if (!(await askApp('Cerrar sesión', 'Los datos de este teléfono no se borran. Se seguirán guardando con un usuario anónimo nuevo hasta que vuelvas a entrar.', 'Cerrar sesión'))) return;
@@ -228,7 +242,7 @@ function openCloudLogin() {
     <div class="field"><input id="cli-mail" type="email" inputmode="email" autocomplete="email" placeholder="Correo"></div><div class="gap"></div>
     <div class="field"><input id="cli-pass" type="password" autocomplete="current-password" placeholder="Contraseña"></div><div class="gap"></div>
     <button class="btn" id="cli-go">Entrar</button><div class="gap"></div>
-    <button class="btn ghost" id="cli-g">Entrar con Google</button><div class="gap"></div>
+    ${IOS_APP ? '' : '<button class="btn ghost" id="cli-g">Entrar con Google</button><div class="gap"></div>'}
     <button class="btn ghost small" id="cli-forgot">Olvidé mi contraseña</button>`, () => {
     const done = u => { CLOUD.user = u; cloudUI(); LS.del('cloud.hash'); closeSheet(); toast('Sesión iniciada'); CLOUD.wantRestore = true; cloudCheck(); };
     $('#cli-go').onclick = async () => {
@@ -237,7 +251,7 @@ function openCloudLogin() {
       if (!(await cloudStart()) && !window.FBA) { toast('Sin conexión'); return; }
       try { done(await FBA.signInEmail(e, p)); } catch (err) { toast(clErr(err)); }
     };
-    $('#cli-g').onclick = async () => {
+    if ($('#cli-g')) $('#cli-g').onclick = async () => {
       if (!(await cloudStart()) && !window.FBA) { toast('Sin conexión'); return; }
       try { done(await FBA.signInGoogle()); } catch (err) { toast(clErr(err)); }
     };
