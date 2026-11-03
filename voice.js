@@ -1,19 +1,31 @@
 'use strict';
 /* =========================================================
-   Voz del entrenador: audios grabados (Dora, Alex, Paula y Julio)
+   Voz del entrenador: audios grabados (Dora, Alex, Paula, Julio, Ona y Kimetz)
    o la voz del teléfono. Se carga al final y reemplaza a say().
    ========================================================= */
-const VOICES = { dora: 'Dora · latina', alex: 'Alex · latino', paula: 'Paula', julio: 'Julio', sistema: 'Voz del teléfono' };
-const MALE_VOICES = ['alex', 'julio'];
+// entre paréntesis, la variante del español de cada voz
+const VOICES = { dora: 'Dora (Español latino)', alex: 'Alex (Español latino)', paula: 'Paula (Español latino)', julio: 'Julio (Español latino)', ona: 'Ona (Español México)', kimetz: 'Kimetz (Español México)', sistema: 'Voz del teléfono' };
+const MALE_VOICES = ['alex', 'julio', 'kimetz'];
 // voces que ya tienen sus audios en voz/<voz>/ (se agregan acá cuando están listas)
-const READY_VOICES = ['dora', 'alex', 'paula', 'julio', 'sistema'];
+const READY_VOICES = ['dora', 'alex', 'paula', 'julio', 'sistema'];   // ona y kimetz se suman cuando estén sus audios
 const sysSay = say; // voz del sistema (speechSynthesis), queda como respaldo
 const VNUM = { cero: '0', uno: '1', dos: '2', tres: '3' };
 const vnorm = t => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
 let VIDX = null;
+// revisión de los audios de cada voz: al regenerarlos se sube el número y el teléfono baja los nuevos
+// (los audios quedan guardados para siempre en el teléfono, así que sin esto seguiría usando los viejos)
+const VOZ_REV = { paula: 2, julio: 2 };
+const vozUrl = (voice, id) => `voz/${voice}/${id}.mp3` + (VOZ_REV[voice] ? `?r=${VOZ_REV[voice]}` : '');
+// borra del teléfono los audios viejos de las voces regeneradas (para no ocupar lugar de más)
+setTimeout(async () => {
+  try {
+    if (!self.caches) return; const c = await caches.open('intervalo-voz');
+    for (const req of await c.keys()) { const u = new URL(req.url), m = u.pathname.match(/\/voz\/([a-z]+)\//); if (m && VOZ_REV[m[1]] && u.searchParams.get('r') !== String(VOZ_REV[m[1]])) await c.delete(req); }
+  } catch (e) {}
+}, 8000);
 const loadIdx = () => VIDX || (VIDX = fetch('voz/index.json').then(r => r.ok ? r.json() : null).catch(() => null));
 const vbuf = new Map();
-// las voces grabadas (Dora, Alex, Paula y Julio) son en español: en otro idioma se usa la del teléfono
+// las voces grabadas (Dora, Alex, Paula, Julio, Ona y Kimetz) son en español: en otro idioma se usa la del teléfono
 const voiceOf = () => LANG !== 'es' ? 'sistema' : (S.voiceSrc && READY_VOICES.includes(S.voiceSrc)) ? S.voiceSrc : 'dora';
 function audioCtx() {
   if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)();
@@ -23,7 +35,7 @@ function audioCtx() {
 function getBuf(voice, id) {
   const key = voice + '/' + id;
   if (!vbuf.has(key)) {
-    const p = fetch(`voz/${voice}/${id}.mp3`).then(r => { if (!r.ok) throw new Error('404'); return r.arrayBuffer(); })
+    const p = fetch(vozUrl(voice, id)).then(r => { if (!r.ok) throw new Error('404'); return r.arrayBuffer(); })
       .then(a => new Promise((res, rej) => audioCtx().decodeAudioData(a, res, rej)));
     p.catch(() => vbuf.delete(key));
     vbuf.set(key, p);
@@ -142,7 +154,7 @@ function sysVoiceList() {
 function openVoiceSettings() {
   let v = voiceOf();
   sheet(`<h3>Voz del entrenador</h3>
-    <p class="sub">Dora, Alex, Paula y Julio son voces grabadas en español. «Voz del teléfono» usa la del iPhone o del navegador.</p>
+    <p class="sub">Dora, Alex, Paula, Julio, Ona y Kimetz son voces grabadas en español. «Voz del teléfono» usa la del iPhone o del navegador.</p>
     <h2>Voz</h2>
     <div class="seg" id="vs-v">${Object.entries(VOICES).filter(([k]) => READY_VOICES.includes(k) && (LANG === 'es' || k === 'sistema')).map(([k, n]) => `<button data-v="${k}" aria-pressed="${v === k}">${n}</button>`).join('')}</div>
     <div id="vs-sysbox" class="hidden"><h2>Voz del teléfono</h2><div id="vs-sys"></div>
@@ -169,7 +181,7 @@ function openVoiceSettings() {
       const voice = v, idx = await loadIdx(); if (!idx) { toast('No se encontraron los audios'); return; }
       const ids = [...new Set(Object.values(idx))]; let done = 0, fail = 0;
       const st = $('#vs-st'), btn = $('#vs-dl'); btn.disabled = true;
-      const work = async () => { while (ids.length) { const id = ids.pop(); try { const r = await fetch(`voz/${voice}/${id}.mp3`); if (!r.ok) fail++; } catch (e) { fail++; } done++; if (done % 10 === 0 && st) st.textContent = `Guardando… ${done} audios`; } };
+      const work = async () => { while (ids.length) { const id = ids.pop(); try { const r = await fetch(vozUrl(voice, id)); if (!r.ok) fail++; } catch (e) { fail++; } done++; if (done % 10 === 0 && st) st.textContent = `Guardando… ${done} audios`; } };
       await Promise.all([1, 2, 3, 4, 5, 6].map(work));
       if (st) st.textContent = fail ? `Guardados ${done - fail}; ${fail} no se pudieron bajar (¿sin conexión?).` : `Listo: ${done} audios guardados para usar sin conexión.`;
       btn.disabled = false;

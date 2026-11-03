@@ -1186,7 +1186,7 @@ I18N = {
 "press": "press",
 "curl": "curl",
 "Idioma": "Language",
-"Cambia el idioma de toda la app. Las voces grabadas (Dora, Alex, Paula y Julio) son solo en español; en inglés se usa la voz del teléfono.": "Changes the language of the whole app. The recorded voices (Dora, Alex, Paula and Julio) are Spanish only; in English the phone's voice is used.",
+"Cambia el idioma de toda la app. Las voces grabadas (Dora, Alex, Paula, Julio, Ona y Kimetz) son solo en español; en inglés se usa la voz del teléfono.": "Changes the language of the whole app. The recorded voices (Dora, Alex, Paula, Julio, Ona and Kimetz) are Spanish only; in English the phone's voice is used.",
 "Pasa a la etapa": "Moves to stage",
 "¡Prueba superada!": "Test passed!",
 "lento": "slow",
@@ -1246,7 +1246,7 @@ I18N = {
 "Zonas a cuidar": "Areas to protect",
 "Los entrenamientos evitan los ejercicios que cargan:": "Workouts avoid exercises that load:",
 "Los audios se descargan a medida que se usan. Para tenerlos todos sin internet, guárdalos ahora (unos 15 MB).": "Audio clips download as they're used. To have them all without internet, save them now (about 15 MB).",
-"Dora, Alex, Paula y Julio son voces grabadas en español. «Voz del teléfono» usa la del iPhone o del navegador.": "Dora, Alex, Paula and Julio are recorded Spanish voices. \"Phone voice\" uses the iPhone's or browser's voice.",
+"Dora, Alex, Paula, Julio, Ona y Kimetz son voces grabadas en español. «Voz del teléfono» usa la del iPhone o del navegador.": "Dora, Alex, Paula, Julio, Ona and Kimetz are recorded Spanish voices. \"Phone voice\" uses the iPhone's or browser's voice.",
 "Primera dominada": "First pull-up",
 "Dominadas negativas": "Negative pull-ups",
 "Dominadas asistidas": "Assisted pull-ups",
@@ -1389,7 +1389,13 @@ I18N = {
 "Antes de cambiar nada te muestro qué contiene la que elijas.": "Before changing anything I'll show you what the one you choose contains.",
 "Todavía no hay nada guardado en la nube": "Nothing saved in the cloud yet",
 "No se pudo leer esa copia: prueba con la otra": "Couldn't read that copy: try the other one",
-"Abriendo la foto…": "Opening the photo…"
+"Abriendo la foto…": "Opening the photo…",
+"Dora (Español latino)": "Dora (Latin American Spanish)",
+"Alex (Español latino)": "Alex (Latin American Spanish)",
+"Paula (Español latino)": "Paula (Latin American Spanish)",
+"Julio (Español latino)": "Julio (Latin American Spanish)",
+"Ona (Español México)": "Ona (Mexican Spanish)",
+"Kimetz (Español México)": "Kimetz (Mexican Spanish)"
 };
 I18N_PAT = [
 [
