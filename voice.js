@@ -7,7 +7,7 @@
 const VOICES = { dora: 'Dora (Español latino)', alex: 'Alex (Español latino)', paula: 'Paula (Español latino)', julio: 'Julio (Español latino)', ona: 'Ona (Español México)', kimetz: 'Kimetz (Español México)', sistema: 'Voz del teléfono' };
 const MALE_VOICES = ['alex', 'julio', 'kimetz'];
 // voces que ya tienen sus audios en voz/<voz>/ (se agregan acá cuando están listas)
-const READY_VOICES = ['dora', 'alex', 'paula', 'julio', 'ona', 'sistema'];   // kimetz se suma cuando estén sus audios
+const READY_VOICES = ['dora', 'alex', 'paula', 'julio', 'ona', 'kimetz', 'sistema'];
 const sysSay = say; // voz del sistema (speechSynthesis), queda como respaldo
 const VNUM = { cero: '0', uno: '1', dos: '2', tres: '3' };
 const vnorm = t => t.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
