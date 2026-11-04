@@ -386,20 +386,36 @@ const grpCode = () => Array.from(crypto.getRandomValues(new Uint8Array(6)), x =>
 let frMode = 'm', frSel = null, frCache = {};
 const memberId = u => u.uid + '_' + PROFILE.id;
 async function frUser() { if (typeof cloudUser !== 'function') return null; try { return await cloudUser(); } catch (e) { return null; } }
+// lo que ven los demás además de sesiones y minutos: racha de semanas, logros, repeticiones de la semana y retos en curso
+function frExtra() {
+  const H = PS.get('history', []), wk = weekKey(Date.now());
+  let rp = 0; H.forEach(x => { if (weekKey(x.at) !== wk) return; const r = repsNow(x); rp += (r.sq || 0) + (r.pu || 0) + (r.ab || 0) + (r.bu || 0) + (r.dm || 0); });
+  const all = PS.get('retos', {}) || {}, rt = [];
+  Object.keys(all).forEach(k => { const st = all[k]; if (!st || !RETOS[k] || st.stage == null) return; let D = 0; try { D = retoDays(k, st.k, st.stage).length; } catch (e) {} rt.push([k, st.stage, (st.day || 0) + 1, D, st.best || 0, st.goalsDone || 0]); });
+  return { st: weekStreak(H), aw: Object.keys(PS.get('awards', {}) || {}).length, rp, rt: rt.slice(0, 4) };
+}
+function frInfo(x) {
+  const e = x.x || {}, a = [];
+  if (e.st) a.push(`🔥 ${t(e.st === 1 ? '{0} semana seguida' : '{0} semanas seguidas', e.st)}`);
+  if (e.aw) a.push(`🏅 ${t(e.aw === 1 ? '{0} logro' : '{0} logros', e.aw)}`);
+  if (e.rp && x.wk === weekKey(Date.now())) a.push(`💪 ${t('{0} reps esta semana', e.rp)}`);
+  const rt = (e.rt || []).filter(r => RETOS[r[0]]).map(([k, st, d, D, b, g]) => `<span class="fr-rt">🎯 <b>${esc(t(RETOS[k].n))}</b> · ${t('etapa {0}/3', st)}${D ? ' · ' + t('día {0}/{1}', d, D) : ''}${b ? ' · ' + t('récord {0}', b) : ''}${g ? ' · 🥇' + (g > 1 ? '×' + g : '') : ''}</span>`);
+  return a.length || rt.length ? `<small class="fr-fx">${a.join(' · ')}</small>${rt.join('')}` : '';
+}
 async function frPublish(only) {
   const G = PS.get('groups', []); if (!G.length || !navigator.onLine) return;
   const u = await frUser(); if (!u || !FBA.memberPut) return;
-  const w = weekProgress(), d = { n: PROFILE.name, wk: weekKey(Date.now()), s: w.n, m: w.m, at: Date.now() };
+  const w = weekProgress(), d = { n: PROFILE.name, wk: weekKey(Date.now()), s: w.n, m: w.m, at: Date.now(), x: frExtra() };
   for (const g of G) { if (only && g.c !== only) continue; try { await FBA.memberPut(g.c, memberId(u), d); } catch (e) {} }
 }
 async function renderFriends() {
   const el = $('#friends'); if (!el || !PROFILE) return;
   const G = PS.get('groups', []);
   if (!frSel || !G.some(g => g.c === frSel)) frSel = G[0] && G[0].c;
-  el.innerHTML = `<p class="sub pane-intro">Crea un grupo, comparte el código y compitan por quién entrena más cada semana. Se ve solo el nombre del perfil, las sesiones y los minutos de la semana.</p>
-    ${G.length ? `<div class="chips" id="fr-g">${G.map(g => `<button class="chip" data-g="${g.c}" aria-pressed="${g.c === frSel}" data-noi18n>${esc(g.n)}</button>`).join('')}</div>
+  el.innerHTML = `<p class="sub pane-intro">Crea un grupo, comparte el código y compitan por quién entrena más cada semana. Se ve el nombre del perfil, las sesiones y minutos de la semana, la racha, los logros y los retos en curso.</p>
+    ${G.length ? `<div class="chips fr-g" id="fr-g">${G.map(g => `<button class="chip" data-g="${g.c}" aria-pressed="${g.c === frSel}" data-noi18n>${esc(g.n)}</button>`).join('')}</div>
       <div id="fr-rank"><p class="note">Cargando…</p></div>` : ''}
-    <div class="row" style="margin-top:12px"><button class="btn ghost small" id="fr-new">+ Crear grupo</button><button class="btn ghost small" id="fr-join">Unirme con un código</button></div>`;
+    <div class="row fr-act"><button class="btn ghost small" id="fr-new">+ Crear grupo</button><button class="btn ghost small" id="fr-join">Unirme con un código</button></div>`;
   $('#fr-new').onclick = () => openGroupNew(); $('#fr-join').onclick = () => openGroupJoin();
   const gg = $('#fr-g'); if (gg) gg.onclick = e => { const b = e.target.closest('[data-g]'); if (b) { frSel = b.dataset.g; renderFriends(); } };
   if (!G.length) return;
@@ -417,8 +433,8 @@ async function renderFriends() {
       <div class="ch-top"><div><b data-noi18n>${esc(g.n)}</b><small>${t('Código: {0} · esta semana', '<span class="code" data-noi18n>' + frSel + '</span>')}</small></div>
         <div class="seg" id="fr-mode"><button data-m="m" aria-pressed="${frMode === 'm'}">Minutos</button><button data-m="s" aria-pressed="${frMode === 's'}">Sesiones</button></div></div>
       <div class="rank">${rows.map((x, i) => `<div class="rk${x.id === me ? ' me' : ''}"><span class="pos">${i + 1}</span><span class="av" style="background:var(--av${i % 7});color:var(--avt${i % 7})" data-noi18n>${esc((x.n || '?')[0].toUpperCase())}</span>
-        <span class="nm" data-noi18n>${esc(x.n || '—')}${x.id === me ? ` <small>(${t('tú')})</small>` : ''}</span><b>${frMode === 'm' ? x.m + ' min' : x.s}</b></div>`).join('')}</div></div>
-      <div class="row" style="margin-top:10px"><button class="btn ghost small" id="fr-invite">Invitar</button><button class="btn ghost small" id="fr-leave">Salir del grupo</button></div>`;
+        <span class="fr-who"><span class="nm" data-noi18n>${esc(x.n || '—')}${x.id === me ? ` <small>(${t('tú')})</small>` : ''}</span>${frInfo(x)}</span><b>${frMode === 'm' ? x.m + ' min' : x.s}</b></div>`).join('')}</div></div>
+      <div class="row fr-act"><button class="btn ghost small" id="fr-invite">Invitar</button><button class="btn ghost small" id="fr-leave">Salir del grupo</button></div>`;
     bindSeg('fr-mode', 'm', m => { frMode = m; renderFriends(); });
     $('#fr-invite').onclick = () => inviteGroup(g);
     $('#fr-leave').onclick = async () => {

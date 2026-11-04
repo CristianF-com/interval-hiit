@@ -1565,7 +1565,16 @@ I18N = {
 "5 minutos de burpees": "5 minutes of burpees",
 "Sumaste 5 minutos haciendo burpees, por tiempo o por repeticiones.": "You spent 5 minutes doing burpees, timed or by reps.",
 "20 minutos de burpees": "20 minutes of burpees",
-"Sumaste 20 minutos haciendo burpees, por tiempo o por repeticiones.": "You spent 20 minutes doing burpees, timed or by reps."
+"Sumaste 20 minutos haciendo burpees, por tiempo o por repeticiones.": "You spent 20 minutes doing burpees, timed or by reps.",
+"Crea un grupo, comparte el código y compitan por quién entrena más cada semana. Se ve el nombre del perfil, las sesiones y minutos de la semana, la racha, los logros y los retos en curso.": "Create a group, share the code and compete to see who trains most each week. Others see the profile name, sessions and minutes of the week, streak, awards and challenges in progress.",
+"{0} semana seguida": "{0} week in a row",
+"{0} semanas seguidas": "{0} weeks in a row",
+"{0} logro": "{0} award",
+"{0} logros": "{0} awards",
+"{0} reps esta semana": "{0} reps this week",
+"etapa {0}/3": "stage {0}/3",
+"día {0}/{1}": "day {0}/{1}",
+"récord {0}": "best {0}"
 };
 I18N_PAT = [
 [

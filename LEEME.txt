@@ -201,6 +201,8 @@ ORGANIZACIÓN (subpestañas)
 - Logros de repeticiones (sentadillas, flexiones, abdominales, burpees): cuentan solo ejercicios hechos por
   repeticiones, retos y pruebas. Logros de tiempo (minutos de cada uno): suman lo que duró cada ejercicio,
   sea por tiempo o por repeticiones (con el tiempo medido de cada serie).
+- Amigos: cada integrante muestra su racha de semanas, logros, repeticiones de la semana y retos en curso
+  (etapa, día, récord y metas alcanzadas).
 
 META SEMANAL
 - Sesiones o minutos por semana (lunes a domingo). Anillo en Coach y en Historial → Resumen; al cumplirla
