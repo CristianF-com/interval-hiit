@@ -374,7 +374,7 @@ async function renderFriends() {
     ${G.length ? `<div class="chips" id="fr-g">${G.map(g => `<button class="chip" data-g="${g.c}" aria-pressed="${g.c === frSel}" data-noi18n>${esc(g.n)}</button>`).join('')}</div>
       <div id="fr-rank"><p class="note">Cargando…</p></div>` : ''}
     <div class="row" style="margin-top:12px"><button class="btn ghost small" id="fr-new">+ Crear grupo</button><button class="btn ghost small" id="fr-join">Unirme con un código</button></div>`;
-  $('#fr-new').onclick = openGroupNew; $('#fr-join').onclick = openGroupJoin;
+  $('#fr-new').onclick = () => openGroupNew(); $('#fr-join').onclick = () => openGroupJoin();
   const gg = $('#fr-g'); if (gg) gg.onclick = e => { const b = e.target.closest('[data-g]'); if (b) { frSel = b.dataset.g; renderFriends(); } };
   if (!G.length) return;
   const rk = $('#fr-rank');
@@ -425,6 +425,7 @@ function openGroupNew() {
   }, false, true);
 }
 function openGroupJoin(code) {
+  if (typeof code !== 'string') code = '';   // por si llega el evento del toque en lugar de un código
   sheet(`<h3>Unirme a un grupo</h3><div class="field"><input id="gj-c" maxlength="6" placeholder="Código de 6 letras" autocapitalize="characters" autocomplete="off" value="${esc(code || '')}" style="text-transform:uppercase;letter-spacing:.2em"></div>
     <p class="note auth-msg" id="auth-msg"></p><div class="gap"></div><button class="btn" id="gj-ok">Unirme</button>`, () => {
     $('#gj-ok').onclick = async () => {
