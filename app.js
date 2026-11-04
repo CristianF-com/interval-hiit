@@ -958,9 +958,10 @@ function buildTimeline(w) {
       });
     });
   } else {
-    const sk = w.sk;
+    const sk = w.sk, spec = w.rtItems;   // rutinas propias: cada ejercicio con su tiempo o sus repeticiones
     w.rounds.forEach((ids, r) => ids.forEach((id, i) => {
-      t.push({ k: 'work', ex: id, dur: sk.w, sec: 'Ronda', r, R: w.rounds.length, i, N: ids.length });
+      const it = spec && spec[i], amt = it && it.m === 'r' ? { dur: 0, reps: it.v } : { dur: it ? it.v : sk.w };
+      t.push({ k: 'work', ex: id, ...amt, sec: 'Ronda', r, R: w.rounds.length, i, N: ids.length });
       const lastInRound = i === ids.length - 1, lastRound = r === w.rounds.length - 1;
       if (!lastInRound) { if (sk.r > 0) t.push({ k: 'rest', dur: sk.r, label: 'Descanso', r, R: w.rounds.length }); }
       else if (!lastRound && sk.rr > 0) t.push({ k: 'roundrest', dur: sk.rr, label: 'Descanso de ronda', r, R: w.rounds.length });
@@ -1037,9 +1038,11 @@ function renderPreview() {
     });
   } else {
     const sk = w.sk;
+    const rtg = i => w.rtItems && w.rtItems[i] ? (w.rtItems[i].m === 'r' ? `×${w.rtItems[i].v}` : `${w.rtItems[i].v}s`) : '';
+    if (w.rtItems) $('#pv-sub').textContent = t('Mi rutina · {0}s de descanso entre ejercicios · {1}s entre rondas', sk.r, sk.rr); else
     $('#pv-sub').textContent = `${w.smart ? 'Entrenador inteligente · intensidad ' + w.I + ' · ' : ''}${LEVELS[w.level - 1]} · ${sk.w}s trabajo / ${sk.r}s descanso${w.noJump ? ' · sin saltos' : ''} · dificultad media ${avgLevel(w).toFixed(1).replace('.', ',')} de 3${w.edited ? ' (ajustada)' : ''}`;
     $('#pv-stats').innerHTML = `<div class="stat"><b>${fmt(total(tl))}</b><span>minutos</span></div><div class="stat"><b>${w.rounds.length}</b><span>rondas</span></div><div class="stat"><b>${w.rounds.flat().length}</b><span>intervalos</span></div>`;
-    if (!w.vary) h += `<div class="block"><div class="block-h"><b>Circuito × ${w.rounds.length}</b><span>${sk.w}s / ${sk.r}s · ${sk.rr}s entre rondas</span></div>${w.rounds[0].map((id, i) => exRow(id, i, 'all-' + i, '', true)).join('')}</div>`;
+    if (!w.vary) h += `<div class="block"><div class="block-h"><b>Circuito × ${w.rounds.length}</b><span>${w.rtItems ? t('{0}s de descanso · {1}s entre rondas', sk.r, sk.rr) : `${sk.w}s / ${sk.r}s · ${sk.rr}s entre rondas`}</span></div>${w.rounds[0].map((id, i) => exRow(id, i, 'all-' + i, rtg(i), true)).join('')}</div>`;
     else w.rounds.forEach((ids, r) => { h += `<div class="block"><div class="block-h"><b>Ronda ${r + 1}</b><span>${sk.w}s / ${sk.r}s</span></div>${ids.map((id, i) => exRow(id, i, r + '-' + i, '', true)).join('')}</div>`; });
   }
   if (w.cool && w.cool.length) h += `<div class="block"><div class="block-h"><b>Estiramientos</b><span>${w.cool.length} × 30s</span></div>${w.cool.map((id, i) => exRow(id, i, '')).join('')}</div>`;

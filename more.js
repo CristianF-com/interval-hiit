@@ -239,20 +239,35 @@ function comparePhotos(two) {
 }
 
 /* ---------- Rutinas propias ----------
-   PS 'routines' = [{ id, n, w, r, R, rr, ex: [ids], warm, cool }] (van en la copia). Se comparten con un link o QR. */
-const RT_DEF = { n: '', w: 40, r: 20, R: 3, rr: 60, ex: [], warm: true, cool: true };
-function rtWorkout(rt) {
-  return { kind: 'coach', rt: rt.id || 'x', rtName: rt.n, created: Date.now(), sk: { w: rt.w, r: rt.r, n: rt.ex.length, R: rt.R, rr: rt.rr, dur: 0 },
-    level: 2, parts: ['all'], noJump: false, vary: false, rounds: Array.from({ length: rt.R }, () => rt.ex.slice()), db: false,
+   PS 'routines' = [{ id, n, r, R, rr, items: [{ id, m: 't' (segundos) | 'r' (repeticiones), v }], warm, cool }]
+   (van en la copia). Cada ejercicio va por tiempo o por repeticiones, con su propia cantidad.
+   Las rutinas viejas (ex: [ids] + w: segundos para todos) se convierten solas. Se comparten con un link o QR. */
+const RT_DEF = { n: '', r: 20, R: 3, rr: 60, items: [], warm: true, cool: true };
+// por defecto: los ejercicios que se sostienen (planchas, isométricos) van por tiempo; el resto por repeticiones
+const RT_HOLD = /plank|hold|wall_sit|hollow|superman|bridge_hold|dead_hang|static|isometric|mountain|jack|high_knees|butt_kick|skater|run|climb|skier|quick_feet|shuffle|jog|march|punch|box|rope|sprint|flutter|kick/;
+const rtDefItem = (id, prev) => prev ? { id, m: prev.m, v: prev.v } : RT_HOLD.test(id) ? { id, m: 't', v: 40 } : { id, m: 'r', v: 12 };
+function rtNorm(rt) {
+  rt = { ...RT_DEF, ...rt };
+  if (!Array.isArray(rt.items) || !rt.items.length) rt.items = (rt.ex || []).map(id => ({ id, m: 't', v: rt.w || 40 }));
+  rt.items = rt.items.filter(it => it && CATALOG[it.id]).map(it => ({ id: it.id, m: it.m === 'r' ? 'r' : 't', v: Math.max(1, Math.min(it.m === 'r' ? 200 : 600, Math.round(+it.v) || (it.m === 'r' ? 12 : 40))) }));
+  delete rt.ex; delete rt.w;
+  return rt;
+}
+function rtWorkout(rt0) {
+  const rt = rtNorm(rt0), ids = rt.items.map(it => it.id), firstT = rt.items.find(it => it.m === 't');
+  return { kind: 'coach', rt: rt.id || 'x', rtName: rt.n, rtItems: rt.items, created: Date.now(), sk: { w: firstT ? firstT.v : 40, r: rt.r, n: ids.length, R: rt.R, rr: rt.rr, dur: 0 },
+    level: 2, parts: ['all'], noJump: false, vary: false, rounds: Array.from({ length: rt.R }, () => ids.slice()), db: false,
     warm: rt.warm ? shuffle(WARM).slice(0, 5) : [], cool: rt.cool ? shuffle(COOL).slice(0, 5) : [] };
 }
-const rtSecs = rt => rt.ex.length ? rt.R * (rt.ex.length * rt.w + (rt.ex.length - 1) * rt.r) + (rt.R - 1) * rt.rr : 0;
+const rtItemSecs = it => it.m === 'r' ? it.v * REP_SEC : it.v;
+const rtSecs = rt0 => { const rt = rtNorm(rt0), n = rt.items.length; return n ? rt.R * (rt.items.reduce((a, it) => a + rtItemSecs(it), 0) + (n - 1) * rt.r) + (rt.R - 1) * rt.rr : 0; };
+const rtAmt = it => it.m === 'r' ? t('{0} rep', it.v) : t('{0} s', it.v);
 function renderRoutines() {
   const el = $('#routines'); if (!el || !PROFILE) return;
-  const R = PS.get('routines', []);
-  el.innerHTML = `<p class="sub pane-intro">Arma tus circuitos con los ejercicios que quieras y compártelos con un link o un código QR.</p>
+  const R = PS.get('routines', []).map(rtNorm);
+  el.innerHTML = `<p class="sub pane-intro">Arma tus circuitos con los ejercicios que quieras, cada uno por tiempo o por repeticiones, y compártelos con un link o un código QR.</p>
     <button class="btn" id="rt-new">+ Nueva rutina</button>
-    ${R.length ? `<h2>Mis rutinas</h2><div class="block">${R.map((rt, i) => `<div class="hist"><div class="t" data-rto="${i}"><b data-noi18n>${esc(rt.n)}</b><small>${t('{0} ejercicios · {1} rondas · {2} min', rt.ex.length, rt.R, Math.round(rtSecs(rt) / 60))}</small></div>
+    ${R.length ? `<h2>Mis rutinas</h2><div class="block">${R.map((rt, i) => `<div class="hist"><div class="t" data-rto="${i}"><b data-noi18n>${esc(rt.n)}</b><small>${t('{0} ejercicios · {1} rondas · {2} min', rt.items.length, rt.R, Math.round(rtSecs(rt) / 60))}</small></div>
       <button class="icon-btn" data-rtp="${i}" aria-label="Empezar"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg></button>
       <button class="icon-btn" data-rte="${i}" aria-label="Editar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg></button></div>`).join('')}</div>` : ''}`;
   $('#rt-new').onclick = () => openRoutine(null);
@@ -260,43 +275,54 @@ function renderRoutines() {
   el.querySelectorAll('[data-rte]').forEach(b => b.onclick = () => openRoutine(+b.dataset.rte));
 }
 function openRoutine(idx, preset) {
-  const R = PS.get('routines', []), rt = preset ? { ...RT_DEF, ...preset } : idx != null ? JSON.parse(JSON.stringify(R[idx])) : { ...RT_DEF, ex: [] };
+  const R = PS.get('routines', []), rt = rtNorm(preset ? preset : idx != null ? JSON.parse(JSON.stringify(R[idx])) : { ...RT_DEF, items: [] });
   const num = (id, lo, hi) => { const v = parseInt($(id).value, 10); return isFinite(v) ? Math.max(lo, Math.min(hi, v)) : null; };
-  const read = () => { rt.n = $('#rt-n').value.trim().slice(0, 40); const a = num('#rt-w', 5, 300), b = num('#rt-r', 0, 300), c = num('#rt-R', 1, 20), d = num('#rt-rr', 0, 600); if (a != null) rt.w = a; if (b != null) rt.r = b; if (c != null) rt.R = c; if (d != null) rt.rr = d; };
+  const read = () => {
+    rt.n = $('#rt-n').value.trim().slice(0, 40);
+    const b = num('#rt-r', 0, 300), c = num('#rt-R', 1, 20), d = num('#rt-rr', 0, 600); if (b != null) rt.r = b; if (c != null) rt.R = c; if (d != null) rt.rr = d;
+    document.querySelectorAll('#rt-ex [data-v]').forEach(inp => { const it = rt.items[+inp.dataset.v], v = parseInt(inp.value, 10); if (it && isFinite(v) && v > 0) it.v = Math.min(it.m === 'r' ? 200 : 600, v); });
+  };
+  const sum = () => { $('#rt-sum').textContent = rt.items.length ? t('Duración aprox.: {0} min (sin calentamiento ni estiramientos)', Math.round(rtSecs(rt) / 60)) : ''; };
   const list = () => {
-    $('#rt-ex').innerHTML = rt.ex.length ? rt.ex.map((id, i) => `<div class="hist rt-row"><div class="t"><b>${i + 1}. ${esc(ex(id).n)}</b></div>
-      <button class="icon-btn" data-up="${i}" aria-label="Subir" ${i ? '' : 'disabled'}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 15l6-6 6 6"/></svg></button>
-      <button class="icon-btn" data-rm="${i}" aria-label="Quitar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>`).join('')
+    $('#rt-ex').innerHTML = rt.items.length ? rt.items.map((it, i) => `<div class="rt-item">
+      <div class="rt-top"><b>${i + 1}. ${esc(ex(it.id).n)}</b>
+        <button class="icon-btn" data-up="${i}" aria-label="Subir" ${i ? '' : 'disabled'}><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 15l6-6 6 6"/></svg></button>
+        <button class="icon-btn" data-rm="${i}" aria-label="Quitar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+      <div class="rt-amt"><div class="seg rt-mode"><button data-mode="${i}" data-m="t" aria-pressed="${it.m === 't'}">Tiempo</button><button data-mode="${i}" data-m="r" aria-pressed="${it.m === 'r'}">Repeticiones</button></div>
+        <label class="rt-v"><input type="number" inputmode="numeric" min="1" data-v="${i}" value="${it.v}" aria-label="${it.m === 'r' ? t('Repeticiones') : t('Segundos')}"><span>${it.m === 'r' ? t('rep') : t('s')}</span></label></div></div>`).join('')
       : '<p class="note">Todavía no agregaste ejercicios.</p>';
-    $('#rt-sum').textContent = rt.ex.length ? t('Duración aprox.: {0} min (sin calentamiento ni estiramientos)', Math.round(rtSecs(rt) / 60)) : '';
+    sum();
   };
   sheet(`<h3>${idx != null ? 'Editar rutina' : 'Nueva rutina'}</h3>
     <div class="field"><input id="rt-n" maxlength="40" placeholder="Nombre de la rutina" value="${esc(rt.n)}"></div>
-    <div class="adv" style="grid-template-columns:1fr 1fr;padding:0;margin-top:10px">
-      <label>Trabajo (s)<input type="number" inputmode="numeric" id="rt-w" value="${rt.w}"></label>
+    <div class="adv" style="grid-template-columns:1fr 1fr 1fr;padding:0;margin-top:10px">
       <label>Descanso (s)<input type="number" inputmode="numeric" id="rt-r" value="${rt.r}"></label>
       <label>Rondas<input type="number" inputmode="numeric" id="rt-R" value="${rt.R}"></label>
-      <label>Descanso entre rondas (s)<input type="number" inputmode="numeric" id="rt-rr" value="${rt.rr}"></label></div>
-    <div class="toggles" style="margin-top:10px">
-      <button class="tg" id="rt-warm" role="switch" aria-checked="${!!rt.warm}"><span>Calentamiento<small>5 movimientos suaves antes</small></span><i class="sw"></i></button>
-      <button class="tg" id="rt-cool" role="switch" aria-checked="${!!rt.cool}"><span>Estiramientos al final<small>5 estiramientos de 30 s</small></span><i class="sw"></i></button></div>
-    <h2>Ejercicios</h2><div class="block" id="rt-ex"></div>
+      <label>Entre rondas (s)<input type="number" inputmode="numeric" id="rt-rr" value="${rt.rr}"></label></div>
+    <p class="note">El descanso es entre un ejercicio y otro. En los ejercicios por repeticiones se toca ✓ al terminar la serie.</p>
+    <h2>Ejercicios</h2><div class="block rt-list" id="rt-ex"></div>
     <button class="btn ghost small" id="rt-add">+ Agregar ejercicio</button>
     <p class="note" id="rt-sum"></p>
-    <div class="row"><button class="btn ghost small" id="rt-cancel">Cancelar</button><button class="btn small" id="rt-save">Guardar</button></div>
+    <div class="toggles">
+      <button class="tg" id="rt-warm" role="switch" aria-checked="${!!rt.warm}"><span>Calentamiento<small>5 movimientos suaves antes</small></span><i class="sw"></i></button>
+      <button class="tg" id="rt-cool" role="switch" aria-checked="${!!rt.cool}"><span>Estiramientos al final<small>5 estiramientos de 30 s</small></span><i class="sw"></i></button></div>
+    <div class="row" style="margin-top:12px"><button class="btn ghost small" id="rt-cancel">Cancelar</button><button class="btn small" id="rt-save">Guardar</button></div>
     ${idx != null ? `<div class="row" style="margin-top:10px"><button class="btn ghost small" id="rt-share">Compartir</button><button class="btn danger small" id="rt-del">Borrar</button></div>` : ''}`, () => {
     list();
     ['warm', 'cool'].forEach(k => { const b = $('#rt-' + k); b.onclick = () => { rt[k] = !rt[k]; b.setAttribute('aria-checked', rt[k]); }; });
     $('#rt-ex').onclick = e => {
-      const u = e.target.closest('[data-up]'), m = e.target.closest('[data-rm]');
-      if (u) { const i = +u.dataset.up; [rt.ex[i - 1], rt.ex[i]] = [rt.ex[i], rt.ex[i - 1]]; list(); }
-      if (m) { rt.ex.splice(+m.dataset.rm, 1); list(); }
+      const u = e.target.closest('[data-up]'), m = e.target.closest('[data-rm]'), md = e.target.closest('[data-mode]');
+      if (u || m || md) read();
+      if (u) { const i = +u.dataset.up; [rt.items[i - 1], rt.items[i]] = [rt.items[i], rt.items[i - 1]]; list(); }
+      if (m) { rt.items.splice(+m.dataset.rm, 1); list(); }
+      if (md) { const it = rt.items[+md.dataset.mode], to = md.dataset.m; if (it.m !== to) { it.m = to; it.v = to === 'r' ? 12 : 40; list(); const inp = document.querySelector(`#rt-ex [data-v="${md.dataset.mode}"]`); if (inp) inp.select(); } }
     };
-    ['#rt-w', '#rt-r', '#rt-R', '#rt-rr'].forEach(id => $(id).oninput = () => { read(); list(); });
-    $('#rt-add').onclick = () => { read(); pickExercise(id => { rt.ex.push(id); openRoutine(idx, rt); }, () => openRoutine(idx, rt)); };
+    $('#rt-ex').oninput = e => { if (e.target.matches('[data-v]')) { read(); sum(); } };
+    ['#rt-r', '#rt-R', '#rt-rr'].forEach(id => $(id).oninput = () => { read(); sum(); });
+    $('#rt-add').onclick = () => { read(); pickExercise(id => { rt.items.push(rtDefItem(id)); openRoutine(idx, rt); }, () => openRoutine(idx, rt)); };
     $('#rt-cancel').onclick = () => closeSheet();
     $('#rt-save').onclick = () => {
-      read(); if (!rt.n) { toast('Ponle un nombre'); $('#rt-n').focus(); return; } if (!rt.ex.length) { toast('Agrega al menos un ejercicio'); return; }
+      read(); if (!rt.n) { toast('Ponle un nombre'); $('#rt-n').focus(); return; } if (!rt.items.length) { toast('Agrega al menos un ejercicio'); return; }
       const R2 = PS.get('routines', []); if (!rt.id) rt.id = uid();
       const at = R2.findIndex(x => x.id === rt.id); if (at >= 0) R2[at] = rt; else R2.unshift(rt);
       PS.set('routines', R2.slice(0, 60)); closeSheet(); renderRoutines(); toast('Rutina guardada');
@@ -322,7 +348,7 @@ function pickExercise(onPick, onBack) {
 // link: …/#rt=<datos en base64>; se abre en cualquier teléfono con la app y ofrece guardarla
 const b64u = s => btoa(unescape(encodeURIComponent(s))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
 const unb64u = s => decodeURIComponent(escape(atob(s.replace(/-/g, '+').replace(/_/g, '/'))));
-const rtLink = rt => location.origin + location.pathname + '#rt=' + b64u(JSON.stringify({ n: rt.n, w: rt.w, r: rt.r, R: rt.R, rr: rt.rr, ex: rt.ex, warm: rt.warm ? 1 : 0, cool: rt.cool ? 1 : 0 }));
+const rtLink = rt0 => { const rt = rtNorm(rt0); return location.origin + location.pathname + '#rt=' + b64u(JSON.stringify({ n: rt.n, r: rt.r, R: rt.R, rr: rt.rr, it: rt.items.map(it => [it.id, it.m, it.v]), warm: rt.warm ? 1 : 0, cool: rt.cool ? 1 : 0 })); };
 async function shareRoutine(rt) {
   const link = rtLink(rt);
   let qr = ''; try { await loadQR(); const q = qrcode(0, 'M'); q.addData(link); q.make(); qr = q.createSvgTag({ cellSize: 4, margin: 2, scalable: true }); } catch (e) {}
@@ -341,11 +367,11 @@ const loadQR = () => QR_P || (QR_P = new Promise((res, rej) => { if (window.qrco
 function checkSharedRoutine() {
   const m = location.hash.match(/^#rt=([\w-]+)/); if (!m || !PROFILE) return;
   history.replaceState(null, '', location.pathname + location.search);
-  let rt; try { rt = JSON.parse(unb64u(m[1])); } catch (e) { toast('Ese link de rutina no es válido'); return; }
-  rt.ex = (rt.ex || []).filter(id => CATALOG[id]); if (!rt.ex.length) return;
-  rt = { ...RT_DEF, ...rt, warm: !!rt.warm, cool: !!rt.cool };
-  sheet(`<h3>Rutina compartida</h3><p class="sub"><b data-noi18n>${esc(rt.n)}</b> · ${t('{0} ejercicios · {1} rondas · {2} min', rt.ex.length, rt.R, Math.round(rtSecs(rt) / 60))}</p>
-    <div class="block">${rt.ex.map((id, i) => `<div class="hist"><div class="t"><b>${i + 1}. ${esc(ex(id).n)}</b></div></div>`).join('')}</div>
+  let raw; try { raw = JSON.parse(unb64u(m[1])); } catch (e) { toast('Ese link de rutina no es válido'); return; }
+  if (Array.isArray(raw.it)) raw.items = raw.it.map(([id, m2, v]) => ({ id, m: m2, v }));
+  const rt = rtNorm({ ...raw, warm: !!raw.warm, cool: !!raw.cool }); delete rt.it; if (!rt.items.length) return;
+  sheet(`<h3>Rutina compartida</h3><p class="sub"><b data-noi18n>${esc(rt.n)}</b> · ${t('{0} ejercicios · {1} rondas · {2} min', rt.items.length, rt.R, Math.round(rtSecs(rt) / 60))}</p>
+    <div class="block">${rt.items.map((it, i) => `<div class="hist"><div class="t"><b>${i + 1}. ${esc(ex(it.id).n)}</b></div><span class="tgt">${rtAmt(it)}</span></div>`).join('')}</div>
     <div class="gap"></div><button class="btn" id="sr-save">Guardar en Mis rutinas</button><div class="gap"></div><button class="btn ghost" id="sr-try">Probarla ahora</button>`, () => {
     $('#sr-save').onclick = () => { rt.id = uid(); const R = PS.get('routines', []); R.unshift(rt); PS.set('routines', R.slice(0, 60)); closeSheet(); goTo('coach', 'coach', 'mine'); toast('Rutina guardada'); };
     $('#sr-try').onclick = () => { closeSheet(); openPreview(rtWorkout(rt), 'coach'); };

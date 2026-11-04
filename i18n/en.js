@@ -1527,7 +1527,18 @@ I18N = {
 "{0} días entre una y otra": "{0} days between them",
 "coach": "coach",
 "Int. HIIT": "Smart HIIT",
-"Int. mancuernas": "Smart dumbbells"
+"Int. mancuernas": "Smart dumbbells",
+"Repeticiones": "Reps",
+"Segundos": "Seconds",
+"rep": "reps",
+"s": "s",
+"{0} rep": "{0} reps",
+"{0} s": "{0} s",
+"Entre rondas (s)": "Between rounds (s)",
+"El descanso es entre un ejercicio y otro. En los ejercicios por repeticiones se toca ✓ al terminar la serie.": "Rest is between one exercise and the next. For rep-based exercises, tap ✓ when you finish the set.",
+"Arma tus circuitos con los ejercicios que quieras, cada uno por tiempo o por repeticiones, y compártelos con un link o un código QR.": "Build circuits with any exercises you like, each by time or by reps, and share them with a link or a QR code.",
+"Mi rutina · {0}s de descanso entre ejercicios · {1}s entre rondas": "My routine · {0}s rest between exercises · {1}s between rounds",
+"{0}s de descanso · {1}s entre rondas": "{0}s rest · {1}s between rounds"
 };
 I18N_PAT = [
 [
@@ -2605,6 +2616,14 @@ I18N_PAT = [
 [
 "{0}: hasta el {1} las sesiones son más suaves (intensidad {2}) para que el cuerpo se recupere y después rindas más.",
 "{0}: until {1} sessions are lighter (intensity {2}) so your body recovers and you perform better afterwards."
+],
+[
+"Mi rutina · {0}s de descanso entre ejercicios · {1}s entre rondas",
+"My routine · {0}s rest between exercises · {1}s between rounds"
+],
+[
+"{0}s de descanso · {1}s entre rondas",
+"{0}s rest · {1}s between rounds"
 ]
 ];
 // catálogo de ejercicios y planes en inglés (búsqueda, voz y textos armados en el código)
