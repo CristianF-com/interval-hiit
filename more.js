@@ -501,5 +501,9 @@ rFinish = function (...a) {
 };
 const _showM = show;
 show = function (v) { _showM(v); try { renderGoal(); } catch (e) {} };
+// al abrir la app, Coach e Historial arrancan en su primera opción y se dibuja la parte visible
+// (la app ya mostró la pantalla antes de cargar este archivo, cuando todavía no sabía dibujar estas partes)
+['coach', 'hist'].forEach(g => LS.set('tab.' + g, SUBTABS[g][0][0]));
+if (currentView === 'coach' || currentView === 'hist') try { bindSubtabs(currentView); } catch (e) { console.error(e); }
 setTimeout(() => { try { renderGoal(); checkSharedRoutine(); checkGroupLink(); } catch (e) { console.error(e); } }, 600);
 window.addEventListener('hashchange', () => { checkSharedRoutine(); checkGroupLink(); });
