@@ -228,3 +228,7 @@ AMIGOS (Historial → Amigos)
 SEMANA DE DESCARGA (entrenador inteligente)
 - 7 días con intensidad −1,5: cada 5 semanas de entrenamiento (con 8 sesiones o más) o tras dos «Difícil»
   seguidos. Se muestra en la tarjeta y se puede saltear.
+
+- Barra de estado del iPhone: desde iOS 26.1 el sistema dibuja un degradé arriba en las apps instaladas con la barra
+  translúcida. Ahora la barra es opaca y toma el color del tema (meta theme-color). iOS guarda ese ajuste al instalar,
+  así que hay que quitar el ícono y volver a agregarlo a la pantalla de inicio (antes, hacer copia en la nube).
