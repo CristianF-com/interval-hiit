@@ -224,11 +224,12 @@ $('#hr-file').onchange = async e => {
 /* ---------- Detalle de una sesión del historial ---------- */
 function openHistDetail(i) {
   const h = PS.get('history', []), x = h[i]; if (!x) return;
-  const r = x.reps || repsOf(x);
+  const r = repsNow(x), tt = r.t || {};
+  const tl = [['sq', 'sentadillas'], ['pu', 'flexiones'], ['ab', 'abdominales'], ['bu', 'burpees']].filter(([k]) => tt[k] >= 5).map(([k, n]) => `${fmt(tt[k])} min de ${n}`).join(' · ');
   const rl = [['sq', 'sentadillas'], ['pu', 'flexiones'], ['ab', 'abdominales'], ['bu', 'burpees']].filter(([k]) => r[k]).map(([k, n]) => `${r[k]} ${n}`).join(' · ');
   sheet(`<h3>${esc(title(x.w))}</h3>
     <p class="sub">${dateStr(x.at)} · ${new Date(x.at - x.secs * 1000).toLocaleTimeString(LOC, { hour: '2-digit', minute: '2-digit' })} · ${fmt(x.secs)} min activos${x.full ? '' : ' · incompleto'}${x.fb ? ' · ' + FB[x.fb].n.toLowerCase() : ''}</p>
-    ${rl ? `<p class="note">Aprox.: ${rl}${r.pl ? ` · ${fmt(r.pl)} min de plancha` : ''}</p>` : ''}
+    ${rl ? `<p class="note">Repeticiones: ${rl}</p>` : ''}${tl || r.pl ? `<p class="note">Tiempo: ${[tl, r.pl ? `${fmt(r.pl)} min de plancha` : ''].filter(Boolean).join(' · ')}</p>` : ''}
     <div class="gap"></div>
     ${x.hr ? hrBlockHTML(x.hr) : '<div class="empty" style="padding:22px 16px">Sin datos de pulso.</div>'}
     <div class="gap"></div>
@@ -247,26 +248,37 @@ function openHistDetail(i) {
   });
 }
 
-/* ---------- Repeticiones aproximadas de una sesión ---------- */
-const REP_CAT = { sq: /squat/, pu: /push_up/, ab: /crunch|sit_up|v_up|bicycle|leg_raise|toe_touch|russian_twist|scissor_kick|beetle|windshield|knee_tuck/, bu: /burpee/ };
-const REP_SECS = { sq: 2.5, pu: 3, ab: 2.5, bu: 5 };
+/* ---------- Repeticiones y tiempo por tipo de ejercicio en una sesión ----------
+   Las repeticiones solo salen de ejercicios hechos por repeticiones (o retos y pruebas): nada estimado.
+   El tiempo (t.sq, t.pu…) suma lo que duró cada ejercicio, sea por tiempo o por repeticiones (medido si hay registro). */
+const REP_CAT = { sq: /squat/, pu: /push_up/, ab: /crunch|sit_up|v_up|bicycle|leg_raise|toe_touch|russian_twist|scissor_kick|beetle|windshield|knee_tuck/, bu: /burpee/, dm: /pull_up/ };
+const REP_SECS = { sq: 2.5, pu: 3, ab: 2.5, bu: 5, dm: 4 };
+const repCat = id => { id = ex(id).id; for (const k in REP_CAT) if (REP_CAT[k].test(id)) return k; return /plank/.test(id) ? 'pl' : ''; };
 function repsOf(x, upto) {
-  const r = { sq: 0, pu: 0, ab: 0, bu: 0, pl: 0, dm: 0 };
-  if (x.w.kind === 'reto') return { ...r, ...(x.reps || {}) };
-  if (x.w.kind === 'test') { const t = x.w.results || {}; r.sq = +t.sq || 0; r.pu = +t.pu || 0; r.ab = +t.ab || 0; return r; }
+  const r = { sq: 0, pu: 0, ab: 0, bu: 0, pl: 0, dm: 0, t: { sq: 0, pu: 0, ab: 0, bu: 0, dm: 0 } };
+  const add = (id, reps, secs) => { const k = repCat(id); if (!k) return; if (k === 'pl') { if (!reps) r.pl += Math.round(secs); return; } r[k] += reps; r.t[k] += Math.round(secs); };
+  if (x.w.kind === 'reto') {
+    const R = RETOS[x.w.reto], rp = x.reps || {}; Object.keys(r.t).forEach(k => { r[k] = rp[k] || 0; });
+    if (R) (x.w.sets || []).forEach((n, i) => { const k = R.rep; if (r.t[k] != null && r[k]) r.t[k] += Math.round((x.w.times || [])[i] || n * REP_SECS[k]); });
+    return r;
+  }
+  if (x.w.kind === 'test') { const t = x.w.results || {}; ['sq', 'pu', 'ab'].forEach(k => { r[k] = +t[k] || 0; if (r[k]) r.t[k] = 60; }); return r; }
+  if (x.log && x.log.length) { x.log.forEach(([id, reps, dur, ms]) => add(id, reps || 0, ms / 1000)); return r; }
   let tl; try { tl = buildTimeline(x.w); } catch (e) { return r; }
   const end = upto != null ? upto : (x.full ? tl.length : Math.round(tl.length * 0.5));
-  tl.slice(0, end).forEach(s => {
-    if (s.k !== 'work' || s.soft) return;
-    const id = ex(s.ex).id;
-    for (const k in REP_CAT) if (REP_CAT[k].test(id)) { r[k] += s.reps || Math.round(s.dur / REP_SECS[k]); break; }
-    if (/plank/.test(id) && !s.reps) r.pl += s.dur;
-  });
+  tl.slice(0, end).forEach(s => { if (s.k !== 'work' || s.soft) return; const k = repCat(s.ex); add(s.ex, s.reps || 0, s.reps ? s.reps * (REP_SECS[k] || 3) : s.dur); });
   return r;
 }
+// las sesiones guardadas antes de esta versión tenían repeticiones estimadas: se recalculan (y se recuerdan)
+const REPS_MEMO = new Map();
+const repsNow = x => {
+  if (x.rv === 2 || (x.w.kind === 'reto' && x.reps && x.reps.t)) return x.reps;
+  const key = x.at + ':' + x.secs; let r = REPS_MEMO.get(key); if (!r) { r = repsOf(x); REPS_MEMO.set(key, r); } return r;
+};
 
 /* ---------- Logros ---------- */
-const sumR = (H, k) => H.reduce((a, x) => a + ((x.reps || repsOf(x))[k] || 0), 0);
+const sumR = (H, k) => H.reduce((a, x) => a + (repsNow(x)[k] || 0), 0);
+const sumT = (H, k) => H.reduce((a, x) => a + ((repsNow(x).t || {})[k] || 0), 0);
 const weekKey = t => { const d = new Date(dayStart(t)); d.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return d.getTime(); };
 function weekStreak(H) {
   const weeks = new Set(H.filter(x => x.full).map(x => weekKey(x.at)));
@@ -285,6 +297,7 @@ function awardCtx() {
   return {
     H, n: full.length, mins: Math.round(H.reduce((a, x) => a + x.secs, 0) / 60),
     sq: sumR(H, 'sq'), pu: sumR(H, 'pu'), ab: sumR(H, 'ab'), bu: sumR(H, 'bu'), pl: sumR(H, 'pl'),
+    tsq: sumT(H, 'sq'), tpu: sumT(H, 'pu'), tab: sumT(H, 'ab'), tbu: sumT(H, 'bu'),
     streak: weekStreak(H), maxWeek: Math.max(0, ...Object.values(byWeek)),
     long: Math.max(0, ...full.map(x => x.secs)),
     early: full.some(x => new Date(x.start || x.at - x.secs * 1000).getHours() < 7),
@@ -314,17 +327,25 @@ const AWARDS = [
   ['st4', '🗓️', '1 mes de constancia', 'Entrenaste todas las semanas durante 4 semanas.', 2, c => c.streak >= 4, c => [c.streak, 4]],
   ['st8', '🌟', '2 meses de constancia', 'Entrenaste todas las semanas durante 8 semanas.', 3, c => c.streak >= 8, c => [c.streak, 8]],
   ['st12', '👑', '3 meses de constancia', 'Entrenaste todas las semanas durante 12 semanas.', 3, c => c.streak >= 12, c => [c.streak, 12]],
-  ['sq100', '🦵', '100 sentadillas', 'Sumaste 100 sentadillas.', 1, c => c.sq >= 100, c => [c.sq, 100]],
-  ['sq500', '🦵', '500 sentadillas', 'Sumaste 500 sentadillas.', 2, c => c.sq >= 500, c => [c.sq, 500]],
-  ['sq1000', '🦵', '1000 sentadillas', 'Sumaste 1000 sentadillas.', 3, c => c.sq >= 1000, c => [c.sq, 1000]],
-  ['pu100', '🤜', '100 flexiones', 'Sumaste 100 flexiones.', 1, c => c.pu >= 100, c => [c.pu, 100]],
-  ['pu500', '🤜', '500 flexiones', 'Sumaste 500 flexiones.', 2, c => c.pu >= 500, c => [c.pu, 500]],
-  ['pu1000', '🤜', '1000 flexiones', 'Sumaste 1000 flexiones.', 3, c => c.pu >= 1000, c => [c.pu, 1000]],
-  ['ab100', '🍫', '100 abdominales', 'Sumaste 100 abdominales.', 1, c => c.ab >= 100, c => [c.ab, 100]],
-  ['ab500', '🍫', '500 abdominales', 'Sumaste 500 abdominales.', 2, c => c.ab >= 500, c => [c.ab, 500]],
-  ['ab1000', '🍫', '1000 abdominales', 'Sumaste 1000 abdominales.', 3, c => c.ab >= 1000, c => [c.ab, 1000]],
-  ['bu50', '🐸', '50 burpees', 'Sumaste 50 burpees.', 1, c => c.bu >= 50, c => [c.bu, 50]],
-  ['bu250', '🐸', '250 burpees', 'Sumaste 250 burpees.', 3, c => c.bu >= 250, c => [c.bu, 250]],
+  ['sq100', '🦵', '100 sentadillas', 'Sumaste 100 sentadillas en ejercicios por repeticiones.', 1, c => c.sq >= 100, c => [c.sq, 100]],
+  ['sq500', '🦵', '500 sentadillas', 'Sumaste 500 sentadillas en ejercicios por repeticiones.', 2, c => c.sq >= 500, c => [c.sq, 500]],
+  ['sq1000', '🦵', '1000 sentadillas', 'Sumaste 1000 sentadillas en ejercicios por repeticiones.', 3, c => c.sq >= 1000, c => [c.sq, 1000]],
+  ['tsq15', '⏱️', '15 minutos de sentadillas', 'Sumaste 15 minutos haciendo sentadillas, por tiempo o por repeticiones.', 1, c => c.tsq >= 900, c => [Math.floor(c.tsq / 60), 15]],
+  ['tsq60', '⏱️', '60 minutos de sentadillas', 'Sumaste 60 minutos haciendo sentadillas, por tiempo o por repeticiones.', 3, c => c.tsq >= 3600, c => [Math.floor(c.tsq / 60), 60]],
+  ['pu100', '🤜', '100 flexiones', 'Sumaste 100 flexiones en ejercicios por repeticiones.', 1, c => c.pu >= 100, c => [c.pu, 100]],
+  ['pu500', '🤜', '500 flexiones', 'Sumaste 500 flexiones en ejercicios por repeticiones.', 2, c => c.pu >= 500, c => [c.pu, 500]],
+  ['pu1000', '🤜', '1000 flexiones', 'Sumaste 1000 flexiones en ejercicios por repeticiones.', 3, c => c.pu >= 1000, c => [c.pu, 1000]],
+  ['tpu10', '⏱️', '10 minutos de flexiones', 'Sumaste 10 minutos haciendo flexiones, por tiempo o por repeticiones.', 1, c => c.tpu >= 600, c => [Math.floor(c.tpu / 60), 10]],
+  ['tpu30', '⏱️', '30 minutos de flexiones', 'Sumaste 30 minutos haciendo flexiones, por tiempo o por repeticiones.', 3, c => c.tpu >= 1800, c => [Math.floor(c.tpu / 60), 30]],
+  ['ab100', '🍫', '100 abdominales', 'Sumaste 100 abdominales en ejercicios por repeticiones.', 1, c => c.ab >= 100, c => [c.ab, 100]],
+  ['ab500', '🍫', '500 abdominales', 'Sumaste 500 abdominales en ejercicios por repeticiones.', 2, c => c.ab >= 500, c => [c.ab, 500]],
+  ['ab1000', '🍫', '1000 abdominales', 'Sumaste 1000 abdominales en ejercicios por repeticiones.', 3, c => c.ab >= 1000, c => [c.ab, 1000]],
+  ['tab10', '⏱️', '10 minutos de abdominales', 'Sumaste 10 minutos haciendo abdominales, por tiempo o por repeticiones.', 1, c => c.tab >= 600, c => [Math.floor(c.tab / 60), 10]],
+  ['tab30', '⏱️', '30 minutos de abdominales', 'Sumaste 30 minutos haciendo abdominales, por tiempo o por repeticiones.', 3, c => c.tab >= 1800, c => [Math.floor(c.tab / 60), 30]],
+  ['bu50', '🐸', '50 burpees', 'Sumaste 50 burpees en ejercicios por repeticiones.', 1, c => c.bu >= 50, c => [c.bu, 50]],
+  ['bu250', '🐸', '250 burpees', 'Sumaste 250 burpees en ejercicios por repeticiones.', 3, c => c.bu >= 250, c => [c.bu, 250]],
+  ['tbu5', '⏱️', '5 minutos de burpees', 'Sumaste 5 minutos haciendo burpees, por tiempo o por repeticiones.', 1, c => c.tbu >= 300, c => [Math.floor(c.tbu / 60), 5]],
+  ['tbu20', '⏱️', '20 minutos de burpees', 'Sumaste 20 minutos haciendo burpees, por tiempo o por repeticiones.', 3, c => c.tbu >= 1200, c => [Math.floor(c.tbu / 60), 20]],
   ['pl10', '🧱', '10 minutos de plancha', 'Sumaste 10 minutos en planchas.', 2, c => c.pl >= 600, c => [Math.floor(c.pl / 60), 10]],
   ['m60', '⏱️', '1 hora entrenando', 'Sumaste 60 minutos de entrenamiento.', 1, c => c.mins >= 60, c => [c.mins, 60]],
   ['m300', '⏳', '5 horas entrenando', 'Sumaste 5 horas de entrenamiento.', 2, c => c.mins >= 300, c => [c.mins, 300]],

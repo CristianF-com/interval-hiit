@@ -2070,7 +2070,7 @@ function finish(full, reason) {
   const entry = { at: Date.now(), start: P.startedAt, secs, full, w: P.w, pauses: P.pauses || 0 };
   if (P.log && P.log.length) entry.log = P.log;
   if (P.skips && P.skips.length) entry.skips = P.skips;
-  if (P.w.kind !== 'test') entry.reps = repsOf(entry, full ? undefined : P.i);
+  if (P.w.kind !== 'test') { entry.reps = repsOf(entry, full ? undefined : P.i); entry.rv = 2; }
   const hrs = P.hr && P.hr.length ? hrSummary(P.hr) : null; if (hrs) { hrs.src = 'banda'; entry.hr = hrs; }
   const h = PS.get('history', []); h.unshift(entry); saveHistory(h);
   let planMsg = '';

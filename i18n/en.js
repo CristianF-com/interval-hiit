@@ -1538,7 +1538,34 @@ I18N = {
 "El descanso es entre un ejercicio y otro. En los ejercicios por repeticiones se toca ✓ al terminar la serie.": "Rest is between one exercise and the next. For rep-based exercises, tap ✓ when you finish the set.",
 "Arma tus circuitos con los ejercicios que quieras, cada uno por tiempo o por repeticiones, y compártelos con un link o un código QR.": "Build circuits with any exercises you like, each by time or by reps, and share them with a link or a QR code.",
 "Mi rutina · {0}s de descanso entre ejercicios · {1}s entre rondas": "My routine · {0}s rest between exercises · {1}s between rounds",
-"{0}s de descanso · {1}s entre rondas": "{0}s rest · {1}s between rounds"
+"{0}s de descanso · {1}s entre rondas": "{0}s rest · {1}s between rounds",
+"Sumaste 100 sentadillas en ejercicios por repeticiones.": "You did 100 squats in rep-based exercises.",
+"Sumaste 500 sentadillas en ejercicios por repeticiones.": "You did 500 squats in rep-based exercises.",
+"Sumaste 1000 sentadillas en ejercicios por repeticiones.": "You did 1000 squats in rep-based exercises.",
+"Sumaste 100 flexiones en ejercicios por repeticiones.": "You did 100 push-ups in rep-based exercises.",
+"Sumaste 500 flexiones en ejercicios por repeticiones.": "You did 500 push-ups in rep-based exercises.",
+"Sumaste 1000 flexiones en ejercicios por repeticiones.": "You did 1000 push-ups in rep-based exercises.",
+"Sumaste 100 abdominales en ejercicios por repeticiones.": "You did 100 crunches in rep-based exercises.",
+"Sumaste 500 abdominales en ejercicios por repeticiones.": "You did 500 crunches in rep-based exercises.",
+"Sumaste 1000 abdominales en ejercicios por repeticiones.": "You did 1000 crunches in rep-based exercises.",
+"Sumaste 50 burpees en ejercicios por repeticiones.": "You did 50 burpees in rep-based exercises.",
+"Sumaste 250 burpees en ejercicios por repeticiones.": "You did 250 burpees in rep-based exercises.",
+"15 minutos de sentadillas": "15 minutes of squats",
+"Sumaste 15 minutos haciendo sentadillas, por tiempo o por repeticiones.": "You spent 15 minutes doing squats, timed or by reps.",
+"60 minutos de sentadillas": "60 minutes of squats",
+"Sumaste 60 minutos haciendo sentadillas, por tiempo o por repeticiones.": "You spent 60 minutes doing squats, timed or by reps.",
+"10 minutos de flexiones": "10 minutes of push-ups",
+"Sumaste 10 minutos haciendo flexiones, por tiempo o por repeticiones.": "You spent 10 minutes doing push-ups, timed or by reps.",
+"30 minutos de flexiones": "30 minutes of push-ups",
+"Sumaste 30 minutos haciendo flexiones, por tiempo o por repeticiones.": "You spent 30 minutes doing push-ups, timed or by reps.",
+"10 minutos de abdominales": "10 minutes of crunches",
+"Sumaste 10 minutos haciendo abdominales, por tiempo o por repeticiones.": "You spent 10 minutes doing crunches, timed or by reps.",
+"30 minutos de abdominales": "30 minutes of crunches",
+"Sumaste 30 minutos haciendo abdominales, por tiempo o por repeticiones.": "You spent 30 minutes doing crunches, timed or by reps.",
+"5 minutos de burpees": "5 minutes of burpees",
+"Sumaste 5 minutos haciendo burpees, por tiempo o por repeticiones.": "You spent 5 minutes doing burpees, timed or by reps.",
+"20 minutos de burpees": "20 minutes of burpees",
+"Sumaste 20 minutos haciendo burpees, por tiempo o por repeticiones.": "You spent 20 minutes doing burpees, timed or by reps."
 };
 I18N_PAT = [
 [
@@ -2624,6 +2651,30 @@ I18N_PAT = [
 [
 "{0}s de descanso · {1}s entre rondas",
 "{0}s rest · {1}s between rounds"
+],
+[
+"Repeticiones: {0}",
+"Reps: {0}"
+],
+[
+"Tiempo: {0}",
+"Time: {0}"
+],
+[
+"{0} min de sentadillas",
+"{0} min of squats"
+],
+[
+"{0} min de flexiones",
+"{0} min of push-ups"
+],
+[
+"{0} min de abdominales",
+"{0} min of crunches"
+],
+[
+"{0} min de burpees",
+"{0} min of burpees"
 ]
 ];
 // catálogo de ejercicios y planes en inglés (búsqueda, voz y textos armados en el código)
