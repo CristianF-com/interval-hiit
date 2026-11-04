@@ -1120,11 +1120,24 @@ function setSubtab(g, k, root = document) {
   if (bar) bar.querySelectorAll('[data-st]').forEach(b => b.setAttribute('aria-selected', b.dataset.st === k));
   root.querySelectorAll(`[data-pane^="${g}:"]`).forEach(p => p.classList.toggle('hidden', p.dataset.pane !== g + ':' + k));
   const f = SUBTAB_SHOW[g + ':' + k]; if (f) try { f(); } catch (e) { console.error(e); }
+  if (bar) revealChip(bar);
+}
+// deja a la vista la opción elegida moviendo solo la barra de opciones (sin mover la página)
+function revealChip(bar) {
+  const b = bar.querySelector('[aria-selected="true"]'); if (!b) return;
+  const l = b.offsetLeft - 16, r = b.offsetLeft + b.offsetWidth + 16;
+  if (l < bar.scrollLeft) bar.scrollLeft = Math.max(0, l); else if (r > bar.scrollLeft + bar.clientWidth) bar.scrollLeft = r - bar.clientWidth;
 }
 function bindSubtabs(g, root = document) {
   const bar = root.querySelector(`.subtabs[data-group="${g}"]`); if (!bar) return;
   bar.setAttribute('role', 'tablist'); bar.innerHTML = subtabsHTML(g);
-  bar.onclick = e => { const b = e.target.closest('[data-st]'); if (!b) return; setSubtab(g, b.dataset.st, root); b.scrollIntoView({ inline: 'nearest', block: 'nearest' }); };
+  bar.onclick = e => {
+    const b = e.target.closest('[data-st]'); if (!b) return;
+    setSubtab(g, b.dataset.st, root);
+    // si la página estaba más abajo, la parte nueva empieza arriba (justo debajo de la barra)
+    if (root === document) { const pane = document.querySelector(`[data-pane="${g}:${b.dataset.st}"]`); if (pane) { const y = pane.getBoundingClientRect().top + scrollY - bar.offsetHeight - 6; if (scrollY > y) window.scrollTo(0, Math.max(0, y)); } }
+  };
+  bar.scrollLeft = 0;
   setSubtab(g, subtabCur(g), root);
 }
 // ir directo a una parte (p. ej. desde el anillo de la meta o un aviso)
@@ -1172,7 +1185,8 @@ function bindSess(root, w, after) {
   bindSeg('pv-acc', 'v', v => { setAccSec(+v); after && after(); });
   const av = root.querySelector('#pv-avoid'); if (av) av.onclick = () => { S.avoid = []; save(); toast('Ya no se cuida ninguna zona'); after && after(); };
 }
-$('#tabs').onclick = e => { const b = e.target.closest('[data-tab]'); if (!b) return; show(b.dataset.tab); };
+// al tocar una pestaña de abajo, Coach e Historial vuelven siempre a su primera opción
+$('#tabs').onclick = e => { const b = e.target.closest('[data-tab]'); if (!b) return; const g = { coach: 'coach', hist: 'hist' }[b.dataset.tab]; if (g) LS.set('tab.' + g, SUBTABS[g][0][0]); show(b.dataset.tab); };
 $('#gen').onclick = () => {
   if (!poolFor({ parts: activeParts(), level: S.level, noJump: S.noJump }).length) { toast('No hay ejercicios con esa combinación'); return; }
   openPreview(generate(), 'coach');

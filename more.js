@@ -195,15 +195,17 @@ let phUrls = [], phSel = [];
 async function renderPhotos() {
   const el = $('#photos'); if (!el) return;
   phUrls.forEach(u => URL.revokeObjectURL(u)); phUrls = [];
-  let P = []; try { P = await phAll(); } catch (e) { el.innerHTML = '<p class="note">Este navegador no permite guardar fotos.</p>'; return; }
+  const tok = (renderPhotos.tok = (renderPhotos.tok || 0) + 1);
+  let P = []; try { P = await phAll(); } catch (e) { if (el.isConnected) el.innerHTML = '<p class="note">Este navegador no permite guardar fotos.</p>'; return; }
+  if (tok !== renderPhotos.tok || !el.isConnected) return;   // mientras leía, la sección se volvió a dibujar
   phSel = phSel.filter(id => P.some(p => p.id === id));
   el.innerHTML = `<p class="note">Solo quedan en este teléfono (no se suben a la nube). Toca dos para compararlas.</p>
     <div class="ph-grid"><button class="ph-add" id="ph-add"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg><span>${t('Agregar foto')}</span></button>
     ${P.map(p => { const u = URL.createObjectURL(p.blob); phUrls.push(u); return `<button class="ph" data-ph="${p.id}" aria-pressed="${phSel.includes(p.id)}"><img src="${u}" alt=""><span data-noi18n>${dateStr(p.at)}</span></button>`; }).join('')}</div>
     ${phSel.length === 2 ? '<button class="btn" id="ph-cmp" style="margin-top:10px">Comparar las dos fotos</button>' : ''}`;
-  $('#ph-add').onclick = addProgressPhoto;
+  el.querySelector('#ph-add').onclick = addProgressPhoto;
   el.querySelectorAll('[data-ph]').forEach(b => b.onclick = () => { const id = b.dataset.ph; phSel = phSel.includes(id) ? phSel.filter(x => x !== id) : [...phSel.slice(-1), id]; renderPhotos(); });
-  const cm = $('#ph-cmp'); if (cm) cm.onclick = () => comparePhotos(P.filter(p => phSel.includes(p.id)).sort((a, b) => a.at - b.at));
+  const cm = el.querySelector('#ph-cmp'); if (cm) cm.onclick = () => comparePhotos(P.filter(p => phSel.includes(p.id)).sort((a, b) => a.at - b.at));
 }
 function addProgressPhoto() {
   let inp = document.getElementById('pp-input');
