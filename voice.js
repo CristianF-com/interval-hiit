@@ -82,7 +82,11 @@ async function vPlay(text, voice) {
   let bufs;
   try { bufs = await Promise.all(plan.map(p => p.id ? getBuf(voice, p.id) : null)); } catch (e) { return false; }
   if (my !== vGen) return true; // ya se pidió otra frase
-  const ctx = audioCtx(); let t = ctx.currentTime + 0.03;
+  const ctx = audioCtx();
+  // audio frenado (por ejemplo al desbloquear el iPhone): se espera un momento a que vuelva;
+  // si no vuelve, la frase se dice con la voz del teléfono en lugar de quedar en cola para más tarde
+  if (ctx.state !== 'running') { await acWait(ctx, 400); if (my !== vGen) return true; if (ctx.state !== 'running') return false; }
+  let t = ctx.currentTime + 0.03;
   plan.forEach((p, i) => {
     if (p.gap != null) { t += p.gap; return; }
     const src = ctx.createBufferSource(), g = ctx.createGain();
@@ -118,7 +122,18 @@ function vPreload(tl) {
 // el audio en iPhone solo arranca dentro de un toque: cualquier toque lo reactiva si quedó suspendido
 // (por ejemplo después de pedir permiso a los sensores o de una llamada)
 document.addEventListener('pointerdown', () => { try { if (!AC || AC.state !== 'running') audioCtx(); } catch (e) {} }, true);
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible' && AC && AC.state !== 'running') AC.resume().catch(() => {}); });
+const acWait = (ctx, ms) => new Promise(res => { if (ctx.state === 'running') return res(); const t0 = performance.now(); ctx.resume().catch(() => {}); const iv = setInterval(() => { if (ctx.state === 'running' || performance.now() - t0 > ms) { clearInterval(iv); res(); } }, 40); });
+// al bloquear el teléfono se corta lo que estaba sonando; al volver, si el audio quedó trabado
+// («interrupted» en iPhone) se descarta ese contexto y el próximo sonido crea uno nuevo
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') { vStop(); try { speechSynthesis.cancel(); } catch (e) {} return; }
+  if (!AC || AC.state === 'running') return;
+  const old = AC; acWait(old, 600).then(() => {
+    if (old.state === 'running' || AC !== old) return;
+    try { old.close(); } catch (e) {}
+    AC = null; try { audioSession(true); audioCtx(); } catch (e) {}
+  });
+});
 // iPhone: con la sesión de audio «transient» los pitidos y la voz suenan aunque el interruptor de silencio esté activado
 // y bajan un poco la música que estés escuchando en lugar de cortarla
 function audioSession(on) { try { if (navigator.audioSession) navigator.audioSession.type = on ? 'transient' : 'auto'; } catch (e) {} }

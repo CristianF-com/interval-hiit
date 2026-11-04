@@ -252,7 +252,33 @@ function makeDetector(key, mode, sens) {
       return false;
     }, level: () => sig, hint: 'Baja hasta que se llene la barra' };
   }
-  // sentadillas y dominadas: bajada y frenada
+  if (key === 'pullups' && mode === 'original') {
+    // dominadas: altura del cuerpo. Se toma la aceleración en la dirección de la gravedad (sirve con el móvil
+    // en cualquier posición y en iPhone o Android), se integra dos veces con pérdidas para que no se acumule
+    // el error, y cuenta una al subir al menos H y volver a bajar.
+    let gv = null, base = null, vel = 0, pos = 0, up = false, lastT = 0, peak = 0, t0 = 0;
+    const H = 0.09 * k, BACK = H * 0.35;
+    return { feed(e) {
+      const a = e.accelerationIncludingGravity; if (!a || a.x == null) return false;
+      const t = e.timeStamp || performance.now(), dt = lastT ? Math.min(0.1, Math.max(0, (t - lastT) / 1000)) : 0; lastT = t;
+      const v = [a.x, a.y, a.z];
+      if (!t0) t0 = t;
+      gv = gv ? gv.map((x, i) => x + 0.04 * (v[i] - x)) : v.slice();           // dirección de la gravedad (lenta)
+      const n = Math.hypot(...gv) || 1, along = (v[0] * gv[0] + v[1] * gv[1] + v[2] * gv[2]) / n;
+      base = base == null ? along : base + 0.01 * (along - base);             // gravedad medida por este móvil
+      const acc = along - base;                                               // + = acelerando hacia arriba
+      if (!dt) return false;
+      // el primer segundo y medio solo se calibra la gravedad
+      if (t - t0 < 1500) { vel = 0; pos = 0; return false; }
+      vel = (vel + acc * dt) * Math.exp(-dt / 1.2);
+      pos = (pos + vel * dt) * Math.exp(-dt / 1.6);
+      sig = Math.max(0, Math.min(1, pos / H));
+      if (!up && pos > H) { up = true; peak = pos; }
+      else if (up) { peak = Math.max(peak, pos); if (pos < BACK) { up = false; if (t - last > 900) { last = t; return true; } } }
+      return false;
+    }, reset() { vel = 0; pos = 0; up = false; }, level: () => sig, hint: 'Cuenta al bajar de cada dominada' };
+  }
+  // sentadillas: bajada y frenada
   let x = 0, y = 0, z = true, prevT = 0;
   const LOW_START = -0.6 * k, LOW = -0.2, PH1 = 225 * k, PH2 = 450 * k;
   return { feed(e) {

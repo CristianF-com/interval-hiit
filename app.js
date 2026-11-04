@@ -1489,12 +1489,15 @@ function renderResume() {
 /* =========================================================
    Audio, voz y pantalla
    ========================================================= */
-let AC = null;
+let AC = null, LAST_TAP = -1e9;
+document.addEventListener('pointerdown', () => { LAST_TAP = performance.now(); }, true);
 function beep(f = 880, ms = 140, vol = .25) {
   if (S.sound === 'silencio') return;
   try {
     if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)();
-    if (AC.state !== 'running') AC.resume().catch(() => {});
+    // con el audio frenado (pantalla bloqueada, llamada) no se programa nada: si no, al volver sonaría todo junto
+    // (justo después de un toque sí: el audio arranca en unos milisegundos y el pitido suena enseguida)
+    if (AC.state !== 'running') { AC.resume().catch(() => {}); if (performance.now() - LAST_TAP > 1500) return; }
     const o = AC.createOscillator(), g = AC.createGain(); o.type = 'sine'; o.frequency.value = f;
     g.gain.setValueAtTime(vol, AC.currentTime); g.gain.exponentialRampToValueAtTime(.001, AC.currentTime + ms / 1000);
     o.connect(g).connect(AC.destination); o.start(); o.stop(AC.currentTime + ms / 1000 + .02);

@@ -286,7 +286,9 @@ const Anim = (() => {
     triceps: () => k([m(F0, { uR: 172, fR: -20, uL: -160, fL: 150 }), m(F0, { uR: 168, fR: -26, uL: -156, fL: 146 })], 3000),
     shoulder: () => k([m(F0, { uR: -84, fR: -88, uL: -30, fL: 90 }), m(F0, { uR: -90, fR: -94, uL: -34, fL: 86 })], 3000),
     quad_stretch: () => k([m(S0, { tR: -6, sR: -168, pR: -90, uR: -24, fR: -10, uL: 60, fL: 80 }), m(S0, { t: 178, tR: -10, sR: -170, pR: -90, uR: -26, fR: -12, uL: 64, fL: 84 })], 3000, { anchor: 'ankleL' }),
-    pec: () => k([m(S0, { uR: -92, fR: -180 }), m(S0, { t: 175, uR: -100, fR: -184 })], 3000, { props: ['wall_back'], anchor: 'ankleL' }),
+    // de frente, con la pared a la izquierda: antebrazo apoyado en la pared (codo a la altura del hombro)
+    // y el cuerpo se aleja girando hacia el otro lado, con el antebrazo quieto en la pared
+    pec: () => k([m(F0, { uL: -90, fL: 180, uR: 14, fR: 8 }), m(F0, { t: 186, hd: 16, uL: -104, fL: 180, uR: 24, fR: 16, tL: -2, sL: 0, tR: 10, sR: 6 }), m(F0, { t: 186, hd: 16, uL: -104, fL: 180, uR: 24, fR: 16, tL: -2, sL: 0, tR: 10, sR: 6 }), m(F0, { uL: -90, fL: 180, uR: 14, fR: 8 })], 4400, { props: ['wall_side'], anchor: 'handL' }),
     hamstring: () => k([m(SEAT, { t: 182, tL: 92, sL: 92, tR: 94, sR: 94, uL: 100, fL: 100, uR: 104, fR: 104 }), m(SEAT, { t: 140, tL: 92, sL: 92, tR: 94, sR: 94, uL: 100, fL: 100, uR: 104, fR: 104 })], 3200, { anchor: 'hip' }),
     cobra: () => k([PRONE, m(PRONE, { t: 140, hd: 10, uL: 10, fL: 80, uR: 12, fR: 82 })], 3200, { anchor: 'hip' }),
   };
@@ -569,6 +571,7 @@ const Anim = (() => {
     const J0w = pose(anim, 0);
     anim.propGeo = anim.props.map(pr => {
       if (pr === 'wall_back') { const x = Math.min(J0w.sh[0], J0w.hip[0], J0w.head[0] - LEN.head) - 9; x0 = Math.min(x0, x - 6); return { wall: x }; }
+      if (pr === 'wall_side') { const x = Math.min(J0w.elbowL[0], J0w.handL[0]) - 4; x0 = Math.min(x0, x - 6); return { wall: x }; }
       if (pr === 'wall_front') { const x = Math.max(J0w.handL[0], J0w.handR[0]) + 8; x1 = Math.max(x1, x + 6); return { wall: x }; }
       if (pr === 'bar') { const y = Math.min(J0w.handL[1], J0w.handR[1]) - 2; return { bar: [x0 - 6, y, x1 + 6] }; }
       if (pr === 'bench') { const h = J0w.handL; return { bench: [h[0] - 22, h[1] + 5, 34] }; }
