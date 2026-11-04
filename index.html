@@ -608,6 +608,15 @@ input,textarea,select{font-size:16px}
 #rp-sets .st.ok i u{width:100%}
 [data-theme=naranja] .player #rp-sets{--sa:var(--work);--sm:var(--dark-muted);--st:var(--dark-line)}
 /* reto en horizontal: animación a la izquierda, número y datos a la derecha */
+/* reto terminado: resumen arriba y botones abajo; en horizontal, uno al lado del otro */
+.rfin .rf-a{margin-bottom:16px}
+@media (orientation:landscape) and (max-height:520px){
+  .rfin{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:28px;align-items:center}
+  .rfin .rf-a{margin:0}
+  .rfin .rf-a .big-check{width:60px;height:60px;margin:0 auto 6px!important}
+  .rfin .rf-a h3{margin-top:0}
+  .rfin .rf-b .banner{margin-top:0}
+}
 @media (orientation:landscape) and (max-height:520px){
   /* reproductor de entrenamientos: anillo a la izquierda, datos a la derecha, controles en una fila */
   #player .p-top,#player .p-main,#player .p-bottom{max-width:860px}

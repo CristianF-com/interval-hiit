@@ -466,11 +466,11 @@ function rFinish(partial) {
   saveHistory(h);
   beep(784, 150, .25); setTimeout(() => beep(1046, 350, .3), 170);
   if (!partial) say(RP.pre && RP.pre < 3 ? `¡Terminaste! ${total} repeticiones. Buen trabajo.` : `¡Terminaste! ${total} ${R.n.toLowerCase()}. Buen trabajo.`);
-  sheet(`<div class="big-check" style="margin:8px auto 10px"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></div>
+  sheet(`<div class="rfin"><div class="rf-a"><div class="big-check" style="margin:8px auto 10px"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></div>
     <h3 style="text-align:center">${total} ${RP.ps ? RP.ps.unit : R.n.toLowerCase()}</h3>
     <p class="sub" style="text-align:center">${reps.join(' · ')} · ${fmt(secs)} min</p>
-    <p class="note" style="text-align:center">${esc(msg)}</p><div style="height:16px"></div>
-    <button class="btn" id="rf-ok">Listo</button>`, () => { $('#rf-ok').onclick = () => { closeSheet(); renderRetos(); refreshView(); }; });
+    <p class="note" style="text-align:center">${esc(msg)}</p></div>
+    <div class="rf-b"><button class="btn" id="rf-ok">Listo</button></div></div>`, () => { $('#rf-ok').onclick = () => { closeSheet(); renderRetos(); refreshView(); }; });
   renderRetos(); refreshView();
   setTimeout(() => checkAwards(true), 800);
 }
