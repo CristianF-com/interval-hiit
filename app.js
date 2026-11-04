@@ -233,25 +233,32 @@ function applyTheme() {
 })();
 
 /* ---------- Teclado del iPhone ----------
-   Safari no achica la pantalla al abrir el teclado: lo tapa. Las hojas con campos se abren desde arriba
-   (sheet(..., top)); además se guarda la altura visible para que esas hojas no pasen por debajo del teclado
-   y, si un campo igual quedara tapado, se desplaza solo el contenido de la hoja (no la página). */
+   Safari no achica la pantalla al abrir el teclado: lo tapa (y a veces corre la página). Las hojas con campos
+   se abren desde arriba; cuando aparece el teclado se les suma abajo un espacio del alto del teclado (--kb) y el
+   campo que se está escribiendo se centra en la parte visible, moviendo solo el contenido de la hoja. */
 (function () {
   const vv = window.visualViewport; if (!vv) return;
   const root = document.documentElement; let raf = 0;
-  const keep = () => {
+  const kbOpen = () => innerHeight - vv.height > 120;
+  const center = () => {
     const a = document.activeElement;
-    if (!a || !/^(INPUT|TEXTAREA)$/.test(a.tagName)) return;
+    if (!a || !/^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName) || !kbOpen()) return;
     const sh = a.closest('.sheet'); if (!sh) return;
-    const r = a.getBoundingClientRect(), bot = vv.height - 16;
-    if (r.bottom > bot) sh.scrollTop += r.bottom - bot;
+    const r = a.getBoundingClientRect(), want = vv.offsetTop + vv.height * 0.42, d = (r.top + r.height / 2) - want;
+    if (Math.abs(d) > 16) sh.scrollTop = Math.max(0, sh.scrollTop + d);
   };
   const fit = () => {
     cancelAnimationFrame(raf);
-    raf = requestAnimationFrame(() => { root.style.setProperty('--vv-h', Math.round(vv.height) + 'px'); requestAnimationFrame(keep); });
+    raf = requestAnimationFrame(() => {
+      root.style.setProperty('--vv-h', Math.round(vv.height) + 'px');
+      root.style.setProperty('--kb', Math.max(0, Math.round(innerHeight - vv.height)) + 'px');
+      requestAnimationFrame(center);
+    });
   };
   vv.addEventListener('resize', fit);
-  document.addEventListener('focusin', e => { if (/^(INPUT|TEXTAREA)$/.test(e.target.tagName)) setTimeout(fit, 400); });
+  // el teclado tarda en subir (o ya estaba arriba al pasar de un campo a otro): se centra varias veces
+  document.addEventListener('focusin', e => { if (/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) [60, 320, 650].forEach(ms => setTimeout(fit, ms)); });
+  document.addEventListener('focusout', () => setTimeout(fit, 350));
   fit();
 })();
 
