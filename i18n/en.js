@@ -1395,7 +1395,139 @@ I18N = {
 "Paula (Español latino)": "Paula (Latin American Spanish)",
 "Julio (Español latino)": "Julio (Latin American Spanish)",
 "Ona (Español México)": "Ona (Mexican Spanish)",
-"Kimetz (Español México)": "Kimetz (Mexican Spanish)"
+"Kimetz (Español México)": "Kimetz (Mexican Spanish)",
+"A medida": "Custom",
+"Agrega al menos un ejercicio": "Add at least one exercise",
+"Agregar ejercicio": "Add exercise",
+"+ Agregar ejercicio": "+ Add exercise",
+"Agregar foto": "Add photo",
+"Amigos": "Friends",
+"Arma tus circuitos con los ejercicios que quieras y compártelos con un link o un código QR.": "Build circuits with any exercises you like and share them with a link or a QR code.",
+"Borrar foto": "Delete photo",
+"Borrar la primera": "Delete the first",
+"Borrar la segunda": "Delete the second",
+"Borrar registro": "Delete entry",
+"Borrar rutina": "Delete routine",
+"Brazo": "Arm",
+"Cargando…": "Loading…",
+"Cintura": "Waist",
+"Comparar": "Compare",
+"Comparar las dos fotos": "Compare the two photos",
+"Compartir": "Share",
+"Compartir link": "Share link",
+"Compartir mi sesión": "Share my session",
+"Compartir «": "Share “",
+"Completa solo lo que quieras medir hoy. Las medidas se toman siempre en el mismo lugar y a la misma hora (mejor en ayunas).": "Fill in only what you want to measure today. Measure always at the same spot and time (ideally before eating).",
+"Con dos registros o más aparece el gráfico. Toca una medida para verla.": "The chart appears with two entries or more. Tap a measurement to see it.",
+"Copiar link": "Copy link",
+"Crea tu cuenta para no perder tu progreso": "Create your account so you don't lose your progress",
+"Crea un grupo, comparte el código y compitan por quién entrena más cada semana. Se ve solo el nombre del perfil, las sesiones y los minutos de la semana.": "Create a group, share the code and compete to see who trains most each week. Only the profile name, sessions and minutes of the week are shown.",
+"Creando…": "Creating…",
+"Crear": "Create",
+"Crear grupo": "Create group",
+"+ Crear grupo": "+ Create group",
+"Cuenta y datos": "Account and data",
+"Cuerpo": "Body",
+"Cuántas sesiones o minutos quieres entrenar por semana (de lunes a domingo). Cuenta todo: planes, coach, mancuernas, retos y rutinas.": "How many sessions or minutes you want to train per week (Monday to Sunday). Everything counts: plans, coach, dumbbells, challenges and routines.",
+"Código de 6 letras": "6-letter code",
+"Descargar imagen": "Download image",
+"Dos sesiones difíciles seguidas: empieza una semana de descarga": "Two hard sessions in a row: a deload week starts",
+"Editar rutina": "Edit routine",
+"El código tiene 6 letras o números": "The code has 6 letters or numbers",
+"Escribe al menos un valor": "Enter at least one value",
+"Ese link de rutina no es válido": "That routine link isn't valid",
+"Este navegador no permite guardar fotos.": "This browser can't store photos.",
+"Foto guardada": "Photo saved",
+"Fotos de progreso": "Progress photos",
+"Guardando la foto…": "Saving the photo…",
+"Guardar en Mis rutinas": "Save to My routines",
+"Inteligente": "Smart",
+"Invitación copiada": "Invitation copied",
+"Invitar": "Invite",
+"Link copiado": "Link copied",
+"Llevas 5 semanas entrenando: toca una semana de descarga": "5 weeks of training: time for a deload week",
+"Llevas 5 semanas subiendo la intensidad": "You've been raising the intensity for 5 weeks",
+"Tus dos últimas sesiones fueron difíciles": "Your last two sessions were hard",
+"Mantén apretada la imagen para guardarla o compartirla.": "Press and hold the image to save or share it.",
+"Meta guardada": "Goal saved",
+"Meta semanal": "Weekly goal",
+"Mis rutinas": "My routines",
+"Muslo": "Thigh",
+"No existe un grupo con ese código": "There's no group with that code",
+"No se pudo cargar el ranking.": "Couldn't load the ranking.",
+"No se pudo conectar con la nube. Prueba de nuevo en un rato.": "Couldn't connect to the cloud. Try again in a while.",
+"No se pudo copiar": "Couldn't copy",
+"No se pudo crear": "Couldn't create",
+"No se pudo guardar la foto": "Couldn't save the photo",
+"No se pudo preparar la imagen": "Couldn't prepare the image",
+"No se pudo unir": "Couldn't join",
+"Nombre de la rutina": "Routine name",
+"Nombre del grupo (p. ej. Los del gym)": "Group name (e.g. Gym crew)",
+"Nueva rutina": "New routine",
+"+ Nueva rutina": "+ New routine",
+"Pecho": "Chest",
+"Peso": "Weight",
+"Peso y medidas": "Weight and measurements",
+"+ Registrar peso o medidas": "+ Log weight or measurements",
+"Ponle un nombre": "Give it a name",
+"Preparando la imagen…": "Preparing the image…",
+"Probarla ahora": "Try it now",
+"Progreso": "Progress",
+"Quien abra el link (o escanee el código con la cámara) puede guardar la rutina en su app.": "Anyone who opens the link (or scans the code with the camera) can save the routine in their app.",
+"Registra tu peso (y si quieres, cintura, cadera y otras medidas) cada semana o cada dos para ver cómo cambian. El peso también se usa para calcular las calorías.": "Log your weight (and if you like, waist, hips and other measurements) every week or two to see how they change. Your weight is also used to estimate calories.",
+"Registrado": "Saved",
+"Registros": "Entries",
+"Resumen": "Summary",
+"Rutina compartida": "Shared routine",
+"Rutina guardada": "Routine saved",
+"Salir del grupo": "Leave group",
+"Saltearla": "Skip it",
+"Se borra de este teléfono y no se puede recuperar.": "It's deleted from this phone and can't be recovered.",
+"Semana de descarga salteada": "Deload week skipped",
+"Semana de descarga": "Deload week",
+"descarga": "deload",
+"Sin conexión: el ranking se ve con internet.": "Offline: the ranking needs internet.",
+"Sin resultados.": "No results.",
+"Solo quedan en este teléfono (no se suben a la nube). Toca dos para compararlas.": "They stay only on this phone (not uploaded to the cloud). Tap two to compare them.",
+"Todavía no agregaste ejercicios.": "You haven't added exercises yet.",
+"Tu sesión": "Your session",
+"Unirme": "Join",
+"Unirme a un grupo": "Join a group",
+"Unirme con un código": "Join with a code",
+"Ver todos los registros": "See all entries",
+"pulso medio": "average heart rate",
+"día de racha": "day streak",
+"días de racha": "day streak",
+"tú": "you",
+"ENTRENAMIENTO COMPLETADO": "WORKOUT COMPLETE",
+"¡Meta semanal cumplida!": "Weekly goal reached!",
+"{0} min": "{0} min",
+"Código: {0} · esta semana": "Code: {0} · this week",
+"Dejas de aparecer en el ranking de «{0}».": "You'll no longer appear in the “{0}” ranking.",
+"Duración aprox.: {0} min (sin calentamiento ni estiramientos)": "Approx. length: {0} min (without warm-up or stretches)",
+"Grupo creado. Código: {0}": "Group created. Code: {0}",
+"Meta: {0} min por semana": "Goal: {0} min per week",
+"Rutina «{0}» para INHIIT": "“{0}” routine for INHIIT",
+"Semana: {0} de {1} min": "Week: {0} of {1} min",
+"Semana: {0} de {1} sesiones": "Week: {0} of {1} sessions",
+"Sumate a mi grupo «{0}» en INHIIT para ver quién entrena más esta semana. Código: {1}": "Join my group “{0}” on INHIIT to see who trains most this week. Code: {1}",
+"Te faltan {0} min · quedan {1} días": "{0} min to go · {1} days left",
+"Te uniste a «{0}»": "You joined “{0}”",
+"{0} de {1} min esta semana": "{0} of {1} min this week",
+"{0} de {1} sesiones esta semana": "{0} of {1} sessions this week",
+"{0} ejercicios · {1} rondas · {2} min": "{0} exercises · {1} rounds · {2} min",
+"¡Meta cumplida! Llevas {0} esta semana.": "Goal reached! {0} this week.",
+"Te falta {0} sesión · quedan {1} días": "{0} session to go · {1} days left",
+"Te faltan {0} sesiones · quedan {1} días": "{0} sessions to go · {1} days left",
+"Meta: {0} sesión por semana": "Goal: {0} session per week",
+"Meta: {0} sesiones por semana": "Goal: {0} sessions per week",
+"{0} sesión": "{0} session",
+"{0} sesiones": "{0} sessions",
+"{0} día entre una y otra": "{0} day between them",
+"{0} días entre una y otra": "{0} days between them",
+"coach": "coach",
+"Int. HIIT": "Smart HIIT",
+"Int. mancuernas": "Smart dumbbells"
 };
 I18N_PAT = [
 [
@@ -2377,6 +2509,102 @@ I18N_PAT = [
 [
 "Respaldo: {0}",
 "Backup: {0}"
+],
+[
+"Código: {0} · esta semana",
+"Code: {0} · this week"
+],
+[
+"Dejas de aparecer en el ranking de «{0}».",
+"You'll no longer appear in the “{0}” ranking."
+],
+[
+"Duración aprox.: {0} min (sin calentamiento ni estiramientos)",
+"Approx. length: {0} min (without warm-up or stretches)"
+],
+[
+"Grupo creado. Código: {0}",
+"Group created. Code: {0}"
+],
+[
+"Meta: {0} min por semana",
+"Goal: {0} min per week"
+],
+[
+"Meta: {0} sesiones por semana",
+"Goal: {0} sessions per week"
+],
+[
+"Meta: {0} sesión por semana",
+"Goal: {0} session per week"
+],
+[
+"Rutina «{0}» para INHIIT",
+"“{0}” routine for INHIIT"
+],
+[
+"Semana: {0} de {1} min",
+"Week: {0} of {1} min"
+],
+[
+"Semana: {0} de {1} sesiones",
+"Week: {0} of {1} sessions"
+],
+[
+"Sumate a mi grupo «{0}» en INHIIT para ver quién entrena más esta semana. Código: {1}",
+"Join my group “{0}” on INHIIT to see who trains most this week. Code: {1}"
+],
+[
+"Te falta {0} sesión · quedan {1} días",
+"{0} session to go · {1} days left"
+],
+[
+"Te faltan {0} min · quedan {1} días",
+"{0} min to go · {1} days left"
+],
+[
+"Te faltan {0} sesiones · quedan {1} días",
+"{0} sessions to go · {1} days left"
+],
+[
+"Te uniste a «{0}»",
+"You joined “{0}”"
+],
+[
+"{0} de {1} min esta semana",
+"{0} of {1} min this week"
+],
+[
+"{0} de {1} sesiones esta semana",
+"{0} of {1} sessions this week"
+],
+[
+"{0} día entre una y otra",
+"{0} day between them"
+],
+[
+"{0} días entre una y otra",
+"{0} days between them"
+],
+[
+"{0} ejercicios · {1} rondas · {2} min",
+"{0} exercises · {1} rounds · {2} min"
+],
+[
+"{0} sesión",
+"{0} session"
+],
+[
+"{0} sesiones",
+"{0} sessions"
+],
+[
+"¡Meta cumplida! Llevas {0} esta semana.",
+"Goal reached! {0} this week."
+],
+[
+"{0}: hasta el {1} las sesiones son más suaves (intensidad {2}) para que el cuerpo se recupere y después rindas más.",
+"{0}: until {1} sessions are lighter (intensity {2}) so your body recovers and you perform better afterwards."
 ]
 ];
 // catálogo de ejercicios y planes en inglés (búsqueda, voz y textos armados en el código)

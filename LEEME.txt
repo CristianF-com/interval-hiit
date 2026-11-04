@@ -191,3 +191,35 @@ COPIA EN LA NUBE (iCloud Drive / Google Drive)
   Antes de restaurar la app muestra qué contiene la copia (perfiles, entrenamientos, fecha).
 - Recordatorio: después de cada entrenamiento, una vez por semana (por defecto) o nunca.
 - El archivo es texto legible: se puede abrir con cualquier visor y arriba tiene un resumen.
+
+ORGANIZACIÓN (subpestañas)
+- Coach: Inteligente · Mancuernas · A medida · Mis rutinas (rutinas propias y guardados).
+- Historial: Resumen (meta, números, constancia, tipo) · Progreso (tiempos, partes del cuerpo, tablas) ·
+  Sesiones · Logros · Cuerpo (peso, medidas y fotos) · Amigos (desafíos).
+- Perfil: Perfiles (y meta semanal) · Ajustes (tema, idioma, voz, pulso) · Cuenta y datos (nube, copia, instalar).
+- La app recuerda la última subpestaña de cada sección.
+
+META SEMANAL
+- Sesiones o minutos por semana (lunes a domingo). Anillo en Coach y en Historial → Resumen; al cumplirla
+  lo avisa en la pantalla final. Se cambia tocando el anillo o en Perfil → Meta semanal.
+
+COMPARTIR LA SESIÓN
+- Al terminar un entrenamiento o reto: «Compartir mi sesión» arma una imagen (1080 × 1350) con el logo,
+  minutos, calorías, racha y progreso de la semana, con los colores del tema.
+
+PESO, MEDIDAS Y FOTOS (Historial → Cuerpo)
+- Peso y medidas con gráfico por medida; el último peso se usa para las calorías. Van en la copia.
+- Fotos de progreso: quedan SOLO en el teléfono (IndexedDB, no van a la nube ni a la copia).
+
+MIS RUTINAS (Coach → Mis rutinas)
+- Editor: ejercicios, trabajo, descanso, rondas y descanso entre rondas. Se comparten con un link (…#rt=…)
+  o un código QR (qr.js, librería qrcode-generator, MIT); al abrir el link se ofrece guardarla.
+
+AMIGOS (Historial → Amigos)
+- Grupos con código de 6 letras; cada perfil publica sus sesiones y minutos de la semana y se arma un ranking.
+  Firestore: groups/{código} y groups/{código}/members/{uid_perfil}. Reglas en firestore.rules (hay que publicarlas).
+- Invitación por link (…#grp=CÓDIGO).
+
+SEMANA DE DESCARGA (entrenador inteligente)
+- 7 días con intensidad −1,5: cada 5 semanas de entrenamiento (con 8 sesiones o más) o tras dos «Difícil»
+  seguidos. Se muestra en la tarjeta y se puede saltear.

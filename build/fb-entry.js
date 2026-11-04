@@ -7,7 +7,7 @@ import {
   linkWithCredential, linkWithPopup, signInWithEmailAndPassword, signInWithPopup,
   sendPasswordResetEmail, signOut
 } from 'firebase/auth';
-import { getFirestore, doc, getDoc, writeBatch } from 'firebase/firestore/lite';
+import { getFirestore, doc, getDoc, getDocs, setDoc, deleteDoc, collection, writeBatch } from 'firebase/firestore/lite';
 
 let app, auth, db;
 const userInfo = u => u ? { uid: u.uid, anon: u.isAnonymous, email: u.email || (u.providerData[0] && u.providerData[0].email) || '', provider: (u.providerData[0] && u.providerData[0].providerId) || (u.isAnonymous ? 'anonymous' : '') } : null;
@@ -42,6 +42,12 @@ window.FBA = {
     for (let i = parts.length; i < (oldN || 0); i++) b.delete(doc(db, 'users', uid, 'parts', pre + i));
     b.set(doc(db, 'users', uid), meta);
     await b.commit();
-  }
+  },
+  // desafíos con amigos: groups/{código} y groups/{código}/members/{uid_perfil}
+  async groupGet(c) { const s = await getDoc(doc(db, 'groups', c)); return s.exists() ? s.data() : null; },
+  groupCreate: (c, d) => setDoc(doc(db, 'groups', c), d),
+  memberPut: (c, id, d) => setDoc(doc(db, 'groups', c, 'members', id), d),
+  memberDel: (c, id) => deleteDoc(doc(db, 'groups', c, 'members', id)),
+  async membersList(c) { const q = await getDocs(collection(db, 'groups', c, 'members')); return q.docs.map(d => ({ id: d.id, ...d.data() })); }
 };
 window.dispatchEvent(new Event('fba-ready'));

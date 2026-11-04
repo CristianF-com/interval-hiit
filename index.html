@@ -15,7 +15,7 @@
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script>try{var t=localStorage.getItem('intervalo.theme');if(t)document.documentElement.dataset.theme=t;}catch(e){}</script>
+<script>try{var t=localStorage.getItem('intervalo.theme');document.documentElement.dataset.theme=t||'oscuro';}catch(e){document.documentElement.dataset.theme='oscuro';}</script>
 <style>
 :root{
   --bg:#0e0f12; --surface:#17191e; --surface2:#1f2229; --line:#2a2e37;
@@ -531,7 +531,54 @@ input,textarea,select{font-size:16px}
 .bk-prev .r:last-child{border-bottom:0}.bk-prev .r span{color:var(--muted);text-align:right}
 .banner.bk{background:var(--surface);border-color:var(--line)}
 .auth-msg{display:none;color:var(--work);font-weight:600;margin:4px 0 10px}.auth-msg.on{display:block}
-.banner.acct{cursor:pointer;padding-right:6px}.banner.acct .btn{font-size:14px;padding:9px 12px;flex:none}.banner.acct .acct-x{width:34px;height:34px}
+.banner.acct{cursor:pointer;padding:8px 6px 8px 14px;margin:8px 0 2px;gap:8px}
+.banner.acct .t b{font-size:15px}
+.banner.acct.slim{padding:6px 4px 6px 14px}.banner.acct.slim .t b{font-size:14px;font-weight:600;line-height:1.25}.banner.acct.slim .btn{padding:8px 11px;font-size:13px}.banner.acct .t small{display:block;font-size:12.5px;line-height:1.3}
+/* subpestañas dentro de cada sección (Coach, Historial, Perfil) */
+.subtabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:12px -16px 6px;padding:8px 16px;position:sticky;top:0;z-index:20;background:var(--bg)}
+.subtabs::-webkit-scrollbar{display:none}
+.subtabs button{flex:none;display:flex;align-items:center;gap:6px;padding:8px 13px;border-radius:99px;border:1px solid var(--line);background:var(--surface);color:var(--muted);font-weight:600;font-size:14px;white-space:nowrap}
+.subtabs button svg{flex:none}
+.subtabs button[aria-selected=true]{background:var(--work);border-color:var(--work);color:#111}
+.sheet .subtabs{margin:6px -16px 8px;top:34px}
+.pane-intro{margin-top:4px}
+/* meta semanal */
+.goal{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:8px 10px 8px 10px;margin:8px 0 0}
+.goal .gr,.goal-hit .gr{position:relative;display:grid;place-items:center;flex:none}
+.goal .gr b,.goal-hit .gr b{position:absolute;font-size:16px;font-weight:800}
+.goal .t{flex:1;min-width:0}.goal .t b{display:block;font-size:15px;line-height:1.25}.goal .t small{color:var(--muted);font-size:12.5px}
+.goal .chev{color:var(--muted);flex:none}
+.goal.met{border-color:color-mix(in srgb,var(--work) 55%,var(--line))}
+.goal-hit{background:color-mix(in srgb,var(--work) 16%,var(--surface));border-color:color-mix(in srgb,var(--work) 50%,var(--line))}
+.goal-hit .gr b{font-size:16px;color:var(--work)}
+/* peso y medidas */
+.kpi.bk{text-align:left;cursor:pointer}.kpi.bk[aria-pressed=true]{border-color:var(--work)}
+.kpi.bk b small{font-size:13px;color:var(--muted);font-weight:600}.kpi.bk span i{font-style:normal}
+/* fotos de progreso */
+.ph-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px}
+.ph,.ph-add{position:relative;aspect-ratio:3/4;border-radius:14px;overflow:hidden;border:2px solid var(--line);background:var(--surface);padding:0}
+.ph img{width:100%;height:100%;object-fit:cover;display:block}
+.ph span{position:absolute;left:0;right:0;bottom:0;padding:14px 6px 5px;font-size:11.5px;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.7));text-align:center}
+.ph[aria-pressed=true]{border-color:var(--work)}
+.ph-add{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;color:var(--muted);font-weight:600;font-size:13px;border-style:dashed}
+.ph-cmp{display:grid;grid-template-columns:1fr 1fr;gap:8px}.ph-cmp figure{margin:0}.ph-cmp img{width:100%;border-radius:12px;display:block;aspect-ratio:3/4;object-fit:cover}
+.ph-cmp figcaption{text-align:center;color:var(--muted);font-size:13px;margin-top:4px}
+/* rutinas y buscador de ejercicios */
+.rt-row .icon-btn[disabled]{opacity:.25}
+.pk-list{max-height:none}.hist.pk{width:100%;text-align:left}
+.qr{background:#fff;border-radius:16px;padding:14px;width:min(240px,70vw);margin:4px auto 14px}.qr svg{display:block;width:100%;height:auto}
+/* desafíos con amigos */
+.fr .rank{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+.rk{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:12px;background:var(--surface2)}
+.rk.me{outline:2px solid var(--work)}
+.rk .pos{width:20px;text-align:center;font-weight:800;color:var(--muted)}
+.rk .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}.rk .nm small{color:var(--muted);font-weight:500}
+.rk b{font-weight:800}
+.fr .code{font-weight:800;letter-spacing:.12em;color:var(--text)}
+/* semana de descarga */
+.dl-tag{color:var(--rest);font-weight:800}
+.dl-note{border-left:3px solid var(--rest);padding-left:10px}
+.pane>h2:first-child,.pane>div>h2:first-child{margin-top:10px}.banner.acct .btn{font-size:14px;padding:9px 12px;flex:none}.banner.acct .acct-x{width:34px;height:34px}
 /* series del reto: línea de progreso (hecho y actual en color, el resto apagado) */
 #rp-sets{--sa:var(--c);--sm:var(--muted);--st:var(--line);flex:1;min-width:0;display:flex;flex-direction:column;align-items:stretch;gap:6px;padding:0 6px}
 #rp-sets .sb-row{display:flex;align-items:flex-end;gap:5px}
@@ -660,13 +707,13 @@ input,textarea,select{font-size:16px}
 
   <!-- COACH -->
   <section id="v-coach">
-    <p class="hero vh">Tu coach <em>HIIT</em></p>
-    <div class="cols"><div class="col">
-    <div id="smart"></div>
-    <div id="dumb"></div>
-    </div><div class="col">
-    <h2 style="margin-top:30px" class="c-first">O arma uno a medida</h2>
-    <p class="sub">Elige tiempo, zonas y nivel. El coach arma el circuito.</p>
+    <p class="hero vh">Tu <em>coach</em></p>
+    <div id="goal-card"></div>
+    <div class="subtabs" id="coach-tabs" data-group="coach"></div>
+    <div class="pane" data-pane="coach:smart"><div id="smart"></div></div>
+    <div class="pane hidden" data-pane="coach:db"><div id="dumb"></div></div>
+    <div class="pane hidden" data-pane="coach:custom">
+    <p class="sub pane-intro">Elige tiempo, zonas y nivel. El coach arma el circuito.</p>
     <h2>Duración</h2>
     <div class="dur" id="durs"></div>
     <h2>Zonas</h2>
@@ -693,7 +740,8 @@ input,textarea,select{font-size:16px}
     <button class="btn" id="gen">Generar entrenamiento</button>
     <div class="gap"></div>
     <button class="btn ghost small" id="open-lib">Ver todos los ejercicios</button>
-    </div></div>
+    </div>
+    <div class="pane hidden" data-pane="coach:mine"><div id="routines"></div><div id="hist-favs"></div></div>
   </section>
 
   <!-- PREVIEW (coach y día de plan) -->
@@ -737,12 +785,13 @@ input,textarea,select{font-size:16px}
     <p class="hero vh">Historial</p>
     <p class="sub" id="hist-sub"></p>
     <div class="stats hidden" id="hist-stats"></div>
-    <div id="hist-kpi"></div>
-    <div class="hcols">
-    <div id="hist-favs"></div>
-    <div id="hist-awards"></div>
-    <div id="hist-list"></div>
-    </div>
+    <div class="subtabs" id="hist-tabs" data-group="hist"></div>
+    <div class="pane" data-pane="hist:sum"><div id="goal-card2"></div><div id="hist-kpi"></div></div>
+    <div class="pane hidden" data-pane="hist:prog"><div id="hist-prog"></div></div>
+    <div class="pane hidden" data-pane="hist:list"><div id="hist-list"></div></div>
+    <div class="pane hidden" data-pane="hist:aw"><div id="hist-awards"></div></div>
+    <div class="pane hidden" data-pane="hist:body"><div id="body"></div></div>
+    <div class="pane hidden" data-pane="hist:friends"><div id="friends"></div></div>
   </section>
 </div>
 
@@ -815,8 +864,11 @@ input,textarea,select{font-size:16px}
   <div id="d-test"></div>
   <div id="d-fb"></div>
   <div id="d-hr"></div>
+  <div id="d-goal"></div>
   <div id="d-bk"></div>
   <button class="btn" id="d-ok">Listo</button>
+  <div class="gap"></div>
+  <button class="btn ghost" id="d-share">Compartir mi sesión</button>
   <div class="gap"></div>
   <button class="btn ghost" id="d-fav">☆ Guardar este entrenamiento</button>
   <button class="btn ghost hidden" id="d-mark">✓ Marcar el día como hecho</button>
@@ -849,5 +901,6 @@ input,textarea,select{font-size:16px}
 <script src="dumbbells.js"></script>
 <script src="stats.js"></script>
 <script src="cloud.js"></script>
+<script src="more.js"></script>
 </body>
 </html>

@@ -355,7 +355,7 @@ window.addEventListener('online', () => setTimeout(cloudCheck, 1500));
 /* --- avisos para crear la cuenta (reemplazan el recordatorio de la copia en archivo) --- */
 bkDue = () => false;
 const acctDue = () => !!PROFILE && !hasAcct() && Date.now() > LS.get('cloud.snooze', 0);
-const acctBanner = (id, closable) => `<div class="banner acct" id="${id}" role="button" tabindex="0"><div class="t"><b>Crea tu cuenta</b><small>Para mantener todo sincronizado entre tus dispositivos</small></div>
+const acctBanner = (id, closable) => `<div class="banner acct${closable ? ' slim' : ''}" id="${id}" role="button" tabindex="0"><div class="t">${closable ? '<b>Crea tu cuenta para no perder tu progreso</b>' : '<b>Crea tu cuenta</b><small>Para mantener todo sincronizado entre tus dispositivos</small>'}</div>
   <button class="btn small" data-acct>Crear cuenta</button>${closable ? `<button class="icon-btn acct-x" data-snooze aria-label="Ahora no"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>` : ''}</div>`;
 function bindAcct(el) {
   if (!el) return;

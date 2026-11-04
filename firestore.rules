@@ -10,6 +10,20 @@ service cloud.firestore {
           && request.resource.data.d is string && request.resource.data.d.size() <= 900000;
       }
     }
+    // desafíos con amigos: cualquiera con sesión iniciada lee un grupo si sabe su código;
+    // cada uno solo escribe su propia fila (el id empieza con su uid)
+    match /groups/{code} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && request.resource.data.n is string && request.resource.data.n.size() <= 40;
+      allow update, delete: if false;
+      match /members/{mid} {
+        allow read: if request.auth != null;
+        allow create, update: if request.auth != null && mid.matches(request.auth.uid + '_.*')
+          && request.resource.data.n is string && request.resource.data.n.size() <= 40
+          && request.resource.data.s is number && request.resource.data.m is number;
+        allow delete: if request.auth != null && mid.matches(request.auth.uid + '_.*');
+      }
+    }
     match /{document=**} { allow read, write: if false; }
   }
 }

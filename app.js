@@ -38,7 +38,7 @@ function saveHistory(h) {
   }
   return LS.set(`p.${PROFILE.id}.history`, h.slice(0, 400));
 }
-const PROFILE_KEYS = ['settings', 'favs', 'history', 'plan', 'plansDone', 'session', 'smart', 'awards', 'retos', 'dumb'];
+const PROFILE_KEYS = ['settings', 'favs', 'history', 'plan', 'plansDone', 'session', 'smart', 'awards', 'retos', 'dumb', 'body', 'routines', 'groups'];
 let PROFILE = null;
 const PS = {
   get: (k, d) => LS.get(`p.${PROFILE.id}.${k}`, d),
@@ -57,7 +57,7 @@ const saveProfiles = p => LS.set('profiles', p);
 // Pedir al navegador que no borre los datos por falta de espacio
 try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch (e) {}
 
-const DEFAULTS = { dur: 1200, parts: ['all'], level: 2, noJump: false, warmup: true, cooldown: true, vary: false, custom: false,
+const DEFAULTS = { theme: 'oscuro', dur: 1200, parts: ['all'], level: 2, noJump: false, warmup: true, cooldown: true, vary: false, custom: false,
   cw: 40, cr: 20, cn: 5, cR: 3, crr: 60, voice: true, sound: 'voz', planWarm: false, planCool: false, autoNext: true, prepSec: 10 };
 let S = { ...DEFAULTS };
 const save = () => PS.set('settings', S);
@@ -305,15 +305,20 @@ function askApp(title, msg, ok, danger) {
 function openProfiles() {
   const list = profiles();
   sheet(`
-    <h3>Perfiles</h3>
+    <h3>Perfil</h3>
+    <div class="subtabs" data-group="pf"></div>
+    <div class="pane" data-pane="pf:prof">
     <p class="sub">Cada perfil guarda su plan, progreso e historial por separado.</p>
-    <div class="gap"></div>
     <div class="block">${list.map(p => `
       <button class="prof" data-id="${p.id}">${avHTML(p, 'lg')}
         <span class="t"><b data-noi18n>${esc(p.name)}</b><small>Planes: ${VARIANTS[p.variant]}${LS.get(`p.${p.id}.plan`, null) ? ' · ' + esc(FAM[LS.get(`p.${p.id}.plan`).fam]?.n || '') : ''}</small></span>
         ${p.id === PROFILE.id ? '<span class="ck"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg></span>' : ''}
       </button>`).join('')}</div>
     <div class="row"><button class="btn ghost small" id="pf-add">+ Nuevo perfil</button><button class="btn ghost small" id="pf-edit">Editar actual</button></div>
+    <h2>Meta semanal</h2>
+    <button class="btn ghost small" id="pf-goal">${typeof goalLabel === 'function' ? goalLabel() : 'Meta semanal'}</button>
+    </div>
+    <div class="pane hidden" data-pane="pf:set">
     <h2>Apariencia</h2>
     <div class="theme-pick" id="pf-theme">${Object.entries(THEMES).map(([k, t]) => `<button data-t="${k}" aria-pressed="${(S.theme || 'oscuro') === k}"><span class="sw4">${t.sw.map(c => `<i style="background:${c}"></i>`).join('')}</span>${t.n}</button>`).join('')}</div>
     ${(S.avoid || []).length ? `<h2>Zonas a cuidar</h2><p class="note">Los entrenamientos evitan los ejercicios que cargan: <b>${S.avoid.map(k => AREAS[k].n.toLowerCase()).join(', ')}</b>.</p><button class="btn ghost small" id="pf-avoid">Dejar de cuidarlas</button>` : ''}
@@ -322,12 +327,17 @@ function openProfiles() {
     <p class="note">Cambia el idioma de toda la app. Las voces grabadas (Dora, Alex, Paula, Julio, Ona y Kimetz) son solo en español; en inglés se usa la voz del teléfono.</p>
     <h2>Voz y pulso</h2>
     <div class="row"><button class="btn ghost small" id="pf-voice">Voz del entrenador</button><button class="btn ghost small" id="pf-hr">Pulsómetro y zonas</button></div>
+    </div>
+    <div class="pane hidden" data-pane="pf:data">
     <h2>Copia en la nube</h2>
     <button class="btn ghost small" id="pf-cloud">☁ Cuenta y guardado automático</button>
     <p class="note" id="pf-cloud-note">${typeof cloudNote === 'function' ? cloudNote() : ''}</p>
     <button class="btn ghost small" id="pf-backup">Copia en archivo (iCloud Drive / Google Drive)</button>
     <p class="note">${LS.get('bkLast', 0) ? 'Última copia en archivo: ' + dateStr(LS.get('bkLast', 0)) + '. ' : ''}Un archivo que guardas tú, por si quieres una copia aparte.</p>
-    <div id="pf-install"></div>`, () => {
+    <div id="pf-install"></div>
+    </div>`, root => {
+    bindSubtabs('pf', root);
+    $('#pf-goal').onclick = sheetFrom(openProfiles, () => openGoal());
     document.querySelectorAll('.prof').forEach(b => b.onclick = () => { closeSheet(); if (b.dataset.id !== PROFILE.id) { switchProfile(b.dataset.id); toast('Perfil: ' + PROFILE.name); } });
     $('#pf-add').onclick = sheetFrom(openProfiles, () => profileForm(null));
     $('#pf-edit').onclick = sheetFrom(openProfiles, () => profileForm(PROFILE));
@@ -666,7 +676,8 @@ function title(w) {
   if (w.kind === 'test') return 'Prueba de capacidad';
   if (w.kind === 'reto') return w.title;
   if (w.kind === 'db') return w.title || 'Mancuernas';
-  if (w.smart) return `Sesión ${w.smartN} · ${FOCUS[w.focus].n}${w.db ? ' · mancuernas' : ''}`;
+  if (w.rt) return w.rtName || 'Mi rutina';
+  if (w.smart) return `Sesión ${w.smartN} · ${FOCUS[w.focus].n}${w.db ? ' · mancuernas' : ''}${w.deload ? ' · descarga' : ''}`;
   return (w.parts.includes('all') ? 'Cuerpo completo' : w.parts.map(k => PARTS[k]).join(' + ')) + (w.db ? ' · mancuernas' : '');
 }
 
@@ -733,9 +744,25 @@ function bindSmartOpts(root, o, onChange) {
   root.querySelectorAll('[data-so]').forEach(b => b.onclick = () => { const k = b.dataset.so; o[k] = !o[k]; b.setAttribute('aria-checked', o[k]); onChange && onChange(o); });
 }
 // Arma la próxima sesión según la intensidad (1–10), la zona del día y la nota de cada zona
+/* Semana de descarga: 7 días con sesiones más suaves (intensidad −1,5) para recuperarse.
+   Empieza sola cada 5 semanas de entrenamiento (con 8 sesiones o más) o tras dos sesiones seguidas «Difícil». */
+const DL_DAYS = 7, DL_EVERY = 35 * DAY;
+const deloadOn = sm => !!(sm && sm.deload && Date.now() < sm.deload.until);
+function deloadCheck(sm, fb) {
+  sm.fbs = [...(sm.fbs || []), fb].slice(-4);
+  if (deloadOn(sm) || (sm.deloadEnd && Date.now() - sm.deloadEnd < 14 * DAY)) return false;
+  if (!sm.cycleStart) sm.cycleStart = (sm.log && sm.log[0] && sm.log[0].at) || Date.now();
+  const sinceCycle = (sm.log || []).filter(l => l.at >= sm.cycleStart && FB[l.why]).length;
+  const hard2 = sm.fbs.slice(-2).length === 2 && sm.fbs.slice(-2).every(x => x === 'hard');
+  const cycle = Date.now() - sm.cycleStart >= DL_EVERY && sinceCycle >= 8;
+  if (!hard2 && !cycle) return false;
+  const until = dayStart(Date.now()) + (DL_DAYS + 1) * DAY;
+  sm.deload = { from: Date.now(), until, why: hard2 ? 'hard' : 'cycle' }; sm.deloadEnd = until; sm.cycleStart = until; sm.fbs = [];
+  return true;
+}
 function genSmart(sm) {
   const op = smartOpts(sm);
-  const I = sm.I, level = levelOfI(I), n = (sm.sessions || 0) + 1, focus = (n - 1) % 3;
+  const dl = deloadOn(sm), I = dl ? Math.max(1, sm.I - 1.5) : sm.I, level = levelOfI(I), n = (sm.sessions || 0) + 1, focus = (n - 1) % 3;
   const want = 600 + (I - 1) * 240, cap = sm.maxDur || 1800;
   const durs = DURS.filter(d => d <= cap);
   const dur = durs.reduce((b, d) => Math.abs(d - want) < Math.abs(b - want) ? d : b, durs[0] || DURS[0]);
@@ -747,7 +774,7 @@ function genSmart(sm) {
   const rounds = [];
   if (op.vary) { const seen = new Set(); for (let r = 0; r < sk.R; r++) { const ids = pick(seen); ids.forEach(i => seen.add(i)); rounds.push(ids); } }
   else { const ids = pick(); for (let r = 0; r < sk.R; r++) rounds.push(ids); }
-  return { kind: 'coach', smart: true, smartN: n, focus, I: +I.toFixed(1), created: Date.now(), sk, level, parts: FOCUS[focus].parts.slice(), noJump: op.noJump, vary: op.vary, rounds, db: op.db,
+  return { kind: 'coach', smart: true, smartN: n, focus, I: +I.toFixed(1), deload: dl || undefined, created: Date.now(), sk, level, parts: FOCUS[focus].parts.slice(), noJump: op.noJump, vary: op.vary, rounds, db: op.db,
     warm: op.warm ? shuffle(WARM).slice(0, 5) : [], cool: op.cool ? shuffle(COOL).slice(0, 5) : [] };
 }
 function smartRefresh(sm) {
@@ -790,12 +817,13 @@ function renderSmart() {
   const t = sm.tests && sm.tests[0], old = t && Date.now() - t.at > 28 * DAY;
   const pct = Math.round(sm.I / 10 * 100);
   el.innerHTML = `<div class="now smart">
-    <div class="wk">Entrenador inteligente · Sesión ${w.smartN}</div>
+    <div class="wk">Entrenador inteligente · Sesión ${w.smartN}${deloadOn(sm) ? '<span class="dl-tag"> · Semana de descarga</span>' : ''}</div>
     <b class="name">${due ? 'Hoy toca entrenar' : 'Hoy toca descansar'}</b>
     <p class="sub">${due ? '' : `Próxima sesión: <b>${whenStr(sm.nextAt)}</b>. `}${esc(FOCUS[w.focus].n)} · ~${Math.round(total(buildTimeline(w)) / 60)} min · ${LEVELS[w.level - 1]} · ${w.sk.w}s / ${w.sk.r}s</p>
     <div class="gap"></div>
     <div class="pbar"><i style="width:${pct}%"></i></div>
     <div class="pmeta"><span>Intensidad ${sm.I.toFixed(1)} de 10</span><span>${sm.last ? 'Última: ' + FB[sm.last.fb].n.toLowerCase() : ''}</span></div>
+    ${deloadOn(sm) ? `<p class="note dl-note">${sm.deload.why === 'hard' ? 'Tus dos últimas sesiones fueron difíciles' : 'Llevas 5 semanas subiendo la intensidad'}: hasta el ${dateStr(sm.deload.until - DAY)} las sesiones son más suaves (intensidad ${Math.max(1, sm.I - 1.5).toFixed(1)}) para que el cuerpo se recupere y después rindas más. <button class="linkbtn" id="sm-skipdl">Saltearla</button></p>` : ''}
     <div class="gap"></div>
     <button class="btn ${due ? '' : 'ghost'}" id="sm-go">${due ? 'Empezar' : 'Entrenar igual'}</button>
     ${t ? `<p class="note">Prueba del ${dateStr(t.at)}: ${t.sq} sentadillas · ${t.pu} flexiones${t.puKnee ? ' (rodillas)' : ''} · ${t.ab} abdominales${old ? ' · <b>conviene repetirla</b>' : ''}</p>` : '<p class="note">Sin prueba de capacidad: empiezo por tu nivel y me guío por tus respuestas.</p>'}
@@ -807,6 +835,7 @@ function renderSmart() {
   $('#sm-go').onclick = () => openPreview(clone(getSmart().next), 'coach');
   $('#sm-retest').onclick = openTestSetup;
   $('#sm-set').onclick = openSmartSettings;
+  const sk2 = $('#sm-skipdl'); if (sk2) sk2.onclick = () => { const s3 = getSmart(); s3.deload = null; s3.next = genSmart(s3); setSmart(s3); renderSmart(); toast('Semana de descarga salteada'); };
 }
 function openSmartSettings() {
   const sm = getSmart(); let cap = sm.maxDur || 1800; const op = smartOpts(sm);
@@ -859,8 +888,10 @@ function saveTest(r) {
 // Respuesta tras entrenar: ajusta la intensidad y deja preparada la siguiente sesión (día por medio)
 function applyFeedback(w, fb) {
   const sm = getSmart(); if (!sm || !sm.I) return null;
-  const k = w.smart ? 1 : 0.5;
+  // en la semana de descarga la intensidad casi no sube (las sesiones son suaves a propósito)
+  const k = (w.smart ? 1 : 0.5) * (deloadOn(sm) && FB[fb].d > 0 ? 0.2 : 1);
   sm.I = +Math.max(1, Math.min(10, sm.I + FB[fb].d * k)).toFixed(2);
+  if (w.smart && deloadCheck(sm, fb)) setTimeout(() => toast(sm.deload.why === 'hard' ? 'Dos sesiones difíciles seguidas: empieza una semana de descarga' : 'Llevas 5 semanas entrenando: toca una semana de descarga'), 1200);
   if (w.smart) { sm.sessions = (sm.sessions || 0) + 1; sm.nextAt = dayStart(Date.now()) + 2 * DAY; }
   sm.lastAt = Date.now(); sm.decay = 0; sm.last = { at: Date.now(), fb };
   sm.log = [...(sm.log || []), { at: Date.now(), I: sm.I, why: fb }].slice(-200);
@@ -989,7 +1020,7 @@ function renderPreview() {
   $('#pv-title').textContent = title(w);
   $('#pv-plan-opts').classList.add('hidden');
   const ps = $('#pv-sess'); ps.innerHTML = w.kind === 'test' ? '' : sessHTML(w); bindSess(ps, w, renderPreview);
-  $('#pv-coach-btns').classList.toggle('hidden', isPlan);
+  $('#pv-coach-btns').classList.toggle('hidden', isPlan || !!w.rt);   // las rutinas propias no se regeneran ni se guardan aparte
   let h = '';
   if (w.warm && w.warm.length) h += `<div class="block"><div class="block-h"><b>Calentamiento</b><span>${w.warm.length} × 30s</span></div>${w.warm.map((id, i) => exRow(id, i, '')).join('')}</div>`;
   if (isPlan) {
@@ -1058,17 +1089,57 @@ function refreshView() {
     else if (v === 'plans') renderPlans(); else if (v === 'hist') renderHist(); else if (v === 'coach') renderSmart();
   } catch (e) { console.error(e); }
 }
+/* ---------- Subpestañas (Coach, Historial, Perfil) ----------
+   Dividen cada sección en partes cortas para no hacer tanto scroll. Se recuerda la última elegida. */
+const IC = {
+  brain: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M7 7a3 3 0 0 1 5-2M17 7a3 3 0 0 0-5-2M5 12a3 3 0 0 1 2-5M19 12a3 3 0 0 0-2-5M5 12a3 3 0 0 0 2 5M19 12a3 3 0 0 1-2 5M7 17a3 3 0 0 0 5 2M17 17a3 3 0 0 1-5 2"/></svg>',
+  db: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 8v8M3 10v4M18 8v8M21 10v4M6 12h12"/></svg>',
+  sliders: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>',
+  star: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg>',
+  chart: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 20V11M12 20V5M19 20v-7"/></svg>',
+  trend: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l6-6 4 4 8-8M15 7h6v6"/></svg>',
+  list: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h1M3 12h1M3 18h1"/></svg>',
+  medal: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="15" r="5"/><path d="M8.5 11 6 3h4l2 5 2-5h4l-2.5 8"/></svg>',
+  body: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="4.5" r="2"/><path d="M5 9h14M12 9v5M9 22l3-8 3 8"/></svg>',
+  people: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 20c.8-3.3 3.2-5 6-5s5.2 1.7 6 5"/><circle cx="17" cy="9" r="2.4"/><path d="M16.5 14.2c2.4.2 4 1.8 4.5 4.8"/></svg>',
+  user: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c1.2-3.5 4-5.3 7-5.3s5.8 1.8 7 5.3"/></svg>',
+  gear: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a7 7 0 0 0-2-1.2L14 3h-4l-.5 2.6a7 7 0 0 0-2 1.2l-2.4-1-2 3.4 2 1.6a7 7 0 0 0 0 2.4l-2 1.6 2 3.4 2.4-1a7 7 0 0 0 2 1.2L10 21h4l.5-2.6a7 7 0 0 0 2-1.2l2.4 1 2-3.4-2-1.6c.1-.4.1-.8.1-1.2z"/></svg>',
+  cloud: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4 4 0 0 1-.6-8A6 6 0 0 1 18 9a4.5 4.5 0 0 1-.5 9z"/></svg>'
+};
+const SUBTABS = {
+  coach: [['smart', 'Int. HIIT', IC.brain], ['db', 'Int. mancuernas', IC.db], ['custom', 'A medida', IC.sliders], ['mine', 'Mis rutinas', IC.star]],
+  hist: [['sum', 'Resumen', IC.chart], ['prog', 'Progreso', IC.trend], ['list', 'Sesiones', IC.list], ['aw', 'Logros', IC.medal], ['body', 'Cuerpo', IC.body], ['friends', 'Amigos', IC.people]],
+  pf: [['prof', 'Perfiles', IC.user], ['set', 'Ajustes', IC.gear], ['data', 'Cuenta y datos', IC.cloud]]
+};
+const subtabCur = g => { const v = LS.get('tab.' + g, null); return SUBTABS[g].some(x => x[0] === v) ? v : SUBTABS[g][0][0]; };
+const subtabsHTML = g => SUBTABS[g].map(([k, n, ic]) => `<button role="tab" data-st="${k}" aria-selected="${k === subtabCur(g)}">${ic}<span>${n}</span></button>`).join('');
+const SUBTAB_SHOW = {};                 // qué dibujar al mostrar cada parte
+function setSubtab(g, k, root = document) {
+  LS.set('tab.' + g, k);
+  const bar = root.querySelector(`.subtabs[data-group="${g}"]`);
+  if (bar) bar.querySelectorAll('[data-st]').forEach(b => b.setAttribute('aria-selected', b.dataset.st === k));
+  root.querySelectorAll(`[data-pane^="${g}:"]`).forEach(p => p.classList.toggle('hidden', p.dataset.pane !== g + ':' + k));
+  const f = SUBTAB_SHOW[g + ':' + k]; if (f) try { f(); } catch (e) { console.error(e); }
+}
+function bindSubtabs(g, root = document) {
+  const bar = root.querySelector(`.subtabs[data-group="${g}"]`); if (!bar) return;
+  bar.setAttribute('role', 'tablist'); bar.innerHTML = subtabsHTML(g);
+  bar.onclick = e => { const b = e.target.closest('[data-st]'); if (!b) return; setSubtab(g, b.dataset.st, root); b.scrollIntoView({ inline: 'nearest', block: 'nearest' }); };
+  setSubtab(g, subtabCur(g), root);
+}
+// ir directo a una parte (p. ej. desde el anillo de la meta o un aviso)
+function goTo(view, g, k) { if (g) LS.set('tab.' + g, k); show(view); if (g) setSubtab(g, k); }
 function show(view) {
   currentView = view;
-  if (view === 'favs') view = 'hist';   // los guardados ahora están dentro del historial
+  if (view === 'favs') { LS.set('tab.coach', 'mine'); view = 'coach'; }   // los guardados están en Coach → Mis rutinas
   currentView = view;
   ['coach', 'preview', 'plans', 'retos', 'cal', 'hist', 'lib'].forEach(v => $('#v-' + v).classList.toggle('hidden', v !== view));
   const tab = view === 'preview' ? previewFrom : view === 'lib' ? 'coach' : view;
   document.querySelectorAll('#tabs button').forEach(b => b.setAttribute('aria-current', b.dataset.tab === tab));
-  if (view === 'coach') renderSmart();
+  if (view === 'coach') { renderSmart(); bindSubtabs('coach'); }
   if (view === 'plans') renderPlans();
   if (view === 'retos' && typeof renderRetos === 'function') renderRetos();
-  if (view === 'hist') renderHist();
+  if (view === 'hist') { renderHist(); bindSubtabs('hist'); }
   if (view === 'lib') renderLib();
   if (view === 'cal') renderCal();
   window.scrollTo(0, 0); syncViewTitle();

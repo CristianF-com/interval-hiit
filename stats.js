@@ -71,14 +71,16 @@ const fmtT = s => { s = Math.round(s); return s >= 60 ? `${Math.floor(s / 60)}:$
 const fmtN = n => Math.round(n).toLocaleString(LOC);
 let statsAll = false;
 function statsHTML() {
-  const st = computeStats(); if (!st.H.length) return '';
+  const st = computeStats(); if (!st.H.length) return { sum: '', prog: '<p class="note">Completa tu primer entrenamiento para ver tu progreso.</p>' };
   const tile = (v, l) => `<div class="kpi"><b>${v}</b><span>${l}</span></div>`;
   let h = `<h2>Estadísticas</h2><div class="kpis">
     ${tile(fmtN(st.H.length), st.H.length === 1 ? 'entrenamiento' : 'entrenamientos')}${tile(fmtN(st.days), st.days === 1 ? 'día activo' : 'días activos')}
     ${tile(fmtDur(st.secs), 'tiempo total')}${tile(fmtN(st.reps), 'repeticiones')}
     ${tile(fmtN(st.kcal), 'kcal aprox.')}${tile(st.curStreak ? `${st.curStreak} / ${st.best}` : st.best, 'racha / mejor racha (días)')}
     ${tile(fmtN(st.wkN), st.wkN === 1 ? 'entrenamiento esta semana' : 'entrenamientos esta semana')}${tile(fmtDur(st.wkSecs), 'tiempo esta semana')}</div>`;
-  h += weekChartHTML(st.H) + kindChartHTML(st.H) + progChartHTML();
+  // Resumen: números, constancia y tipo · Progreso: tiempos, partes del cuerpo, tablas y otros datos
+  const sum = h + weekChartHTML(st.H) + kindChartHTML(st.H);
+  h = progChartHTML();
   // partes del cuerpo
   const tot = Object.values(st.parts).reduce((a, b) => a + b, 0);
   if (tot) h += `<h3 class="st-h">Partes del cuerpo trabajadas</h3><div class="zbars">${Object.entries(ST_PARTS).map(([c, n]) => { const v = st.parts[c] || 0, p = Math.round(v / tot * 100);
@@ -115,7 +117,7 @@ function statsHTML() {
     st.hrAvg && ['Pulso medio', `${st.hrAvg} ppm`],
   ].filter(Boolean);
   h += `<h3 class="st-h">Otros datos</h3><div class="block st-list">${items.map(([k, v]) => `<div class="kv"><span>${k}</span><b>${esc(String(v))}</b></div>`).join('')}</div>`;
-  return h;
+  return { sum, prog: h };
 }
 /* ---------- Gráficos: constancia semanal (barras) y tipo de entrenamiento (dona) ---------- */
 let wkMode = 'n';                                    // 'n' entrenamientos · 'm' minutos
@@ -135,8 +137,8 @@ function weekChartHTML(H) {
 }
 // los dos primeros siguen los colores del tema; el resto son fijos para que no se repitan en ningún tema
 const KINDS = [['plan', 'Planes', 'var(--work)'], ['smart', 'Entrenador inteligente', 'var(--rest)'], ['libre', 'Entrenamiento libre', '#9d8cff'],
-  ['db', 'Mancuernas', '#5fb3ff'], ['reto', 'Retos', '#ff7eb6'], ['test', 'Pruebas de capacidad', '#8a93a3']];
-const kindOf = w => w.kind === 'reto' ? 'reto' : w.kind === 'test' ? 'test' : w.kind === 'db' ? 'db' : w.kind === 'plan' ? 'plan' : w.smart ? 'smart' : 'libre';
+  ['db', 'Mancuernas', '#5fb3ff'], ['reto', 'Retos', '#ff7eb6'], ['rt', 'Mis rutinas', '#ffc23d'], ['test', 'Pruebas de capacidad', '#8a93a3']];
+const kindOf = w => w.rt ? 'rt' : w.kind === 'reto' ? 'reto' : w.kind === 'test' ? 'test' : w.kind === 'db' ? 'db' : w.kind === 'plan' ? 'plan' : w.smart ? 'smart' : 'libre';
 // tiempo corto para el centro de la dona: «8 h 22 m», «45 m», «125 h» (que entre aunque pase las 10 horas)
 const fmtDurS = s => { s = Math.round(s / 60); const h = Math.floor(s / 60), m = s % 60; return h >= 100 ? `${h} h` : h ? `${h} h ${m} m` : `${m} m`; };
 function kindChartHTML(H) {
@@ -208,7 +210,7 @@ function progChartHTML() {
 }
 function renderStats() {
   const el = $('#hist-kpi'); if (!el) return;
-  el.innerHTML = statsHTML();
+  const r = statsHTML(); el.innerHTML = r.sum; const hp = $('#hist-prog'); if (hp) hp.innerHTML = r.prog;
   bindSeg('wk-mode', 'm', m => { wkMode = m; renderStats(); });
   const pg = $('#pg-sel'); if (pg) pg.onchange = () => { progSel = pg.value; renderStats(); };
   const b = $('#st-all'); if (b) b.onclick = () => { statsAll = !statsAll; renderStats(); };
