@@ -15,6 +15,7 @@
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800&family=Archivo:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script>(function(){var r=document.documentElement;function f(){var o=window.orientation,a=screen.orientation&&screen.orientation.angle;if(o==null&&a!=null)o=a===270?-90:a;r.classList.toggle('notch-l',o===90);r.classList.toggle('notch-r',o===-90||o===270);}f();addEventListener('orientationchange',f);addEventListener('resize',f);try{screen.orientation.addEventListener('change',f)}catch(e){}})();</script>
 <script>try{var t=localStorage.getItem('intervalo.theme');document.documentElement.dataset.theme=t||'oscuro';var c={naranja:'#2b2c31',lima:'#0a0c0b'}[t];if(c)document.querySelector('meta[name=theme-color]').setAttribute('content',c);}catch(e){document.documentElement.dataset.theme='oscuro';}</script>
 <style>
 :root{
@@ -24,6 +25,11 @@
   --body:'Archivo',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+/* márgenes laterales seguros: en horizontal el iPhone reserva el mismo espacio a los dos lados,
+   pero el notch está solo en uno; en el otro alcanza con un margen chico para las esquinas redondeadas */
+:root{--sal:env(safe-area-inset-left,0px);--sar:env(safe-area-inset-right,0px)}
+html.notch-l{--sar:min(env(safe-area-inset-right,0px),14px)}
+html.notch-r{--sal:min(env(safe-area-inset-left,0px),14px)}
 html,body{margin:0;background:var(--bg);color:var(--text);font-family:var(--body);font-size:16px;line-height:1.4}
 body{min-height:100dvh;overflow-x:hidden}
 button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
@@ -378,11 +384,11 @@ code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.92em;backgroun
 /* ---------- Horizontal: menú lateral, todo el ancho y dos columnas ---------- */
 .cols{display:block}
 @media (orientation:landscape) and (min-width:640px){
-  nav.tabs{top:0;bottom:0;right:auto;width:calc(88px + env(safe-area-inset-left));padding:calc(10px + env(safe-area-inset-top)) 6px calc(10px + env(safe-area-inset-bottom)) calc(6px + env(safe-area-inset-left));border-top:0;border-right:1px solid var(--line);display:flex;align-items:center}
+  nav.tabs{top:0;bottom:0;right:auto;width:calc(88px + var(--sal));padding:calc(10px + env(safe-area-inset-top)) 6px calc(10px + env(safe-area-inset-bottom)) calc(6px + var(--sal));border-top:0;border-right:1px solid var(--line);display:flex;align-items:center}
   nav.tabs .in{grid-template-columns:1fr;grid-auto-rows:minmax(54px,auto);gap:2px;width:100%;max-width:none}
   nav.tabs button{font-size:11.5px;border-radius:12px}
   nav.tabs button[aria-current=true]{background:var(--surface)}
-  .app{max-width:none;margin:0;padding:0 calc(20px + env(safe-area-inset-right)) calc(28px + env(safe-area-inset-bottom)) calc(108px + env(safe-area-inset-left))}
+  .app{max-width:none;margin:0;padding:0 calc(20px + var(--sar)) calc(28px + env(safe-area-inset-bottom)) calc(108px + var(--sal))}
   header.top{padding-top:calc(12px + env(safe-area-inset-top))}
   .cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:0 28px;align-items:start}
   .cols .c-first,.cols .col>h2:first-child,.cols #cal-day>h2:first-child{margin-top:14px!important}
@@ -405,7 +411,7 @@ code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.92em;backgroun
   .col.stick .cd .dots .dt{width:4px;height:4px}
   .sheet{max-width:none}
   /* las hojas empiezan donde empiezan los íconos del menú lateral (no quedan bajo el notch) */
-  .scrim{padding-left:calc(6px + env(safe-area-inset-left));padding-right:env(safe-area-inset-right)}
+  .scrim{padding-left:calc(6px + var(--sal));padding-right:var(--sar)}
   #hist-kpi .kpis{grid-template-columns:repeat(4,minmax(0,1fr))}
   .hcols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-areas:"favs aw" "list aw";gap:0 28px;align-items:start}
   .hcols>#hist-favs{grid-area:favs}.hcols>#hist-list{grid-area:list}.hcols>#hist-awards{grid-area:aw}
@@ -430,7 +436,7 @@ code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.92em;backgroun
 [data-theme=naranja] header.top{background:var(--dark);color:#fff;margin:0 -16px 6px;padding-left:16px;padding-right:16px;padding-bottom:12px}
 /* horizontal: la banda del encabezado va del menú lateral hasta el borde derecho de la pantalla */
 @media (orientation:landscape) and (min-width:640px){
-  [data-theme=naranja] header.top{margin-left:-20px;margin-right:calc(-20px - env(safe-area-inset-right));padding-left:20px;padding-right:calc(20px + env(safe-area-inset-right));
+  [data-theme=naranja] header.top{margin-left:-20px;margin-right:calc(-20px - var(--sar));padding-left:20px;padding-right:calc(20px + var(--sar));
     box-shadow:0 0 0 100vmax var(--dark);clip-path:inset(0 -100vmax 0 0)}   /* la banda sigue hasta el borde aunque el iPhone reserve margen para el notch */
 }
 [data-theme=naranja] header.top .who{background:var(--dark2);border-color:var(--dark-line);color:#fff}
