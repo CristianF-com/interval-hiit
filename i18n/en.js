@@ -1574,7 +1574,19 @@ I18N = {
 "{0} reps esta semana": "{0} reps this week",
 "etapa {0}/3": "stage {0}/3",
 "día {0}/{1}": "day {0}/{1}",
-"récord {0}": "best {0}"
+"récord {0}": "best {0}",
+"Invitación a un grupo": "Group invitation",
+"¿Ya tienes INHIIT en la pantalla de inicio? Ábrela desde su ícono y entra con este código en Historial → Amigos → «Unirme con un código».": "Already have INHIIT on your home screen? Open it from its icon and use this code in History → Friends → “Join with a code”.",
+"¿Ya tienes INHIIT en la pantalla de inicio? Copia el link, abre la app desde su ícono y pégalo en Coach → Mis rutinas → «Pegar link de rutina».": "Already have INHIIT on your home screen? Copy the link, open the app from its icon and paste it in Coach → My routines → “Paste routine link”.",
+"El navegador y la app instalada guardan los datos por separado, por eso acá no aparece tu cuenta.": "The browser and the installed app keep their data separately, which is why your account doesn’t show up here.",
+"Copiar código": "Copy code",
+"Seguir en el navegador": "Continue in the browser",
+"Código copiado": "Code copied",
+"Pegar código o link": "Paste code or link",
+"No encontré un código en lo que copiaste": "No code found in what you copied",
+"Pegar link de rutina": "Paste routine link",
+"Copia primero el link de la rutina": "Copy the routine link first",
+"Si ya tienes la app, ábrela y entra con el código en Historial → Amigos.": "If you already have the app, open it and enter the code in History → Friends."
 };
 I18N_PAT = [
 [

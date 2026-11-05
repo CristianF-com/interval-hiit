@@ -266,11 +266,17 @@ function renderRoutines() {
   const el = $('#routines'); if (!el || !PROFILE) return;
   const R = PS.get('routines', []).map(rtNorm);
   el.innerHTML = `<p class="sub pane-intro">Arma tus circuitos con los ejercicios que quieras, cada uno por tiempo o por repeticiones, y compártelos con un link o un código QR.</p>
-    <button class="btn" id="rt-new">+ Nueva rutina</button>
+    <button class="btn" id="rt-new">+ Nueva rutina</button><button class="btn ghost small rt-paste" id="rt-paste">Pegar link de rutina</button>
     ${R.length ? `<h2>Mis rutinas</h2><div class="block">${R.map((rt, i) => `<div class="hist"><div class="t" data-rto="${i}"><b data-noi18n>${esc(rt.n)}</b><small>${t('{0} ejercicios · {1} rondas · {2} min', rt.items.length, rt.R, Math.round(rtSecs(rt) / 60))}</small></div>
       <button class="icon-btn" data-rtp="${i}" aria-label="Empezar"><svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M7 5v14l12-7z"/></svg></button>
       <button class="icon-btn" data-rte="${i}" aria-label="Editar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h4L19 9l-4-4L4 16z"/></svg></button></div>`).join('')}</div>` : ''}`;
   $('#rt-new').onclick = () => openRoutine(null);
+  $('#rt-paste').onclick = async () => {
+    let tx = ''; try { tx = await navigator.clipboard.readText(); } catch (e) {}
+    const m = (tx || '').match(/#rt=([\w-]+)/);
+    if (!m) { toast('Copia primero el link de la rutina'); return; }
+    LINK_HERE = true; location.hash = 'rt=' + m[1]; checkSharedRoutine();
+  };
   el.querySelectorAll('[data-rtp],[data-rto]').forEach(b => b.onclick = () => { const rt = R[+(b.dataset.rtp || b.dataset.rto)]; openPreview(rtWorkout(rt), 'coach'); });
   el.querySelectorAll('[data-rte]').forEach(b => b.onclick = () => openRoutine(+b.dataset.rte));
 }
@@ -364,7 +370,28 @@ async function shareRoutine(rt) {
 let QR_P = null;
 const loadQR = () => QR_P || (QR_P = new Promise((res, rej) => { if (window.qrcode) return res(); const s = document.createElement('script'); s.src = 'qr.js'; s.onload = () => window.qrcode ? res() : rej(); s.onerror = () => { QR_P = null; rej(); }; document.head.appendChild(s); }));
 // al abrir un link de rutina compartida
+/* ---------- Links de invitación abiertos en el navegador del teléfono ----------
+   En iPhone los links siempre abren Safari, nunca la app instalada, y cada una guarda sus datos aparte:
+   quien ya tiene la app vería la página como si fuera nueva. Antes de seguir se le explica cómo usarlo en la app. */
+let LINK_HERE = false;
+const mobileWeb = () => !isStandalone() && matchMedia('(pointer:coarse)').matches;
+function linkInBrowser(kind, val) {
+  if (LINK_HERE || !mobileWeb()) return false;
+  if ($('#lk-here')) return true;   // el aviso ya está abierto
+  const grp = kind === 'grp';
+  sheet(`<h3>${grp ? 'Invitación a un grupo' : 'Rutina compartida'}</h3>
+    <p class="sub">${grp ? '¿Ya tienes INHIIT en la pantalla de inicio? Ábrela desde su ícono y entra con este código en Historial → Amigos → «Unirme con un código».' : '¿Ya tienes INHIIT en la pantalla de inicio? Copia el link, abre la app desde su ícono y pégalo en Coach → Mis rutinas → «Pegar link de rutina».'}</p>
+    ${grp ? `<div class="lk-code" data-noi18n>${esc(val)}</div>` : ''}
+    <p class="note">El navegador y la app instalada guardan los datos por separado, por eso acá no aparece tu cuenta.</p>
+    <div class="gap"></div><button class="btn" id="lk-copy">${grp ? 'Copiar código' : 'Copiar link'}</button>
+    <div class="gap"></div><button class="btn ghost" id="lk-here">Seguir en el navegador</button>`, () => {
+    $('#lk-copy').onclick = async () => { try { await navigator.clipboard.writeText(val); toast(grp ? 'Código copiado' : 'Link copiado'); } catch (e) { toast(grp ? 'Código: ' + val : 'No se pudo copiar'); } };
+    $('#lk-here').onclick = () => { LINK_HERE = true; closeSheet(); setTimeout(() => { checkSharedRoutine(); checkGroupLink(); }, 250); };
+  });
+  return true;
+}
 function checkSharedRoutine() {
+  const m0 = location.hash.match(/^#rt=([\w-]+)/); if (m0 && linkInBrowser('rt', location.href)) return;
   const m = location.hash.match(/^#rt=([\w-]+)/); if (!m || !PROFILE) return;
   history.replaceState(null, '', location.pathname + location.search);
   let raw; try { raw = JSON.parse(unb64u(m[1])); } catch (e) { toast('Ese link de rutina no es válido'); return; }
@@ -446,7 +473,7 @@ async function renderFriends() {
 }
 async function inviteGroup(g) {
   const link = location.origin + location.pathname + '#grp=' + g.c;
-  const txt = t('Sumate a mi grupo «{0}» en INHIIT para ver quién entrena más esta semana. Código: {1}', g.n, g.c);
+  const txt = t('Sumate a mi grupo «{0}» en INHIIT para ver quién entrena más esta semana. Código: {1}', g.n, g.c) + ' ' + t('Si ya tienes la app, ábrela y entra con el código en Historial → Amigos.');
   try { if (navigator.share) { await navigator.share({ title: 'INHIIT', text: txt, url: link }); return; } } catch (e) { if (e && e.name === 'AbortError') return; }
   try { await navigator.clipboard.writeText(txt + ' ' + link); toast('Invitación copiada'); } catch (e) { toast('Código: ' + g.c); }
 }
@@ -469,7 +496,13 @@ function openGroupNew() {
 function openGroupJoin(code) {
   if (typeof code !== 'string') code = '';   // por si llega el evento del toque en lugar de un código
   sheet(`<h3>Unirme a un grupo</h3><div class="field"><input id="gj-c" maxlength="6" placeholder="Código de 6 letras" autocapitalize="characters" autocomplete="off" value="${esc(code || '')}" style="text-transform:uppercase;letter-spacing:.2em"></div>
+    <button class="btn ghost small" id="gj-paste">Pegar código o link</button>
     <p class="note auth-msg" id="auth-msg"></p><div class="gap"></div><button class="btn" id="gj-ok">Unirme</button>`, () => {
+    $('#gj-paste').onclick = async () => {
+      let tx = ''; try { tx = await navigator.clipboard.readText(); } catch (e) {}
+      const m = (tx || '').match(/grp=([A-Z0-9]{6})/i) || (tx || '').toUpperCase().match(/\b([A-HJ-NP-Z2-9]{6})\b/);
+      if (m) $('#gj-c').value = m[1].toUpperCase(); else authMsg('No encontré un código en lo que copiaste');
+    };
     $('#gj-ok').onclick = async () => {
       const c = $('#gj-c').value.trim().toUpperCase(); if (!/^[A-Z0-9]{6}$/.test(c)) { authMsg('El código tiene 6 letras o números'); return; }
       if (PS.get('groups', []).some(g => g.c === c)) { closeSheet(); frSel = c; goTo('hist', 'hist', 'friends'); return; }
@@ -483,7 +516,8 @@ function openGroupJoin(code) {
   }, false, true);
 }
 function checkGroupLink() {
-  const m = location.hash.match(/^#grp=([A-Z0-9]{6})/i); if (!m || !PROFILE) return;
+  const m = location.hash.match(/^#grp=([A-Z0-9]{6})/i); if (!m) return;
+  if (linkInBrowser('grp', m[1].toUpperCase()) || !PROFILE) return;
   history.replaceState(null, '', location.pathname + location.search);
   openGroupJoin(m[1].toUpperCase());
 }
@@ -523,3 +557,5 @@ show = function (v) { _showM(v); try { renderGoal(); } catch (e) {} };
 if (currentView === 'coach' || currentView === 'hist') try { bindSubtabs(currentView); } catch (e) { console.error(e); }
 setTimeout(() => { try { renderGoal(); checkSharedRoutine(); checkGroupLink(); } catch (e) { console.error(e); } }, 600);
 window.addEventListener('hashchange', () => { checkSharedRoutine(); checkGroupLink(); });
+const _switchProfileM = switchProfile;
+switchProfile = function (...a) { const r = _switchProfileM(...a); setTimeout(() => { try { checkSharedRoutine(); checkGroupLink(); } catch (e) {} }, 500); return r; };

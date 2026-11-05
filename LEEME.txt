@@ -232,3 +232,6 @@ SEMANA DE DESCARGA (entrenador inteligente)
 - Barra de estado del iPhone: desde iOS 26.1 el sistema dibuja un degradé arriba en las apps instaladas con la barra
   translúcida. Ahora la barra es opaca y toma el color del tema (meta theme-color). iOS guarda ese ajuste al instalar,
   así que hay que quitar el ícono y volver a agregarlo a la pantalla de inicio (antes, hacer copia en la nube).
+- Links de invitación y de rutinas: en iPhone siempre abren Safari, no la app instalada (y cada una guarda sus datos
+  aparte). En el navegador del teléfono primero se muestra cómo usarlo en la app (copiar código o link); en la app,
+  «Pegar código o link» al unirse a un grupo y «Pegar link de rutina» en Mis rutinas.
