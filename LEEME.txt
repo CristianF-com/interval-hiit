@@ -249,3 +249,8 @@ ABDOMINALES (abs.js)
   animación propia comparada con los videos de la app y audios en las 6 voces.
 - Ritmo guiado (repeticiones × ritmo, con sonido en cada una) o a tu ritmo (✓). Opciones: serie extra, calentamiento,
   estiramientos.
+
+REGLAS DE DISEÑO
+- Espaciado: un texto (.sub, .note o <p>) seguido directo de un componente con recuadro (.block, .seg, .toggles,
+  .field, .chips, .plans-cat, .opts, .row, .weeks) deja siempre 14 px. Está como regla general en index.html
+  (:is(.sub,.note,p)+:is(...)), así que no hace falta agregar márgenes a mano en cada pantalla.
