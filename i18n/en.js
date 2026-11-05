@@ -1703,7 +1703,58 @@ I18N = {
 "reps quedan": "reps left",
 "rep. queda": "rep left",
 "Faltan diez.": "Ten to go.",
-"extra": "extra"
+"extra": "extra",
+"Repeticiones guiadas": "Guided reps",
+"Para empezar: 3 o 4 ejercicios básicos por sesión, de 6 a 26 repeticiones.": "To get started: 3 or 4 basic exercises per session, 6 to 26 reps.",
+"Más ejercicios y repeticiones, con oblicuos y planchas laterales.": "More exercises and reps, with obliques and side planks.",
+"Sesiones largas y exigentes, con planchas dinámicas y hasta 50 repeticiones.": "Long, demanding sessions with dynamic planks and up to 50 reps.",
+"{0} días": "{0} days",
+"después, un día de descanso": "then a rest day",
+"{0} de {1} días": "{0} of {1} days",
+"Ver en el Coach": "See in Coach",
+"Plan diario de abdominales con días de descanso. Se puede combinar con cualquier otro plan.": "Daily abs plan with rest days. It can be combined with any other plan.",
+"Día {0}": "Day {0}",
+"Coach inteligente de abdominales": "Smart abs coach",
+"Abdominales a tu medida": "Abs made for you",
+"Mide tu capacidad con una prueba corta y arma cada sesión con ejercicios de abdomen superior, oblicuos e inferior. No tiene fecha de fin: la dificultad sube de a poco según cómo te va.": "Measures your capacity with a short test and builds each session with upper, oblique and lower abs exercises. It has no end date: difficulty goes up little by little based on how you are doing.",
+"Medir mi nivel y empezar": "Measure my level and start",
+"¿Prefieres un plan cerrado de 10, 15 o 25 días? Están en Planes.": "Prefer a fixed 10, 15 or 25-day plan? They are in Plans.",
+"Sesión {0}": "Session {0}",
+"{0} ejercicios · {1} series · ~{2} min": "{0} exercises · {1} sets · ~{2} min",
+"Sesión de descarga: un poco más suave para recuperar y seguir subiendo.": "Deload session: a bit easier to recover and keep progressing.",
+"Prueba del {0}: {1} crunches": "Test on {0}: {1} crunches",
+"plancha {0} s": "plank {0} s",
+"Repetir la prueba": "Repeat the test",
+"Prueba de abdominales": "Abs test",
+"Dos ejercicios con buena técnica. Descansa 2 minutos entre uno y otro.": "Two exercises with good form. Rest 2 minutes in between.",
+"Todos los que puedas en 1 minuto": "As many as you can in 1 minute",
+"Opcional: cuánto aguantas con buena postura": "Optional: how long you hold with good form",
+"Usé el resultado de tu última prueba de capacidad. Puedes cambiarlo.": "I used the result of your last fitness test. You can change it.",
+"Guardar y recalcular": "Save and recalculate",
+"Anota cuántos crunches hiciste": "Enter how many crunches you did",
+"aparece en el calendario": "it shows up in your calendar",
+"Coach de abdominales": "Abs coach",
+"Ajustar la dificultad": "Adjust difficulty",
+"Cada toque mueve el nivel medio punto. El coach igual lo sigue ajustando con tus respuestas.": "Each tap moves the level half a point. The coach keeps adjusting it with your answers.",
+"Historial del nivel": "Level history",
+"Desactivar el coach de abdominales": "Turn off the abs coach",
+"Se borran tu nivel y tus pruebas. El historial se mantiene.": "Your level and tests are deleted. Your history is kept.",
+"te resultó fácil": "it felt easy",
+"bien": "good",
+"te costó": "it was hard",
+"sesión hecha": "session done",
+"volviste después de unos días": "back after a few days",
+"ajuste manual": "manual adjustment",
+"La próxima sesión será un poco más suave.": "Next session will be a bit easier.",
+"La próxima sesión sube un poco más.": "Next session goes up a bit more.",
+"La próxima sesión sube un poco.": "Next session goes up a little.",
+"se ajusta según la sesión anterior": "adapts to the previous session",
+"Los ejercicios y las repeticiones se eligen después de la sesión anterior, según cómo te fue.": "Exercises and reps are chosen after the previous session, based on how it went.",
+"Empezar día {0}": "Start day {0}",
+"Hacer el día {0} ahora": "Do day {0} now",
+"Abdomen superior": "Upper abs",
+"Oblicuos": "Obliques",
+"Abdomen inferior": "Lower abs"
 };
 I18N_PAT = [
 [
@@ -2821,6 +2872,14 @@ I18N_PAT = [
 [
 "Día {0} · {1}",
 "Day {0} · {1}"
+],
+[
+"Abdominales · Sesión {0}",
+"Abs · Session {0}"
+],
+[
+"Sesión {0} · {1}",
+"Session {0} · {1}"
 ]
 ];
 // catálogo de ejercicios y planes en inglés (búsqueda, voz y textos armados en el código)

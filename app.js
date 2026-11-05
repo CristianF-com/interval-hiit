@@ -38,7 +38,7 @@ function saveHistory(h) {
   }
   return LS.set(`p.${PROFILE.id}.history`, h.slice(0, 400));
 }
-const PROFILE_KEYS = ['settings', 'favs', 'history', 'plan', 'plansDone', 'session', 'smart', 'awards', 'retos', 'dumb', 'abs', 'body', 'routines', 'groups'];
+const PROFILE_KEYS = ['settings', 'favs', 'history', 'plan', 'plansDone', 'session', 'smart', 'awards', 'retos', 'dumb', 'abs', 'absAi', 'body', 'routines', 'groups'];
 let PROFILE = null;
 const PS = {
   get: (k, d) => LS.get(`p.${PROFILE.id}.${k}`, d),
@@ -1482,7 +1482,7 @@ $('#hist-list').onclick = e => {
   if (w.kind === 'test') { openTestSetup(); return; }
   if (w.kind === 'reto') { openReto(w.reto); return; }
   if (w.kind === 'db') { openDbStart(); return; }
-  if (w.kind === 'abs') { openAbStart(); return; }
+  if (w.kind === 'abs') { if (w.ai) openAbAiStart(); else openAbStart(); return; }
   if (w.kind === 'plan') { w.warm = []; w.cool = []; }
   openPreview(w, 'hist');
 };

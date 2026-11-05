@@ -267,6 +267,18 @@ const Anim = (() => {
     hydrant: () => k([QUAD, m(QUAD, { tR: -40, sR: -100 })], 1400, { anchor: 'kneeL' }),
     // gato: espalda redondeada hacia arriba y cabeza abajo; vaca: espalda hundida y mirada arriba
     cat_cow: () => k([QUAD, m(QUAD, { arch: -11, hd: -40 }), QUAD, m(QUAD, { arch: 9, hd: 38 })], 5200, { anchor: 'handR' }),
+    // tumbado de lado: las dos piernas juntas suben unos centímetros
+    side_legs: () => k([SIDE_LY, m(SIDE_LY, { tL: 106, sL: 106, tR: 107, sR: 107 })], 1800, { anchor: 'hip' }),
+    // de pies apoyados con rodillas flexionadas a piernas casi verticales
+    bent_leg_raise: () => k([LIE_K, m(LIE, { tL: 172, sL: 150, tR: 174, sR: 152 })], 2000, { anchor: 'sh' }),
+    // piernas estiradas en el aire y brazos al frente → rodillas al pecho subiendo el tronco
+    stretch_crunch: () => k([m(LIE, { t: -106, tL: 108, sL: 108, tR: 110, sR: 110, uL: 96, fL: 96, uR: 98, fR: 98 }), m(LIE, { t: -132, hd: 6, tL: 214, sL: 116, tR: 216, sR: 118, uL: 128, fL: 150, uR: 130, fR: 152 })], 2000, { anchor: 'hip' }),
+    // crunch con manos en la nuca: el codo va hacia la rodilla que sube
+    cross_crunch: () => k([m(LIE_K, { uL: -140, fL: 60, uR: -136, fR: 64 }), m(LIE_K, { t: -124, uL: -140, fL: 60, uR: -136, fR: 64, tR: 205, sR: 112 })], 1800, { anchor: 'ankleL' }),
+    // crunch con los brazos estirados hacia el techo
+    crunch_reach: () => k([m(LIE_K, { uL: 178, fL: 178, uR: 180, fR: 180 }), m(CRUNCH, { uL: 172, fL: 172, uR: 174, fR: 174 })], 1800, { anchor: 'ankleL' }),
+    // crunch con las manos en la nuca (oblicuo: rodillas caídas a un lado)
+    crunch_head: () => k([m(LIE_K, { uL: -140, fL: 60, uR: -136, fR: 64, tL: 128, tR: 131 }), m(LIE_K, { t: -122, uL: -140, fL: 60, uR: -136, fR: 64, tL: 128, tR: 131 })], 1800, { anchor: 'ankleL' }),
     abduction: () => k([SIDE_LY, m(SIDE_LY, { tR: 128, sR: 128 })], 1800, { anchor: 'hip' }),
     adduction: () => k([SIDE_ADD, m(SIDE_ADD, { tL: 116, sL: 116, pL: 206 })], 1800, { anchor: 'hip', farShade: true }),
     cross_over: () => k([LIE_K, m(LIE_K, { tL: 110, sL: 40, tR: 113, sR: 43 })], 2400, { anchor: 'sh' }),
@@ -351,10 +363,10 @@ const Anim = (() => {
     lying_figure_4_stretch: 'figure4', overhead_triceps_stretch: 'triceps', shoulder_cross_stretch: 'shoulder', standing_quadriceps_stretch: 'quad_stretch',
     wall_pectoral_stretch: 'pec',
     // entrenador de abdominales
-    ab_adductor_crunch: 'toe_reach', ab_toe_touch: 'toe_reach', ab_hip_raise: 'hip_raise', ab_scissor_legs: 'scissors', ab_crossover: 'bicycle',
-    ab_hip_drop: 'wipers_front', ab_crunch_reach: 'crunch', ab_knee_touch: 'crunch', ab_bent_leg_raise: 'reverse_crunch', ab_table_twist: 'table_crunch',
-    ab_stretch_crunch: 'tuck_crunch', ab_side_bridge: 'side_plank', ab_side_leg_lift: 'abduction', ab_side_plank_lift: 'side_plank_leg',
-    ab_oblique_crunch: 'crunch', ab_double_knee: 'quad_knee', ab_thread_needle: 'side_plank_twist',
+    ab_adductor_crunch: 'toe_reach', ab_toe_touch: 'toe_reach', ab_hip_raise: 'hip_raise', ab_scissor_legs: 'scissors', ab_crossover: 'cross_crunch',
+    ab_hip_drop: 'knee_drops', ab_crunch_reach: 'crunch_reach', ab_knee_touch: 'crunch', ab_bent_leg_raise: 'bent_leg_raise', ab_table_twist: 'table_crunch',
+    ab_stretch_crunch: 'stretch_crunch', ab_side_bridge: 'side_plank', ab_side_leg_lift: 'side_legs', ab_side_plank_lift: 'side_plank_leg',
+    ab_oblique_crunch: 'crunch_head', ab_double_knee: 'quad_knee', ab_thread_needle: 'side_plank_twist',
   };
   // dominadas de frente: colgado de una barra y subida con los codos hacia abajo
   T.pullup = () => { const hang = m(F0, { uL: -172, fL: -176, uR: 172, fR: 176, tL: -4, sL: 6, tR: 4, sR: -6, pL: -60, pR: 60 });
@@ -469,6 +481,9 @@ const Anim = (() => {
   // limpiaparabrisas y cruce de piernas vistos desde los pies
   const LW = { v: 'f', t: 180, hd: 0, kT: 0.22, uL: -90, fL: -90, uR: 90, fR: 90, tL: 178, sL: 178, tR: 182, sR: 182, pL: 178, pR: 182 };
   T.wipers_front = () => k([m(LW, { tL: 125, sL: 125, tR: 128, sR: 128 }), m(LW, { tL: 232, sL: 232, tR: 235, sR: 235 })], 2400, { anchor: 'hip', anchorY: 'hip', trail: ['ankleR'], armsBack: true, legsFront: true });
+  // caída de rodillas vista desde los pies: piernas en mesa (muslos hacia arriba) que caen juntas a un lado y al otro
+  const KD = m(LW, { kLL: 0.55, kLR: 0.55, kSL: 0.42, kSR: 0.42 });
+  T.knee_drops = () => k([m(KD, { tL: 176, sL: 176, tR: 184, sR: 184 }), m(KD, { tL: 128, sL: 128, tR: 134, sR: 134 }), m(KD, { tL: 176, sL: 176, tR: 184, sR: 184 }), m(KD, { tL: 226, sL: 226, tR: 232, sR: 232 })], 3600, { anchor: 'hip', anchorY: 'hip', armsBack: true, legsFront: true });
   const CF = m(LW, { tL: 172, sL: 190, tR: 188, sR: 170, kSL: 0.7, kSR: 0.7 });
   T.cross_front = () => k([CF, m(CF, { tR: 236, sR: 208 }), CF, m(CF, { tL: 124, sL: 152 })], 3600, { anchor: 'hip', anchorY: 'hip', armsBack: true, legsFront: true });
   // golpes cruzados de frente

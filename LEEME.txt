@@ -236,11 +236,16 @@ SEMANA DE DESCARGA (entrenador inteligente)
   aparte). En el navegador del teléfono primero se muestra cómo usarlo en la app (copiar código o link); en la app,
   «Pegar código o link» al unirse a un grupo y «Pegar link de rutina» en Mis rutinas.
 
-ENTRENADOR INTELIGENTE DE ABDOMINALES (abs.js)
-- Basado en el plan de una app de abdominales: 3 niveles (principiante 10 días, intermedio 15, avanzado 25) con
-  días de descanso fijos, versión hombre/mujer según el perfil y ritmo por repetición de cada ejercicio.
-- 41 ejercicios: los que ya existían se reutilizan; los nuevos llevan el prefijo ab_ (los de un lado, _r y _l).
-- Ritmo guiado (como el original: la serie dura repeticiones × ritmo, con sonido en cada repetición) o a tu ritmo (✓).
-- Se adapta: «fácil» +8 %, «bien» +2 %, «difícil» −10 % y se repite el día. Más de una semana sin entrenar:
-  retrocede dos días y baja un poco. Al terminar un nivel: pasar al siguiente o repetirlo más exigente.
-- Opciones: serie extra, calentamiento, estiramientos. Aparece en el calendario y en el historial (tipo abs).
+ABDOMINALES (abs.js)
+- Planes (pestaña Planes): los 3 planes cerrados de la app original (principiante 10 días, intermedio 15, avanzado
+  25) con días de descanso fijos, versión hombre/mujer y cronograma día por día. «Fácil» +8 %, «Difícil» −10 % y se
+  repite el día; al terminar, pasar de nivel o repetirlo más exigente. Estado: PS 'abs'.
+- Coach inteligente (Coach → Int. abdominales): sin fecha de fin. Prueba: crunches en 1 minuto y plancha (opcional).
+  Cada sesión se arma con los 41 ejercicios según categoría (superior, oblicuos, inferior) y dificultad; la cantidad
+  de ejercicios, series, descanso y repeticiones sale del nivel (I) y de la prueba. Sube +0,15 por sesión y según la
+  respuesta (fácil +0,45, bien +0,25, difícil −0,4); descarga cada 8 sesiones; dos días sí y uno no; tras una semana
+  sin entrenar baja medio punto por semana. Estado: PS 'absAi'. Historial: kind 'abs' con ai: 1.
+- 41 ejercicios: los existentes se reutilizan; los nuevos llevan el prefijo ab_ (los de un lado, _r y _l), con
+  animación propia comparada con los videos de la app y audios en las 6 voces.
+- Ritmo guiado (repeticiones × ritmo, con sonido en cada una) o a tu ritmo (✓). Opciones: serie extra, calentamiento,
+  estiramientos.
