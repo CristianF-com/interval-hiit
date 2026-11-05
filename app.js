@@ -799,25 +799,38 @@ const whenStr = t => {
   const d = Math.round((dayStart(t) - dayStart(Date.now())) / DAY);
   return d <= 0 ? 'hoy' : d === 1 ? 'mañana' : new Date(t).toLocaleDateString(LOC, LANG === 'es' ? { weekday: 'long', day: 'numeric' } : { weekday: 'long', month: 'short', day: 'numeric' });
 };
+// inicio del entrenador inteligente: nivel y, con o sin prueba de capacidad (igual que mancuernas y abdominales)
+function openSmartSetup() {
+  let lv = Math.min(3, S.level || 1);
+  sheet(`<h3>AI HIIT</h3>
+    <p class="sub">Sesiones de HIIT progresivas, una cada dos días, que se ajustan según cómo te va.</p>
+    <h2>Nivel</h2><div class="seg" id="sms-lv">${LEVELS.map((n, i) => `<button data-v="${i + 1}" aria-pressed="${lv === i + 1}">${n}</button>`).join('')}</div>
+    <p class="note">Con la prueba de capacidad (3 minutos: sentadillas, flexiones y abdominales) calculo tu nivel real. Si empiezas sin prueba, parto del nivel elegido y lo ajusto con tus respuestas.</p>
+    <div style="height:14px"></div><button class="btn" id="sms-test">Medir mi nivel</button>
+    <div class="gap"></div><button class="btn ghost small" id="sms-skip">Empezar sin prueba</button>`, () => {
+    bindSeg('sms-lv', 'v', v => { lv = +v; });
+    $('#sms-test').onclick = () => { S.level = lv; save(); closeSheet(); openTestSetup(); };
+    $('#sms-skip').onclick = () => {
+      S.level = lv; save();
+      const I = [2, 4.5, 7.5][lv - 1];
+      const n = { I, tests: [], sessions: 0, maxDur: 1800, nextAt: Date.now(), log: [{ at: Date.now(), I, why: 'inicio' }], opts: smartOpts(null) };
+      n.next = genSmart(n); setSmart(n); closeSheet(); renderSmart(); toast('Listo: tu primera sesión está preparada');
+    };
+  });
+}
 function renderSmart() {
   const el = $('#smart'); if (!el || !PROFILE) return;
   let sm = getSmart();
   if (!sm || !sm.I) {
     el.innerHTML = `<div class="now smart">
-      <div class="wk">Entrenador inteligente</div>
-      <b class="name">Prueba de capacidad</b>
-      <p class="sub">3 minutos: sentadillas, flexiones y abdominales, 1 minuto cada uno. Con tus resultados armo sesiones progresivas, una cada dos días, y después de cada una me dices si fue fácil, bien o difícil para ajustar la siguiente.</p>
+      <div class="wk">Entrenador inteligente · HIIT</div>
+      <b class="name">HIIT a tu medida</b>
+      <p class="sub">Sesiones progresivas, una cada dos días. Después de cada una me dices si fue fácil, bien o difícil y ajusto la siguiente. Puedes medir tu nivel con una prueba de 3 minutos o empezar directamente.</p>
       ${optFold('sm-opts', `${smartOptsHTML(smartOpts(null))}
       <p class="note">La duración, las zonas, el nivel y los tiempos los calculo yo según tus resultados. Estas opciones se pueden cambiar después en Ajustes, y el calentamiento y los estiramientos también antes de cada sesión.</p>`)}
-      <div class="gap"></div><button class="btn" id="sm-test">Hacer la prueba</button>
-      <div class="gap"></div><button class="btn ghost small" id="sm-skip">Empezar sin prueba</button></div>`;
+      <div class="gap"></div><button class="btn" id="sm-start">¡Empezar!</button></div>`;
     bindSmartOpts(el, smartOpts(null), o => PS.set('smartOpts', o)); bindFolds(el);
-    $('#sm-test').onclick = openTestSetup;
-    $('#sm-skip').onclick = () => {
-      const I = [2, 4.5, 7.5][S.level - 1];
-      const n = { I, tests: [], sessions: 0, maxDur: 1800, nextAt: Date.now(), log: [{ at: Date.now(), I, why: 'inicio' }], opts: smartOpts(null) };
-      n.next = genSmart(n); setSmart(n); renderSmart(); toast('Listo: tu primera sesión está preparada');
-    };
+    $('#sm-start').onclick = openSmartSetup;
     return;
   }
   sm = smartRefresh(sm);

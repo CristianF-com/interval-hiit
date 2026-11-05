@@ -90,12 +90,12 @@ I18N = {
 "Con mancuernas": "With dumbbells",
 "La mitad de los ejercicios con mancuerna (peso liviano, por tiempo)": "Half of the exercises with a dumbbell (light weight, timed)",
 "mañana": "tomorrow",
-"Entrenador inteligente": "Smart coach",
+"Entrenador inteligente": "AI coach",
 "3 minutos: sentadillas, flexiones y abdominales, 1 minuto cada uno. Con tus resultados armo sesiones progresivas, una cada dos días, y después de cada una me dices si fue fácil, bien o difícil para ajustar la siguiente.": "3 minutes: squats, push-ups and sit-ups, 1 minute each. With your results I build progressive sessions, one every two days, and after each one you tell me if it was easy, good or hard so I can adjust the next.",
 "Opciones": "Options",
 "La duración, las zonas, el nivel y los tiempos los calculo yo según tus resultados. Estas opciones se pueden cambiar después en Ajustes, y el calentamiento y los estiramientos también antes de cada sesión.": "I calculate the duration, zones, level and timings from your results. You can change these options later in Settings, and the warm-up and stretching before each session too.",
 "Hacer la prueba": "Take the test",
-"Empezar sin prueba": "Start without the test",
+"Empezar sin prueba": "Start without a test",
 "Listo: tu primera sesión está preparada": "Done: your first session is ready",
 "Hoy toca entrenar": "Training day today",
 "Hoy toca descansar": "Rest day today",
@@ -1754,7 +1754,19 @@ I18N = {
 "Hacer el día {0} ahora": "Do day {0} now",
 "Abdomen superior": "Upper abs",
 "Oblicuos": "Obliques",
-"Abdomen inferior": "Lower abs"
+"Abdomen inferior": "Lower abs",
+"¡Empezar!": "Start!",
+"Entrenador inteligente · HIIT": "AI coach · HIIT",
+"HIIT a tu medida": "HIIT made for you",
+"Sesiones progresivas, una cada dos días. Después de cada una me dices si fue fácil, bien o difícil y ajusto la siguiente. Puedes medir tu nivel con una prueba de 3 minutos o empezar directamente.": "Progressive sessions, one every two days. After each one you tell me if it was easy, good or hard and I adjust the next one. You can measure your level with a 3-minute test or start right away.",
+"Entrenador inteligente · Mancuernas": "AI coach · Dumbbells",
+"Entrenador inteligente · Abdominales": "AI coach · Abs",
+"Sesiones de HIIT progresivas, una cada dos días, que se ajustan según cómo te va.": "Progressive HIIT sessions, one every two days, that adapt to how you are doing.",
+"Con la prueba de capacidad (3 minutos: sentadillas, flexiones y abdominales) calculo tu nivel real. Si empiezas sin prueba, parto del nivel elegido y lo ajusto con tus respuestas.": "With the fitness test (3 minutes: squats, push-ups and sit-ups) I work out your real level. If you start without a test, I begin at the level you chose and adjust it with your answers.",
+"Sesiones de abdominales que se arman a tu medida y suben de a poco, dos días sí y uno no.": "Abs sessions built for you that build up little by little, two days on and one off.",
+"Con la prueba (crunches en 1 minuto y plancha) calculo tu nivel real. Si empiezas sin prueba, parto del nivel elegido y lo ajusto con tus respuestas.": "With the test (crunches in 1 minute and a plank) I work out your real level. If you start without a test, I begin at the level you chose and adjust it with your answers.",
+"Sin prueba: empiezo por el nivel elegido y lo ajusto con tus respuestas.": "No test: I start at the level you chose and adjust it with your answers.",
+"inicio": "start"
 };
 I18N_PAT = [
 [

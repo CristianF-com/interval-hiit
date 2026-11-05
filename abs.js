@@ -307,11 +307,10 @@ function renderAbAi() {
   const el = $('#abs'); if (!el || !PROFILE) return;
   const st = getAbAi();
   if (!st) {
-    el.innerHTML = `<div class="now abs"><div class="wk">${t('Coach inteligente de abdominales')}</div><b class="name">${t('Abdominales a tu medida')}</b>
+    el.innerHTML = `<div class="now abs"><div class="wk">${t('Entrenador inteligente · Abdominales')}</div><b class="name">${t('Abdominales a tu medida')}</b>
       <p class="sub">${t('Mide tu capacidad con una prueba corta y arma cada sesión con ejercicios de abdomen superior, oblicuos e inferior. No tiene fecha de fin: la dificultad sube de a poco según cómo te va.')}</p>
-      ${abOptsHTML()}<div class="gap"></div><button class="btn" id="abi-test">${t('Medir mi nivel y empezar')}</button>
-      <p class="note">${t('¿Prefieres un plan cerrado de 10, 15 o 25 días? Están en Planes.')}</p></div>`;
-    $('#abi-test').onclick = () => openAbAiTest(); bindAbOpts(el);
+      ${abOptsHTML()}<div class="gap"></div><button class="btn" id="abi-start">${t('¡Empezar!')}</button></div>`;
+    $('#abi-start').onclick = () => openAbAiSetup(); bindAbOpts(el);
     return;
   }
   const ss = abAiSession(st), due = Date.now() >= (st.nextAt || 0), tst = st.test, old = tst && Date.now() - tst.at > 42 * DAY;
@@ -324,23 +323,41 @@ function renderAbAi() {
     ${ss.deload ? `<p class="note">${t('Sesión de descarga: un poco más suave para recuperar y seguir subiendo.')}</p>` : ''}
     ${st.back && Date.now() - st.back < 3 * DAY ? `<p class="note">${t('Volviste después de unos días: retomamos un poco más suave.')}</p>` : ''}<div class="gap"></div>
     <div class="row"><button class="btn ${due ? '' : 'ghost'}" id="abi-go">${due ? t('Empezar') : t('Entrenar igual')}</button><button class="btn ghost" id="abi-cfg">${t('Ajustes')}</button></div>
-    <p class="note">${tst ? t('Prueba del {0}: {1} crunches', dateStr(tst.at), tst.cr) + (tst.pl ? ' · ' + t('plancha {0} s', tst.pl) : '') + (old ? ' · <b>' + t('conviene repetirla') + '</b>' : '') : ''}</p>
+    <p class="note">${tst && tst.est ? t('Sin prueba: empiezo por el nivel elegido y lo ajusto con tus respuestas.') : tst ? t('Prueba del {0}: {1} crunches', dateStr(tst.at), tst.cr) + (tst.pl ? ' · ' + t('plancha {0} s', tst.pl) : '') + (old ? ' · <b>' + t('conviene repetirla') + '</b>' : '') : ''}</p>
     ${abOptsHTML()}
-    <button class="btn ghost small" id="abi-test" style="margin-top:8px">${t('Repetir la prueba')}</button></div>`;
+    <button class="btn ghost small" id="abi-test" style="margin-top:8px">${tst && !tst.est ? t('Repetir la prueba') : t('Medir mi nivel')}</button></div>`;
   bindAbOpts(el);
   $('#abi-go').onclick = () => openAbAiStart();
   $('#abi-cfg').onclick = () => openAbAiSettings();
   $('#abi-test').onclick = () => openAbAiTest();
 }
+function openAbAiSetup() {
+  const sug = abLevelFromTest(); let lv = sug || 1;
+  sheet(`<h3>${t('AI abdominales')}</h3>
+    <p class="sub">${t('Sesiones de abdominales que se arman a tu medida y suben de a poco, dos días sí y uno no.')}</p>
+    <h2>${t('Nivel')}</h2><div class="seg" id="abis-lv">${AB_LV.map((n, i) => `<button data-v="${i + 1}" aria-pressed="${lv === i + 1}">${t(n)}</button>`).join('')}</div>
+    <p class="note">${t('Con la prueba (crunches en 1 minuto y plancha) calculo tu nivel real. Si empiezas sin prueba, parto del nivel elegido y lo ajusto con tus respuestas.')}</p>
+    <p class="note">${t('¿Prefieres un plan cerrado de 10, 15 o 25 días? Están en Planes.')}</p>
+    <div style="height:14px"></div><button class="btn" id="abis-test">${t('Medir mi nivel')}</button>
+    <div class="gap"></div><button class="btn ghost small" id="abis-skip">${t('Empezar sin prueba')}</button>`, () => {
+    bindSeg('abis-lv', 'v', v => { lv = +v; });
+    $('#abis-test').onclick = () => { closeSheet(); openAbAiTest(); };
+    $('#abis-skip').onclick = () => {
+      const I = [2, 4.5, 7][lv - 1], cr = [15, 30, 50][lv - 1];
+      setAbAi({ I, test: { at: 0, cr, pl: 0, est: 1 }, sessions: 0, streak: 0, nextAt: dayStart(Date.now()), created: Date.now(), log: [{ at: Date.now(), I, why: 'inicio' }] });
+      closeSheet(); renderAbAi(); toast(t('Listo: tu primera sesión está preparada'));
+    };
+  });
+}
 function openAbAiTest() {
   const prev = getAbAi(), capTest = PS.get('history', []).find(x => x.w && x.w.kind === 'test' && x.w.results && +x.w.results.ab > 0);
-  const cr0 = (prev && prev.test && prev.test.cr) || (capTest ? +capTest.w.results.ab : '');
+  const cr0 = (prev && prev.test && !prev.test.est && prev.test.cr) || (capTest ? +capTest.w.results.ab : '');
   sheet(`<h3>${t('Prueba de abdominales')}</h3>
     <p class="sub">${t('Dos ejercicios con buena técnica. Descansa 2 minutos entre uno y otro.')}</p>
     <div class="block" id="dbt-rows"><div class="dbt"><div class="t"><b>${esc(ex('crunches').n)}</b><small>${t('Todos los que puedas en 1 minuto')}</small></div>
       <div class="dbt-c"><label class="reps"><input type="number" inputmode="numeric" min="0" max="150" id="abt-cr" value="${cr0}" placeholder="0"><small>reps</small></label></div></div>
     <div class="dbt"><div class="t"><b>${esc(ex('low_plank').n)}</b><small>${t('Opcional: cuánto aguantas con buena postura')}</small></div>
-      <div class="dbt-c"><label class="reps"><input type="number" inputmode="numeric" min="0" max="600" id="abt-pl" value="${(prev && prev.test && prev.test.pl) || ''}" placeholder="0"><small>s</small></label></div></div></div>
+      <div class="dbt-c"><label class="reps"><input type="number" inputmode="numeric" min="0" max="600" id="abt-pl" value="${(prev && prev.test && !prev.test.est && prev.test.pl) || ''}" placeholder="0"><small>s</small></label></div></div></div>
     ${capTest && !prev ? `<p class="note">${t('Usé el resultado de tu última prueba de capacidad. Puedes cambiarlo.')}</p>` : ''}
     <button class="btn" id="abt-ok">${prev ? t('Guardar y recalcular') : t('Calcular mi nivel')}</button>`, () => {
     $('#abt-ok').onclick = () => {
@@ -368,7 +385,7 @@ function openAbAiSettings() {
     $('#abc-off').onclick = async () => { if (await askApp(t('Desactivar el coach de abdominales'), t('Se borran tu nivel y tus pruebas. El historial se mantiene.'), t('Desactivar'), true)) { setAbAi(null); closeSheet(); renderAbAi(); } };
   });
 }
-const AB_WHY = { prueba: 'prueba', easy: 'te resultó fácil', ok: 'bien', hard: 'te costó', none: 'sesión hecha', vuelta: 'volviste después de unos días', manual: 'ajuste manual' };
+const AB_WHY = { inicio: 'inicio', prueba: 'prueba', easy: 'te resultó fácil', ok: 'bien', hard: 'te costó', none: 'sesión hecha', vuelta: 'volviste después de unos días', manual: 'ajuste manual' };
 function openAbAiStart() {
   const st = getAbAi(); if (!st) { openAbAiTest(); return; }
   if (abAiComeback(st)) { setAbAi(st); renderAbAi(); }

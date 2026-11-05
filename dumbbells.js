@@ -128,10 +128,10 @@ function renderDumb() {
   const el = $('#dumb'); if (!el || !PROFILE) return;
   const st = getDumb();
   if (!st) {
-    el.innerHTML = `<div class="now dumb"><div class="wk">Entrenador con mancuernas</div><b class="name">Fuerza en casa</b>
+    el.innerHTML = `<div class="now dumb"><div class="wk">Entrenador inteligente · Mancuernas</div><b class="name">Fuerza en casa</b>
       <p class="sub">Arma dos sesiones que se alternan, una cada dos días, y las pone en el calendario. Al empezar eliges el peso de tus mancuernas y calcula las repeticiones para mantener el nivel.</p>
       ${dbOptsHTML()}
-      <div class="gap"></div><button class="btn" id="db-setup">Empezar con mancuernas</button></div>`;
+      <div class="gap"></div><button class="btn" id="db-setup">¡Empezar!</button></div>`;
     $('#db-setup').onclick = () => openDbSetup(); bindDbOpts(el);
     return;
   }
@@ -151,15 +151,15 @@ function renderDumb() {
 }
 function openDbSetup(edit) {
   const st = getDumb(); let lv = st ? st.level : Math.min(3, S.level || 1);
-  sheet(`<h3>Mancuernas</h3>
+  sheet(`<h3>${edit ? 'Mancuernas' : 'AI mancuernas'}</h3>
     <p class="sub">Dos sesiones de cuerpo completo que se alternan (A y B), un día sí y otro no.</p>
     <h2>Nivel</h2><div class="seg" id="dbs-lv">${DB_LV.map((n, i) => `<button data-v="${i + 1}" aria-pressed="${lv === i + 1}">${n}</button>`).join('')}</div>
     <h2>Pesos que tienes (kg por mancuerna)</h2>
     <div class="field"><input id="dbs-w" inputmode="decimal" value="${esc(dbWeights(st || {}).map(fmtKg).join(', '))}" placeholder="2, 4, 6, 8"></div>
     <p class="note">Escríbelos separados por comas. Si son ajustables, pon los pesos que puedes armar.${S.weight ? '' : ' <b>Carga tu peso en Perfil → Editar actual</b> para que los primeros cálculos sean más precisos.'}</p>
     ${edit ? '' : '<p class="note">Después te propongo una prueba de fuerza de 4 ejercicios para calcular tu nivel real. Si no la haces, parto de una estimación por tu peso corporal y el nivel elegido.</p>'}
-    <div style="height:14px"></div><button class="btn" id="dbs-ok">${edit ? 'Guardar' : 'Crear y medir mi nivel'}</button>
-    ${edit ? '' : '<div class="gap"></div><button class="btn ghost small" id="dbs-skip">Crear sin prueba</button>'}
+    <div style="height:14px"></div><button class="btn" id="dbs-ok">${edit ? 'Guardar' : 'Medir mi nivel'}</button>
+    ${edit ? '' : '<div class="gap"></div><button class="btn ghost small" id="dbs-skip">Empezar sin prueba</button>'}
     ${edit ? '<div class="gap"></div><button class="btn danger" id="dbs-off">Desactivar mancuernas</button>' : ''}`, () => {
     bindSeg('dbs-lv', 'v', v => { lv = +v; });
     const create = test => {
