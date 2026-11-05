@@ -151,16 +151,20 @@ function renderDumb() {
 }
 function openDbSetup(edit) {
   const st = getDumb(); let lv = st ? st.level : Math.min(3, S.level || 1);
-  sheet(`<h3>${edit ? 'Mancuernas' : 'AI mancuernas'}</h3>
-    <p class="sub">Dos sesiones de cuerpo completo que se alternan (A y B), un día sí y otro no.</p>
-    <h2>Nivel</h2><div class="seg" id="dbs-lv">${DB_LV.map((n, i) => `<button data-v="${i + 1}" aria-pressed="${lv === i + 1}">${n}</button>`).join('')}</div>
-    <h2>Pesos que tienes (kg por mancuerna)</h2>
+  const lvSeg = `<div class="seg" id="dbs-lv">${DB_LV.map((n, i) => `<button data-v="${i + 1}" aria-pressed="${lv === i + 1}">${n}</button>`).join('')}</div>`;
+  const wts = `<h2>Pesos que tienes (kg por mancuerna)</h2>
     <div class="field"><input id="dbs-w" inputmode="decimal" value="${esc(dbWeights(st || {}).map(fmtKg).join(', '))}" placeholder="2, 4, 6, 8"></div>
-    <p class="note">Escríbelos separados por comas. Si son ajustables, pon los pesos que puedes armar.${S.weight ? '' : ' <b>Carga tu peso en Perfil → Editar actual</b> para que los primeros cálculos sean más precisos.'}</p>
-    ${edit ? '' : '<p class="note">Después te propongo una prueba de fuerza de 4 ejercicios para calcular tu nivel real. Si no la haces, parto de una estimación por tu peso corporal y el nivel elegido.</p>'}
-    <div style="height:14px"></div><button class="btn" id="dbs-ok">${edit ? 'Guardar' : 'Medir mi nivel'}</button>
-    ${edit ? '' : '<div class="gap"></div><button class="btn ghost small" id="dbs-skip">Empezar sin prueba</button>'}
-    ${edit ? '<div class="gap"></div><button class="btn danger" id="dbs-off">Desactivar mancuernas</button>' : ''}`, () => {
+    <p class="note">Escríbelos separados por comas. Si son ajustables, pon los pesos que puedes armar.${S.weight ? '' : ' <b>Carga tu peso en Perfil → Editar actual</b> para que los primeros cálculos sean más precisos.'}</p>`;
+  sheet(edit ? `<h3>Mancuernas</h3>
+    <p class="sub">Dos sesiones de cuerpo completo que se alternan (A y B), un día sí y otro no.</p>
+    <h2>Nivel</h2>${lvSeg}${wts}
+    <div style="height:14px"></div><button class="btn" id="dbs-ok">Guardar</button>
+    <div class="gap"></div><button class="btn danger" id="dbs-off">Desactivar mancuernas</button>` : `<h3>AI mancuernas</h3>
+    <p class="sub">Dos sesiones de cuerpo completo que se alternan (A y B), un día sí y otro no.</p>${wts}
+    <p class="note">La prueba de fuerza son 4 ejercicios: con tus resultados calculo tu nivel real y las repeticiones.</p>
+    <div style="height:14px"></div><button class="btn" id="dbs-ok">Medir mi nivel y empezar</button>
+    <h2 class="or-h">O sin prueba</h2><p class="note">Elige tu nivel: parto de una estimación por tu peso corporal y la ajusto con tus respuestas.</p>${lvSeg}
+    <div style="height:12px"></div><button class="btn ghost" id="dbs-skip">Empezar sin prueba</button>`, () => {
     bindSeg('dbs-lv', 'v', v => { lv = +v; });
     const create = test => {
       const ws = [...new Set($('#dbs-w').value.split(/[;,\s]+/).map(x => parseFloat(x.replace(',', '.'))).filter(x => x > 0 && x <= 60))].sort((a, b) => a - b);

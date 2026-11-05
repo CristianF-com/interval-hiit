@@ -1766,7 +1766,14 @@ I18N = {
 "Sesiones de abdominales que se arman a tu medida y suben de a poco, dos días sí y uno no.": "Abs sessions built for you that build up little by little, two days on and one off.",
 "Con la prueba (crunches en 1 minuto y plancha) calculo tu nivel real. Si empiezas sin prueba, parto del nivel elegido y lo ajusto con tus respuestas.": "With the test (crunches in 1 minute and a plank) I work out your real level. If you start without a test, I begin at the level you chose and adjust it with your answers.",
 "Sin prueba: empiezo por el nivel elegido y lo ajusto con tus respuestas.": "No test: I start at the level you chose and adjust it with your answers.",
-"inicio": "start"
+"inicio": "start",
+"O sin prueba": "Or without a test",
+"Elegir nivel y empezar sin prueba": "Pick a level and start without a test",
+"Elige tu nivel: parto de ahí y lo ajusto con tus respuestas.": "Pick your level: I start there and adjust it with your answers.",
+"La prueba de capacidad dura 3 minutos: sentadillas, flexiones y abdominales. Con tus resultados calculo tu nivel real.": "The fitness test takes 3 minutes: squats, push-ups and sit-ups. With your results I work out your real level.",
+"La prueba son crunches en 1 minuto y, si quieres, cuánto aguantas la plancha. Con eso calculo tu nivel real.": "The test is crunches in 1 minute and, if you like, how long you hold a plank. With that I work out your real level.",
+"La prueba de fuerza son 4 ejercicios: con tus resultados calculo tu nivel real y las repeticiones.": "The strength test is 4 exercises: with your results I work out your real level and reps.",
+"Elige tu nivel: parto de una estimación por tu peso corporal y la ajusto con tus respuestas.": "Pick your level: I start from an estimate based on your body weight and adjust it with your answers."
 };
 I18N_PAT = [
 [

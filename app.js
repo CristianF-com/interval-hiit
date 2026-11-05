@@ -804,12 +804,13 @@ function openSmartSetup() {
   let lv = Math.min(3, S.level || 1);
   sheet(`<h3>AI HIIT</h3>
     <p class="sub">Sesiones de HIIT progresivas, una cada dos días, que se ajustan según cómo te va.</p>
-    <h2>Nivel</h2><div class="seg" id="sms-lv">${LEVELS.map((n, i) => `<button data-v="${i + 1}" aria-pressed="${lv === i + 1}">${n}</button>`).join('')}</div>
-    <p class="note">Con la prueba de capacidad (3 minutos: sentadillas, flexiones y abdominales) calculo tu nivel real. Si empiezas sin prueba, parto del nivel elegido y lo ajusto con tus respuestas.</p>
-    <div style="height:14px"></div><button class="btn" id="sms-test">Medir mi nivel</button>
-    <div class="gap"></div><button class="btn ghost small" id="sms-skip">Empezar sin prueba</button>`, () => {
+    <p class="note">La prueba de capacidad dura 3 minutos: sentadillas, flexiones y abdominales. Con tus resultados calculo tu nivel real.</p>
+    <div style="height:14px"></div><button class="btn" id="sms-test">Medir mi nivel y empezar</button>
+    <h2 class="or-h">O sin prueba</h2><p class="note">Elige tu nivel: parto de ahí y lo ajusto con tus respuestas.</p>
+    <div class="seg" id="sms-lv">${LEVELS.map((n, i) => `<button data-v="${i + 1}" aria-pressed="${lv === i + 1}">${n}</button>`).join('')}</div>
+    <div style="height:12px"></div><button class="btn ghost" id="sms-skip">Empezar sin prueba</button>`, () => {
     bindSeg('sms-lv', 'v', v => { lv = +v; });
-    $('#sms-test').onclick = () => { S.level = lv; save(); closeSheet(); openTestSetup(); };
+    $('#sms-test').onclick = () => { closeSheet(); openTestSetup(); };
     $('#sms-skip').onclick = () => {
       S.level = lv; save();
       const I = [2, 4.5, 7.5][lv - 1];

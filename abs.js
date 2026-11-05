@@ -335,11 +335,12 @@ function openAbAiSetup() {
   const sug = abLevelFromTest(); let lv = sug || 1;
   sheet(`<h3>${t('AI abdominales')}</h3>
     <p class="sub">${t('Sesiones de abdominales que se arman a tu medida y suben de a poco, dos días sí y uno no.')}</p>
-    <h2>${t('Nivel')}</h2><div class="seg" id="abis-lv">${AB_LV.map((n, i) => `<button data-v="${i + 1}" aria-pressed="${lv === i + 1}">${t(n)}</button>`).join('')}</div>
-    <p class="note">${t('Con la prueba (crunches en 1 minuto y plancha) calculo tu nivel real. Si empiezas sin prueba, parto del nivel elegido y lo ajusto con tus respuestas.')}</p>
-    <p class="note">${t('¿Prefieres un plan cerrado de 10, 15 o 25 días? Están en Planes.')}</p>
-    <div style="height:14px"></div><button class="btn" id="abis-test">${t('Medir mi nivel')}</button>
-    <div class="gap"></div><button class="btn ghost small" id="abis-skip">${t('Empezar sin prueba')}</button>`, () => {
+    <p class="note">${t('La prueba son crunches en 1 minuto y, si quieres, cuánto aguantas la plancha. Con eso calculo tu nivel real.')}</p>
+    <div style="height:14px"></div><button class="btn" id="abis-test">${t('Medir mi nivel y empezar')}</button>
+    <h2 class="or-h">${t('O sin prueba')}</h2><p class="note">${t('Elige tu nivel: parto de ahí y lo ajusto con tus respuestas.')}</p>
+    <div class="seg" id="abis-lv">${AB_LV.map((n, i) => `<button data-v="${i + 1}" aria-pressed="${lv === i + 1}">${t(n)}</button>`).join('')}</div>
+    <div style="height:12px"></div><button class="btn ghost" id="abis-skip">${t('Empezar sin prueba')}</button>
+    <p class="note">${t('¿Prefieres un plan cerrado de 10, 15 o 25 días? Están en Planes.')}</p>`, () => {
     bindSeg('abis-lv', 'v', v => { lv = +v; });
     $('#abis-test').onclick = () => { closeSheet(); openAbAiTest(); };
     $('#abis-skip').onclick = () => {
