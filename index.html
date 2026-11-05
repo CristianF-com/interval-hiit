@@ -185,6 +185,9 @@ nav.tabs button[aria-current=true] svg{color:var(--work)}
 .day .dn{width:40px;height:40px;border-radius:12px;background:var(--surface2);display:grid;place-items:center;font-family:var(--display);font-size:20px;font-weight:700;flex:none}
 .day.is-done .dn{background:color-mix(in srgb,var(--ok) 22%,transparent);color:var(--ok)}
 .day.next .dn{background:var(--work);color:#111}
+/* «.next» también es el recuadro de «Siguiente» del reproductor: la fila del día siguiente conserva su formato */
+.day.next{display:flex;gap:14px;background:none;border:0;border-top:1px solid var(--line);border-radius:0;padding:14px 12px 14px 16px;margin:0;font-size:inherit}
+.day.next span.t{color:inherit}.day.next b{flex:none;text-align:left;overflow:visible;white-space:normal}
 .day.off{opacity:.45}
 .day .t{flex:1;min-width:0}
 .day .t b{display:block}
