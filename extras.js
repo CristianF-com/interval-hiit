@@ -251,7 +251,7 @@ function openHistDetail(i) {
 /* ---------- Repeticiones y tiempo por tipo de ejercicio en una sesión ----------
    Las repeticiones solo salen de ejercicios hechos por repeticiones (o retos y pruebas): nada estimado.
    El tiempo (t.sq, t.pu…) suma lo que duró cada ejercicio, sea por tiempo o por repeticiones (medido si hay registro). */
-const REP_CAT = { sq: /squat/, pu: /push_up/, ab: /crunch|sit_up|v_up|bicycle|leg_raise|toe_touch|russian_twist|scissor_kick|beetle|windshield|knee_tuck/, bu: /burpee/, dm: /pull_up/ };
+const REP_CAT = { sq: /squat/, pu: /push_up/, ab: /^ab_(?!side_bridge|side_plank|thread)|crunch|sit_up|v_up|bicycle|leg_raise|toe_touch|russian_twist|scissor_kick|beetle|windshield|knee_tuck/, bu: /burpee/, dm: /pull_up/ };
 const REP_SECS = { sq: 2.5, pu: 3, ab: 2.5, bu: 5, dm: 4 };
 const repCat = id => { id = ex(id).id; for (const k in REP_CAT) if (REP_CAT[k].test(id)) return k; return /plank/.test(id) ? 'pl' : ''; };
 function repsOf(x, upto) {

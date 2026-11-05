@@ -137,8 +137,8 @@ function weekChartHTML(H) {
 }
 // los dos primeros siguen los colores del tema; el resto son fijos para que no se repitan en ningún tema
 const KINDS = [['plan', 'Planes', 'var(--work)'], ['smart', 'Entrenador inteligente', 'var(--rest)'], ['libre', 'Entrenamiento libre', '#9d8cff'],
-  ['db', 'Mancuernas', '#5fb3ff'], ['reto', 'Retos', '#ff7eb6'], ['rt', 'Mis rutinas', '#ffc23d'], ['test', 'Pruebas de capacidad', '#8a93a3']];
-const kindOf = w => w.rt ? 'rt' : w.kind === 'reto' ? 'reto' : w.kind === 'test' ? 'test' : w.kind === 'db' ? 'db' : w.kind === 'plan' ? 'plan' : w.smart ? 'smart' : 'libre';
+  ['db', 'Mancuernas', '#5fb3ff'], ['abs', 'Abdominales', '#7ee0a1'], ['reto', 'Retos', '#ff7eb6'], ['rt', 'Mis rutinas', '#ffc23d'], ['test', 'Pruebas de capacidad', '#8a93a3']];
+const kindOf = w => w.rt ? 'rt' : w.kind === 'reto' ? 'reto' : w.kind === 'test' ? 'test' : w.kind === 'db' ? 'db' : w.kind === 'abs' ? 'abs' : w.kind === 'plan' ? 'plan' : w.smart ? 'smart' : 'libre';
 // tiempo corto para el centro de la dona: «8 h 22 m», «45 m», «125 h» (que entre aunque pase las 10 horas)
 const fmtDurS = s => { s = Math.round(s / 60); const h = Math.floor(s / 60), m = s % 60; return h >= 100 ? `${h} h` : h ? `${h} h ${m} m` : `${m} m`; };
 function kindChartHTML(H) {

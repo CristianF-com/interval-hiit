@@ -235,3 +235,12 @@ SEMANA DE DESCARGA (entrenador inteligente)
 - Links de invitación y de rutinas: en iPhone siempre abren Safari, no la app instalada (y cada una guarda sus datos
   aparte). En el navegador del teléfono primero se muestra cómo usarlo en la app (copiar código o link); en la app,
   «Pegar código o link» al unirse a un grupo y «Pegar link de rutina» en Mis rutinas.
+
+ENTRENADOR INTELIGENTE DE ABDOMINALES (abs.js)
+- Basado en el plan de una app de abdominales: 3 niveles (principiante 10 días, intermedio 15, avanzado 25) con
+  días de descanso fijos, versión hombre/mujer según el perfil y ritmo por repetición de cada ejercicio.
+- 41 ejercicios: los que ya existían se reutilizan; los nuevos llevan el prefijo ab_ (los de un lado, _r y _l).
+- Ritmo guiado (como el original: la serie dura repeticiones × ritmo, con sonido en cada repetición) o a tu ritmo (✓).
+- Se adapta: «fácil» +8 %, «bien» +2 %, «difícil» −10 % y se repite el día. Más de una semana sin entrenar:
+  retrocede dos días y baja un poco. Al terminar un nivel: pasar al siguiente o repetirlo más exigente.
+- Opciones: serie extra, calentamiento, estiramientos. Aparece en el calendario y en el historial (tipo abs).

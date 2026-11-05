@@ -38,7 +38,7 @@ function saveHistory(h) {
   }
   return LS.set(`p.${PROFILE.id}.history`, h.slice(0, 400));
 }
-const PROFILE_KEYS = ['settings', 'favs', 'history', 'plan', 'plansDone', 'session', 'smart', 'awards', 'retos', 'dumb', 'body', 'routines', 'groups'];
+const PROFILE_KEYS = ['settings', 'favs', 'history', 'plan', 'plansDone', 'session', 'smart', 'awards', 'retos', 'dumb', 'abs', 'body', 'routines', 'groups'];
 let PROFILE = null;
 const PS = {
   get: (k, d) => LS.get(`p.${PROFILE.id}.${k}`, d),
@@ -683,6 +683,7 @@ function title(w) {
   if (w.kind === 'test') return 'Prueba de capacidad';
   if (w.kind === 'reto') return w.title;
   if (w.kind === 'db') return w.title || 'Mancuernas';
+  if (w.kind === 'abs') return w.title || 'Abdominales';
   if (w.rt) return w.rtName || 'Mi rutina';
   if (w.smart) return `Sesión ${w.smartN} · ${FOCUS[w.focus].n}${w.db ? ' · mancuernas' : ''}${w.deload ? ' · descarga' : ''}`;
   return (w.parts.includes('all') ? 'Cuerpo completo' : w.parts.map(k => PARTS[k]).join(' + ')) + (w.db ? ' · mancuernas' : '');
@@ -955,6 +956,17 @@ function buildTimeline(w) {
       }
       if (i < N - 1) t.push({ k: 'rest', dur: w.restEx || 90, label: 'Descanso' });
     });
+  } else if (w.kind === 'abs') {
+    // abdominales: series seguidas de cada ejercicio; con ritmo guiado cada serie dura repeticiones × ritmo
+    const N = w.items.length;
+    w.items.forEach((it, i) => {
+      for (let k = 0; k < it.sets; k++) {
+        const amt = w.guided ? { dur: Math.ceil(it.cnt * it.pace), cnt: it.cnt, pace: it.pace } : { dur: 0, reps: it.cnt };
+        t.push({ k: 'work', ex: it.id, ...amt, sec: 'Ronda', i, N, set: k, S: it.sets, metaTxt: `Ejercicio <b>${i + 1}/${N}</b> · Serie <b>${k + 1}/${it.sets}</b>${it.extra && k === it.sets - 1 ? ' · extra' : ''}` });
+        if (k < it.sets - 1) t.push({ k: 'rest', dur: it.rest, label: 'Descanso' });
+      }
+      if (i < N - 1) t.push({ k: 'rest', dur: w.restEx || 30, label: 'Descanso' });
+    });
   } else if (w.kind === 'plan') {
     const R = w.rounds.length;
     w.rounds.forEach((items, r) => {
@@ -1104,6 +1116,7 @@ function refreshView() {
 const IC = {
   brain: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M7 7a3 3 0 0 1 5-2M17 7a3 3 0 0 0-5-2M5 12a3 3 0 0 1 2-5M19 12a3 3 0 0 0-2-5M5 12a3 3 0 0 0 2 5M19 12a3 3 0 0 1-2 5M7 17a3 3 0 0 0 5 2M17 17a3 3 0 0 1-5 2"/></svg>',
   db: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 8v8M3 10v4M18 8v8M21 10v4M6 12h12"/></svg>',
+  abs: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="3" width="10" height="18" rx="4"/><path d="M12 3v18M7 9h10M7 15h10"/></svg>',
   sliders: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 6h10M18 6h2M4 12h4M12 12h8M4 18h12M20 18h0"/><circle cx="16" cy="6" r="2"/><circle cx="10" cy="12" r="2"/><circle cx="18" cy="18" r="2"/></svg>',
   star: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg>',
   chart: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 20V11M12 20V5M19 20v-7"/></svg>',
@@ -1117,7 +1130,7 @@ const IC = {
   cloud: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4 4 0 0 1-.6-8A6 6 0 0 1 18 9a4.5 4.5 0 0 1-.5 9z"/></svg>'
 };
 const SUBTABS = {
-  coach: [['smart', 'Int. HIIT', IC.brain], ['db', 'Int. mancuernas', IC.db], ['custom', 'A medida', IC.sliders], ['mine', 'Mis rutinas', IC.star]],
+  coach: [['smart', 'Int. HIIT', IC.brain], ['db', 'Int. mancuernas', IC.db], ['abs', 'Int. abdominales', IC.abs], ['custom', 'A medida', IC.sliders], ['mine', 'Mis rutinas', IC.star]],
   hist: [['sum', 'Resumen', IC.chart], ['prog', 'Progreso', IC.trend], ['list', 'Sesiones', IC.list], ['aw', 'Logros', IC.medal], ['body', 'Cuerpo', IC.body], ['friends', 'Amigos', IC.people]],
   pf: [['prof', 'Perfiles', IC.user], ['set', 'Ajustes', IC.gear], ['data', 'Cuenta y datos', IC.cloud]]
 };
@@ -1469,6 +1482,7 @@ $('#hist-list').onclick = e => {
   if (w.kind === 'test') { openTestSetup(); return; }
   if (w.kind === 'reto') { openReto(w.reto); return; }
   if (w.kind === 'db') { openDbStart(); return; }
+  if (w.kind === 'abs') { openAbStart(); return; }
   if (w.kind === 'plan') { w.warm = []; w.cool = []; }
   openPreview(w, 'hist');
 };
@@ -1517,7 +1531,7 @@ function nextWorkStep(i) { for (let j = i + 1; j < P.tl.length; j++) if (P.tl[j]
 function exPhrase(st) {
   if (!st) return '';
   const e = ex(st.ex);
-  const what = st.reps ? `${st.reps} repeticiones` : `${st.dur} segundos${e.s ? ', por lado' : ''}`;
+  const what = st.reps || st.cnt ? `${st.reps || st.cnt} repeticiones` : `${st.dur} segundos${e.s ? ', por lado' : ''}`;
   return `${e.n}, ${what}`;
 }
 function announce(i, reason) {
@@ -1635,7 +1649,8 @@ function logClose() {
   const o = P.logOpen; P.logOpen = null; if (!o) return;
   const s = P.tl[o.i]; if (!s) return;
   const ms = Math.round(P.activeMs - o.at); if (ms < 1500) return;
-  const row = s.kg != null ? [s.ex, s.reps || 0, s.dur || 0, ms, s.kg] : [s.ex, s.reps || 0, s.dur || 0, ms];
+  const gr = s.cnt ? Math.min(s.cnt, Math.floor(ms / 1000 / s.pace + 0.25)) : 0;
+  const row = s.kg != null ? [s.ex, s.reps || 0, s.dur || 0, ms, s.kg] : s.cnt ? [s.ex, gr, 0, ms] : [s.ex, s.reps || 0, s.dur || 0, ms];
   if (o.auto) { row[4] = s.kg != null ? s.kg : null; row[5] = 1; }   // pasó solo o con «pasar al siguiente»: no cuenta para el ritmo
   (P.log = P.log || []).push(row);
   if (!o.auto && s.reps && P.pace) paceAdd(P.pace, s.ex, s.reps, ms / 1000);
@@ -1686,7 +1701,7 @@ function step(i, silent, reason) {
   if (P.tl[i] && P.tl[i].k === 'work' && !P.tl[i].soft) P.logOpen = { i, at: P.activeMs };
   if (i >= P.tl.length) { finish(true, reason); return; }
   const s = cur();
-  P.stepMs = 0; P.remain = s.reps ? 0 : s.dur * 1000; P.endAt = performance.now() + P.remain; P.lastSec = null; P.half = false; P.autoAt = 0; P.autoLast = null;
+  P.stepMs = 0; P.remain = s.reps ? 0 : s.dur * 1000; P.endAt = performance.now() + P.remain; P.lastSec = null; P.repDone = null; P.half = false; P.autoAt = 0; P.autoLast = null;
   render(); saveSession();
   if (silent) return;
   if (s.k === 'work') beep(1046, 320, S.sound === 'voz' ? .16 : .3);
@@ -1706,10 +1721,15 @@ function tick() {
     const sec = Math.ceil(rem / 1000);
     if (sec !== P.lastSec) {
       P.lastSec = sec;
-      if (sec <= 3 && sec >= 1 && s.dur >= 5) { beep(sec === 1 ? 880 : 740, 110, S.sound === 'voz' ? .1 : .22); say(sec === 1 && s.k === 'work' ? 'Último.' : NUM_WORDS[sec]); }
+      if (sec <= 3 && sec >= 1 && s.dur >= 5 && !s.cnt) { beep(sec === 1 ? 880 : 740, 110, S.sound === 'voz' ? .1 : .22); say(sec === 1 && s.k === 'work' ? 'Último.' : NUM_WORDS[sec]); }
       // en descansos largos, aviso a 10 s del final para ponerse en posición
       else if (sec === 10 && (s.k === 'rest' || s.k === 'roundrest') && s.dur >= 20) { const v = S.sound === 'voz' ? .1 : .2; beep(660, 160, v); setTimeout(() => beep(660, 160, v), 220); say('10 segundos. Prepárate.'); }
-      if (s.k === 'work' && !s.soft && s.dur >= 30 && sec === Math.round(s.dur / 2) && !ex(s.ex).s) say('¡Mitad!');
+      if (s.k === 'work' && !s.soft && !s.cnt && s.dur >= 30 && sec === Math.round(s.dur / 2) && !ex(s.ex).s) say('¡Mitad!');
+    }
+    if (s.cnt) {
+      const done = Math.min(s.cnt, Math.floor((s.dur * 1000 - rem) / 1000 / s.pace));
+      if (done !== P.repDone) { if (P.repDone != null && done > P.repDone && S.abTick !== false && done < s.cnt) beep(1320, 40, .07); P.repDone = done;
+        const left = s.cnt - done; if (left === 10 && s.cnt >= 16) say('Faltan diez.'); }
     }
     if (s.k === 'work' && ex(s.ex).s && !P.half && rem <= s.dur * 500) { P.half = true; beep(988, 200, .25); say('Cambia de lado'); }
     paint();
@@ -1832,8 +1852,9 @@ function paint() {
   } else {
     const rem = Math.max(0, P.remain), sec = Math.ceil(rem / 1000);
     // en el último segundo de un ejercicio dice «Último»
-    const last = s.k === 'work' && sec === 1 && s.dur >= 5;
-    $('#p-num').textContent = last ? 'Último' : sec; $('#p-num').classList.toggle('word', last);
+    const last = s.k === 'work' && sec === 1 && s.dur >= 5 && !s.cnt;
+    if (s.cnt) { const left = Math.max(0, s.cnt - Math.floor((s.dur * 1000 - rem) / 1000 / s.pace)); $('#p-num').innerHTML = `${left}<small>${t(left === 1 ? 'rep. queda' : 'reps quedan')}</small>`; $('#p-num').classList.remove('word'); }
+    else { $('#p-num').textContent = last ? 'Último' : sec; $('#p-num').classList.toggle('word', last); }
     $('#p-arc').style.strokeDashoffset = 289.03 * (1 - rem / (s.dur * 1000));
     el = before + (s.dur - rem / 1000);
   }

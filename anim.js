@@ -234,6 +234,10 @@ const Anim = (() => {
     table_crunch: () => k([TABLE, m(TABLE, { t: -125, uL: 120, fL: 120, uR: 124, fR: 124 })], 1800, { anchor: 'hip' }),
     bicycle: () => k([m(LIE, { t: -118, uL: -140, fL: 60, uR: -136, fR: 64, tL: 155, sL: 60, tR: 100, sR: 100 }), m(LIE, { t: -118, uL: -140, fL: 60, uR: -136, fR: 64, tR: 155, sR: 60, tL: 100, sL: 100 })], 1200, { anchor: 'hip' }),
     bicycle_straight: () => k([m(LIE, { t: -118, uL: -140, fL: 60, uR: -136, fR: 64, tL: 160, sL: 160, tR: 100, sR: 100 }), m(LIE, { t: -118, uL: -140, fL: 60, uR: -136, fR: 64, tR: 160, sR: 160, tL: 100, sL: 100 })], 1400, { anchor: 'hip' }),
+    // piernas arriba y rectas: crunch estirando los brazos hacia las puntas de los pies
+    toe_reach: () => k([m(LIE, { tL: 178, sL: 178, tR: 180, sR: 180, uL: 178, fL: 178, uR: 180, fR: 180 }), m(LIE, { t: -128, hd: 6, tL: 178, sL: 178, tR: 180, sR: 180, uL: 150, fL: 150, uR: 152, fR: 152 })], 2000, { anchor: 'hip' }),
+    // piernas arriba: se despega la cadera del suelo llevando los pies hacia el techo
+    hip_raise: () => k([m(LIE, { tL: 176, sL: 176, tR: 178, sR: 178 }), m(LIE, { t: -74, tL: 182, sL: 182, tR: 184, sR: 184 })], 2000, { anchor: 'sh' }),
     leg_raise: () => k([m(LIE, { tL: 100, sL: 100, tR: 102, sR: 102 }), m(LIE, { tL: 178, sL: 178, tR: 180, sR: 180 })], 2400, { anchor: 'hip' }),
     reverse_crunch: () => k([TABLE, m(TABLE, { tL: 210, sL: 120, tR: 212, sR: 122 })], 1800, { anchor: 'sh' }),
     scissors: () => k([m(LIE, { t: -108, tL: 120, sL: 120, tR: 100, sR: 100 }), m(LIE, { t: -108, tR: 120, sR: 120, tL: 100, sL: 100 })], 700, { anchor: 'hip' }),
@@ -346,6 +350,11 @@ const Anim = (() => {
     childs_pose: 'child', cobblers_stretch: 'butterfly', dynamic_calf_stretch: 'calf_stretch', kneeling_hip_flexor_stretch: 'hip_flexor',
     lying_figure_4_stretch: 'figure4', overhead_triceps_stretch: 'triceps', shoulder_cross_stretch: 'shoulder', standing_quadriceps_stretch: 'quad_stretch',
     wall_pectoral_stretch: 'pec',
+    // entrenador de abdominales
+    ab_adductor_crunch: 'toe_reach', ab_toe_touch: 'toe_reach', ab_hip_raise: 'hip_raise', ab_scissor_legs: 'scissors', ab_crossover: 'bicycle',
+    ab_hip_drop: 'wipers_front', ab_crunch_reach: 'crunch', ab_knee_touch: 'crunch', ab_bent_leg_raise: 'reverse_crunch', ab_table_twist: 'table_crunch',
+    ab_stretch_crunch: 'tuck_crunch', ab_side_bridge: 'side_plank', ab_side_leg_lift: 'abduction', ab_side_plank_lift: 'side_plank_leg',
+    ab_oblique_crunch: 'crunch', ab_double_knee: 'quad_knee', ab_thread_needle: 'side_plank_twist',
   };
   // dominadas de frente: colgado de una barra y subida con los codos hacia abajo
   T.pullup = () => { const hang = m(F0, { uL: -172, fL: -176, uR: 172, fR: 176, tL: -4, sL: 6, tR: 4, sR: -6, pL: -60, pR: 60 });

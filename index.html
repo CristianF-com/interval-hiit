@@ -351,7 +351,8 @@ code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.92em;backgroun
 .rday.cur{background:color-mix(in srgb,var(--work) 10%,transparent)}
 .rday.cur .dn{background:var(--work);color:#111}
 .rday .t{flex:1;min-width:0}.rday .t b{display:block;overflow-wrap:anywhere}.rday .t small{color:var(--muted)}
-.dt.rt{background:var(--reto)}.dt.db{background:#a78bfa}
+.dt.rt{background:var(--reto)}.dt.db{background:#a78bfa}.dt.abs{background:#7ee0a1}
+.ab-bar{height:6px;border-radius:3px;background:var(--surface2);overflow:hidden;margin:8px 0 10px}.ab-bar i{display:block;height:100%;background:var(--work);border-radius:3px}
 .rplayer{z-index:21}
 .rp-tap{cursor:pointer;user-select:none;-webkit-user-select:none;touch-action:manipulation}
 .rp-anim{width:min(42vw,170px);aspect-ratio:1;border-radius:50%;background:var(--surface);overflow:hidden;display:grid;place-items:center;margin:4px 0 6px}
@@ -749,6 +750,7 @@ input,textarea,select{font-size:16px}
     <div class="subtabs" id="coach-tabs" data-group="coach"></div>
     <div class="pane" data-pane="coach:smart"><div id="smart"></div></div>
     <div class="pane hidden" data-pane="coach:db"><div id="dumb"></div></div>
+    <div class="pane hidden" data-pane="coach:abs"><div id="abs"></div></div>
     <div class="pane hidden" data-pane="coach:custom">
     <p class="sub pane-intro">Elige tiempo, zonas y nivel. El coach arma el circuito.</p>
     <h2>Duración</h2>
@@ -936,6 +938,7 @@ input,textarea,select{font-size:16px}
 <script src="retos_data.js"></script>
 <script src="retos.js"></script>
 <script src="dumbbells.js"></script>
+<script src="abs.js"></script>
 <script src="stats.js"></script>
 <script src="cloud.js"></script>
 <script src="more.js"></script>
