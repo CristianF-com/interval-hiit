@@ -240,7 +240,7 @@ ABDOMINALES (abs.js)
 - Planes (pestaña Planes): los 3 planes cerrados de la app original (principiante 10 días, intermedio 15, avanzado
   25) con días de descanso fijos, versión hombre/mujer y cronograma día por día. «Fácil» +8 %, «Difícil» −10 % y se
   repite el día; al terminar, pasar de nivel o repetirlo más exigente. Estado: PS 'abs'.
-- Coach inteligente (Coach → Int. abdominales): sin fecha de fin. Prueba: crunches en 1 minuto y plancha (opcional).
+- Coach inteligente (Coach → AI abdominales): sin fecha de fin. Prueba: crunches en 1 minuto y plancha (opcional).
   Cada sesión se arma con los 41 ejercicios según categoría (superior, oblicuos, inferior) y dificultad; la cantidad
   de ejercicios, series, descanso y repeticiones sale del nivel (I) y de la prueba. Sube +0,15 por sesión y según la
   respuesta (fácil +0,45, bien +0,25, difícil −0,4); descarga cada 8 sesiones; dos días sí y uno no; tras una semana
