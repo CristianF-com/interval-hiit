@@ -254,3 +254,13 @@ REGLAS DE DISEÑO
 - Espaciado: un texto (.sub, .note o <p>) seguido directo de un componente con recuadro (.block, .seg, .toggles,
   .field, .chips, .plans-cat, .opts, .row, .weeks) deja siempre 14 px. Está como regla general en index.html
   (:is(.sub,.note,p)+:is(...)), así que no hace falta agregar márgenes a mano en cada pantalla.
+- Texto en rem: todo tamaño de letra va en rem (la raíz toma el tamaño de texto del sistema en iPhone).
+  Títulos grandes con min(Xrem, Yvw) para que no se salgan con letra grande. Las etiquetas de la barra
+  de pestañas son la excepción (px fijos).
+- Naranja como texto: usar var(--work-ink), nunca var(--work) (en el tema claro se oscurece para 4,5:1).
+- Áreas táctiles: botones, chips, segmentos y pestañas de al menos 44×44 px.
+- Estado sin depender del color: en el calendario la forma del punto (anillo / lleno / medio) dice si
+  está programado, hecho o incompleto; el color solo dice el tipo.
+- Movimiento: respetar prefers-reduced-motion (la animación del ejercicio pasa a poses fijas) y
+  prefers-contrast: more (texto secundario igual al principal, bordes de 2 px).
+- Avisos (toast) arriba, con role="status", y duran según el largo del texto.

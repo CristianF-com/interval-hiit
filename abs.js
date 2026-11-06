@@ -316,7 +316,7 @@ function renderAbAi() {
   const ss = abAiSession(st), due = Date.now() >= (st.nextAt || 0), tst = st.test, old = tst && Date.now() - tst.at > 42 * DAY;
   const lvl = Math.min(100, Math.round(st.I * 10));
   el.innerHTML = `<div class="now abs"><div class="wk">${t('Abdominales')} · ${t('Sesión {0}', (st.sessions || 0) + 1)}${ss.deload ? ' · ' + t('descarga') : ''}</div>
-    <b class="name">${t('Nivel {0}', st.I.toFixed(1))}</b>
+    <b class="name">${t('Nivel {0}', d1(st.I))}</b>
     <div class="ab-bar"><i style="width:${lvl}%"></i></div>
     <p class="sub">${[...new Set(ss.items.map(it => ex(it.id).n.replace(/ \((derecha|izquierda)\)$/, '')))].map(esc).join(' · ')}</p>
     <p class="note">${due ? t('Toca hoy.') : t('Próxima: {0}.', esc(whenStr(st.nextAt)))} ${t('{0} ejercicios · {1} series · ~{2} min', ss.items.length, ss.items[0].sets, abAiMinutes(ss.items))}.</p>
@@ -370,18 +370,18 @@ function openAbAiTest() {
       const st = cur ? { ...cur, I, test: { at: Date.now(), cr, pl } } : { I, test: { at: Date.now(), cr, pl }, sessions: 0, streak: 0, nextAt: dayStart(Date.now()), created: Date.now(), log: [] };
       (st.log = st.log || []).unshift({ at: Date.now(), I, why: 'prueba' }); st.tests = [{ at: Date.now(), cr, pl }, ...(st.tests || [])].slice(0, 20);
       setAbAi(st); closeSheet(); renderAbAi();
-      toast(t('Nivel {0}', I.toFixed(1)) + (cur ? '' : ' · ' + t('aparece en el calendario')));
+      toast(t('Nivel {0}', d1(I)) + (cur ? '' : ' · ' + t('aparece en el calendario')));
     };
   });
 }
 function openAbAiSettings() {
   const st = getAbAi(); if (!st) return;
-  sheet(`<h3>${t('Coach de abdominales')}</h3><p class="sub">${t('Nivel {0}', st.I.toFixed(1))} · ${t('{0} sesiones', st.sessions || 0)}</p>
+  sheet(`<h3>${t('Coach de abdominales')}</h3><p class="sub">${t('Nivel {0}', d1(st.I))} · ${t('{0} sesiones', st.sessions || 0)}</p>
     <h2>${t('Ajustar la dificultad')}</h2><div class="row"><button class="btn ghost small" id="abc-dn">${t('Más fácil')}</button><button class="btn ghost small" id="abc-up">${t('Más difícil')}</button></div>
     <p class="note">${t('Cada toque mueve el nivel medio punto. El coach igual lo sigue ajustando con tus respuestas.')}</p>
-    ${(st.log || []).length ? `<h2>${t('Historial del nivel')}</h2><div class="block">${st.log.slice(0, 8).map(l => `<div class="hist"><div class="t"><b>${t('Nivel {0}', l.I.toFixed(1))}</b><small>${dateStr(l.at)} · ${t(AB_WHY[l.why] || l.why)}</small></div></div>`).join('')}</div>` : ''}
+    ${(st.log || []).length ? `<h2>${t('Historial del nivel')}</h2><div class="block">${st.log.slice(0, 8).map(l => `<div class="hist"><div class="t"><b>${t('Nivel {0}', d1(l.I))}</b><small>${dateStr(l.at)} · ${t(AB_WHY[l.why] || l.why)}</small></div></div>`).join('')}</div>` : ''}
     <div class="gap"></div><button class="btn danger" id="abc-off">${t('Desactivar el coach de abdominales')}</button>`, () => {
-    const mv = d => { const s2 = getAbAi(); s2.I = Math.max(1, Math.round((s2.I + d) * 10) / 10); (s2.log = s2.log || []).unshift({ at: Date.now(), I: s2.I, why: 'manual' }); setAbAi(s2); renderAbAi(); closeSheet(); toast(t('Nivel {0}', s2.I.toFixed(1))); };
+    const mv = d => { const s2 = getAbAi(); s2.I = Math.max(1, Math.round((s2.I + d) * 10) / 10); (s2.log = s2.log || []).unshift({ at: Date.now(), I: s2.I, why: 'manual' }); setAbAi(s2); renderAbAi(); closeSheet(); toast(t('Nivel {0}', d1(s2.I))); };
     $('#abc-dn').onclick = () => mv(-0.5); $('#abc-up').onclick = () => mv(0.5);
     $('#abc-off').onclick = async () => { if (await askApp(t('Desactivar el coach de abdominales'), t('Se borran tu nivel y tus pruebas. El historial se mantiene.'), t('Desactivar'), true)) { setAbAi(null); closeSheet(); renderAbAi(); } };
   });
@@ -428,7 +428,7 @@ setFeedback = function (fb) {
   if (st.log && st.log[0]) { st.log[0].I = st.I; st.log[0].why = fb; }
   setAbAi(st); renderAbAi();
   const msg = $('#fb-msg');
-  if (msg) { msg.innerHTML = `${fb === 'hard' ? t('La próxima sesión será un poco más suave.') : fb === 'easy' ? t('La próxima sesión sube un poco más.') : t('La próxima sesión sube un poco.')} ${t('Nivel {0}', st.I.toFixed(1))}.`; msg.classList.remove('hidden'); }
+  if (msg) { msg.innerHTML = `${fb === 'hard' ? t('La próxima sesión será un poco más suave.') : fb === 'easy' ? t('La próxima sesión sube un poco más.') : t('La próxima sesión sube un poco.')} ${t('Nivel {0}', d1(st.I))}.`; msg.classList.remove('hidden'); }
 };
 // calendario: las próximas sesiones del coach (las de más adelante se ajustan con cada respuesta)
 const _agAi = buildAgenda;

@@ -887,7 +887,7 @@ const Anim = (() => {
     return g;
   }
   // Dibujo de una figura: suelo, sombra, trayectorias, objetos (pared/banco) y cuerpo
-  function svgFor(id, zone) {
+  function svgFor(id, zone, noBadge) {
     const a = get(id);
     const svg = document.createElementNS(NS, 'svg');
     svg.setAttribute('viewBox', a.vb.join(' '));
@@ -907,14 +907,22 @@ const Anim = (() => {
     });
     // vista desde arriba: colchoneta debajo para que se entienda la perspectiva
     if (a.v === 't') html = `<rect x="${(a.vb[0] + a.vb[2] * 0.04).toFixed(1)}" y="${(a.vb[1] + a.vb[3] * 0.2).toFixed(1)}" width="${(a.vb[2] * 0.92).toFixed(1)}" height="${(a.vb[3] * 0.6).toFixed(1)}" rx="12" fill="#1d2027" stroke="#2c303a" stroke-width="2"/>` + html;
-    if (a.badge) html += badgeSVG(a);
+    if (a.badge && !noBadge) html += badgeSVG(a);
     svg.innerHTML = html + '<g class="body"></g>';
     const inst = { a, svg, g: svg.querySelector('.body'), shadow: svg.querySelector('.sh'), hot: new Set(HI[zone] || []), t0: performance.now() - Math.random() * 400, speed: 1 };
     draw(inst, performance.now());
     return inst;
   }
+  // «Reducir movimiento»: en lugar del movimiento continuo, se muestran las posiciones clave de a una (cada 1,8 s)
+  const RM = window.matchMedia ? matchMedia('(prefers-reduced-motion: reduce)') : { matches: false };
   function draw(inst, now) {
-    const a = inst.a, ms = a.ms, el = ((((now - inst.t0) * inst.speed) % ms) + ms) % ms;
+    const a = inst.a, ms = a.ms;
+    let el = ((((now - inst.t0) * inst.speed) % ms) + ms) % ms;
+    if (RM.matches && a.keys && a.keys.length > 1) {
+      const n = a.keys.length, k = Math.floor(Math.max(0, now - inst.t0) / 1800) % n;
+      if (inst._rk === k) return;
+      inst._rk = k; el = (k / n) * ms;
+    } else inst._rk = null;
     const J = pose2(a, el / ms);
     const arch = a._arch || 0;
     const side = a.v === 's', top = a.v === 't';
@@ -1126,6 +1134,7 @@ const Anim = (() => {
 
   /* ---------- API ---------- */
   // Monta la animación del ejercicio en el contenedor. Usa media/ si existe.
+  const BADGE_TXT = { wide: 'Manos abiertas', narrow: 'Manos juntas', stagger: 'Manos escalonadas', sides: 'De lado a lado', jacks: 'Abrir y cerrar' };
   function mount(el, id, opts = {}) {
     const e = typeof ex === 'function' ? ex(id) : { n: id, p: '' };
     el.innerHTML = '';
@@ -1139,9 +1148,11 @@ const Anim = (() => {
       c.parts.forEach(pt => live.add(pt)); combos.add(c); kick();
       return c.parts[0];
     }
-    const inst = svgFor(id, (e.t === 'x' ? (e.p || '')[0] : ''));
+    const inst = svgFor(id, (e.t === 'x' ? (e.p || '')[0] : ''), !!opts.label);
     if (opts.speed) inst.speed = opts.speed;
     el.appendChild(inst.svg);
+    // en el reproductor el esquema de manos es ilegible: se reemplaza por una etiqueta de texto
+    if (opts.label && inst.a.badge && BADGE_TXT[inst.a.badge]) { const lb = document.createElement('span'); lb.className = 'anim-lbl'; lb.textContent = (window.t ? window.t(BADGE_TXT[inst.a.badge]) : BADGE_TXT[inst.a.badge]); el.appendChild(lb); }
     if (vis) vis.observe(inst.svg);
     live.add(inst); kick();
     findMedia(id, e.n).then(url => {

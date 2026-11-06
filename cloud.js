@@ -223,7 +223,7 @@ function cloudStatusHTML() {
     : u.anon ? 'Usuario anónimo de este teléfono'
     : `Cuenta: <b data-noi18n>${esc(u.email || 'Google')}</b>`;
   const sl = metaSlots(CLOUD.meta), bk = sl && sl.bak != null ? sl.s[sl.bak] : null;
-  return `<div class="bk-card" id="cl-st"><div class="t">${CLOUD.busy ? 'Guardando…' : last ? 'Guardado en la nube: ' + clWhen(last) : 'Todavía no se guardó nada en la nube'}</div><small>${who}</small>${bk ? `<small>${t('Respaldo: {0}', clWhen(bk.updated))}</small>` : ''}${CLOUD.err && !CLOUD.busy ? `<small style="color:var(--work)">${esc(saveErr(CLOUD.err))}</small>` : ''}</div>`;
+  return `<div class="bk-card" id="cl-st"><div class="t">${CLOUD.busy ? 'Guardando…' : last ? 'Guardado en la nube: ' + clWhen(last) : 'Todavía no se guardó nada en la nube'}</div><small>${who}</small>${bk ? `<small>${t('Respaldo: {0}', clWhen(bk.updated))}</small>` : ''}${CLOUD.err && !CLOUD.busy ? `<small style="color:var(--work-ink)">${esc(saveErr(CLOUD.err))}</small>` : ''}</div>`;
 }
 // ¿tiene cuenta (correo o Google)? se recuerda para decidir los avisos aunque Firebase todavía no haya cargado
 const hasAcct = () => !!LS.get('cloud.acct', '');
@@ -355,18 +355,23 @@ window.addEventListener('online', () => setTimeout(cloudCheck, 1500));
 /* --- avisos para crear la cuenta (reemplazan el recordatorio de la copia en archivo) --- */
 bkDue = () => false;
 const acctDue = () => !!PROFILE && !hasAcct() && Date.now() > LS.get('cloud.snooze', 0);
+// el aviso no persigue por todas las pestañas: aparece al terminar la primera sesión y, más adelante,
+// solo en Historial cuando ya hay bastante en riesgo (10 sesiones o más). Si se cierra, vuelve en dos semanas.
+const acctSessions = () => PS.get('history', []).length;
+const acctFirst = () => acctDue() && acctSessions() === 1;
+const acctAtRisk = () => acctDue() && acctSessions() >= 10;
 const acctBanner = (id, closable) => `<div class="banner acct${closable ? ' slim' : ''}" id="${id}" role="button" tabindex="0"><div class="t">${closable ? '<b>Crea tu cuenta para no perder tu progreso</b>' : '<b>Crea tu cuenta</b><small>Para mantener todo sincronizado entre tus dispositivos</small>'}</div>
   <button class="btn small" data-acct>Crear cuenta</button>${closable ? `<button class="icon-btn acct-x" data-snooze aria-label="Ahora no"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>` : ''}</div>`;
 function bindAcct(el) {
   if (!el) return;
   el.onclick = e => {
-    if (e.target.closest('[data-snooze]')) { LS.set('cloud.snooze', Date.now() + 3 * 864e5); renderBkRemind(); toast('Te lo recuerdo en unos días'); return; }
+    if (e.target.closest('[data-snooze]')) { LS.set('cloud.snooze', Date.now() + 14 * 864e5); renderBkRemind(); const dd = $('#d-bk'); if (dd && dd.contains(el)) dd.innerHTML = ''; toast('Te lo recuerdo en dos semanas'); return; }
     openCloudSignup();
   };
 }
 renderBkRemind = function () {
   const el = $('#bk-remind'); if (!el) return;
-  if (!acctDue()) { el.innerHTML = ''; return; }
+  if (!acctAtRisk() || currentView !== 'hist') { el.innerHTML = ''; return; }
   el.innerHTML = acctBanner('acct-home', true); bindAcct($('#acct-home'));
 };
 // al terminar un entrenamiento (también mancuernas y entrenador inteligente)
@@ -374,15 +379,18 @@ const _finishAcct = finish;
 finish = function (...a) {
   _finishAcct(...a);
   const d = $('#d-bk'); if (!d) return;
-  d.innerHTML = PROFILE && !hasAcct() ? acctBanner('acct-done') + '<div class="gap"></div>' : '';
+  d.innerHTML = acctFirst() || acctAtRisk() ? acctBanner('acct-done', true) + '<div class="gap"></div>' : '';
   bindAcct($('#acct-done'));
 };
 // al terminar un reto
 const _rFinishAcct = rFinish;
 rFinish = function (...a) {
   _rFinishAcct(...a);
-  const ok = $('#rf-ok'); if (!ok || hasAcct()) return;
+  const ok = $('#rf-ok'); if (!ok || !(acctFirst() || acctAtRisk())) return;
   ok.insertAdjacentHTML('beforebegin', acctBanner('acct-reto') + '<div class="gap"></div>');
   bindAcct($('#acct-reto'));
 };
+// al cambiar de pestaña se decide si el aviso corresponde (solo en Historial)
+const _showAcct = show;
+show = function (...a) { const r = _showAcct(...a); try { renderBkRemind(); } catch (e) {} return r; };
 if (!window.NO_CLOUD) setTimeout(() => { if (navigator.onLine) cloudCheck(); else cloudStart(); }, 2500);

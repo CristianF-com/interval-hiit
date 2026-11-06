@@ -1773,7 +1773,21 @@ I18N = {
 "La prueba de capacidad dura 3 minutos: sentadillas, flexiones y abdominales. Con tus resultados calculo tu nivel real.": "The fitness test takes 3 minutes: squats, push-ups and sit-ups. With your results I work out your real level.",
 "La prueba son crunches en 1 minuto y, si quieres, cuánto aguantas la plancha. Con eso calculo tu nivel real.": "The test is crunches in 1 minute and, if you like, how long you hold a plank. With that I work out your real level.",
 "La prueba de fuerza son 4 ejercicios: con tus resultados calculo tu nivel real y las repeticiones.": "The strength test is 4 exercises: with your results I work out your real level and reps.",
-"Elige tu nivel: parto de una estimación por tu peso corporal y la ajusto con tus respuestas.": "Pick your level: I start from an estimate based on your body weight and adjust it with your answers."
+"Elige tu nivel: parto de una estimación por tu peso corporal y la ajusto con tus respuestas.": "Pick your level: I start from an estimate based on your body weight and adjust it with your answers.",
+"Rutinas": "Routines",
+"Programado": "Scheduled",
+"Pasado": "Past",
+"Marcar el día": "Mark the day",
+"Automático (según el sistema)": "Automatic (follows the system)",
+"Te lo recuerdo en dos semanas": "I'll remind you in two weeks",
+"Manos abiertas": "Hands wide",
+"Manos juntas": "Hands close",
+"Manos escalonadas": "Hands staggered",
+"De lado a lado": "Side to side",
+"Abrir y cerrar": "Open and close",
+"Cambiar de perfil": "Switch profile",
+"Perfil: {0}. Cambiar de perfil": "Profile: {0}. Switch profile",
+"Cambia algunos ejercicios de los planes, las repeticiones de abdominales, el peso sugerido de las mancuernas y el cálculo de calorías con pulsómetro. Puedes cambiarla luego en tu perfil.": "It changes some plan exercises, the abs reps, the suggested dumbbell weight and the heart-rate calorie estimate. You can change it later in your profile."
 };
 I18N_PAT = [
 [
