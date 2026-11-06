@@ -338,6 +338,9 @@ code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.92em;backgroun
 .cd.past b{color:var(--muted)}
 .cd.today{border-color:var(--work-ink)}.cd.today b{color:var(--work-ink)}
 .cd.sel{border-color:var(--work-ink)}
+/* tema Naranja: el día de hoy/elegido con el naranja de los botones; los retos con color propio (su --reto es gris oscuro, el de las tarjetas) */
+:root[data-theme="naranja"] .cd.today,:root[data-theme="naranja"] .cd.sel{border-color:var(--work)}:root[data-theme="naranja"] .cd.today b{color:var(--work)}
+:root[data-theme="naranja"] .dt.rt{border-color:#2f7de1}
 .cd .dots{position:absolute;inset:0;pointer-events:none}.cd .dots .dt{position:absolute;transform:translate(-50%,-50%)}.dt.more{width:auto;height:6px;border:0;font-size:0.4706rem;line-height:6px;color:var(--muted);background:none}
 /* calendario: el ESTADO va por forma (aro = programado, lleno = hecho, medio = incompleto) y el TIPO por color */
 /* anillo con borde (no sombra) y tamaño par: en el iPhone la sombra interior en medio píxel dejaba el hueco corrido */
