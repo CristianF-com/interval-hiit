@@ -338,12 +338,13 @@ code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.92em;backgroun
 .cd.past b{color:var(--muted)}
 .cd.today{border-color:var(--work-ink)}.cd.today b{color:var(--work-ink)}
 .cd.sel{border-color:var(--work-ink)}
-.cd .dots{position:absolute;inset:0;pointer-events:none}.cd .dots .dt{position:absolute;transform:translate(-50%,-50%)}.dt.more{width:auto;height:6px;font-size:0.4706rem;line-height:6px;color:var(--muted);background:none}
+.cd .dots{position:absolute;inset:0;pointer-events:none}.cd .dots .dt{position:absolute;transform:translate(-50%,-50%)}.dt.more{width:auto;height:6px;border:0;font-size:0.4706rem;line-height:6px;color:var(--muted);background:none}
 /* calendario: el ESTADO va por forma (aro = programado, lleno = hecho, medio = incompleto) y el TIPO por color */
-.dt{display:inline-block;width:7px;height:7px;border-radius:50%;flex:none;--k:var(--muted);background:transparent;box-shadow:inset 0 0 0 1.6px var(--k)}
-.dt.plan{--k:var(--work)}.dt.smart{--k:var(--rest)}
-.dt.ok{--k:var(--ok);background:var(--k);box-shadow:none}
-.dt.part{--k:var(--muted);background:linear-gradient(90deg,var(--k) 50%,transparent 50%)}
+/* anillo con borde (no sombra) y tamaño par: en el iPhone la sombra interior en medio píxel dejaba el hueco corrido */
+.dt{display:inline-block;box-sizing:border-box;width:8px;height:8px;border-radius:50%;flex:none;background:transparent;border:2px solid var(--muted)}
+.dt.plan{border-color:var(--work)}.dt.smart{border-color:var(--rest)}
+.dt.ok{border-color:var(--ok);background:var(--ok)}
+.dt.part{border-color:var(--muted);background:linear-gradient(90deg,var(--muted) 50%,transparent 50%)}
 .legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:0.7059rem;color:var(--muted);margin:10px 2px 0}
 .legend .dt{margin-right:5px}
 .ag{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:12px 12px 12px 14px}
@@ -372,7 +373,7 @@ code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.92em;backgroun
 .rday.cur{background:color-mix(in srgb,var(--work) 10%,transparent)}
 .rday.cur .dn{background:var(--work);color:#111}
 .rday .t{flex:1;min-width:0}.rday .t b{display:block;overflow-wrap:anywhere}.rday .t small{color:var(--muted)}
-.dt.rt{--k:var(--reto)}.dt.db{--k:#a78bfa}.dt.abs,.dt.absai{--k:#ff7eb6}
+.dt.rt{border-color:var(--reto)}.dt.db{border-color:#a78bfa}.dt.abs,.dt.absai{border-color:#ff7eb6}
 .legend .lg-g{display:contents}.legend .lg-h{color:var(--text);font-weight:600}
 .ab-bar{height:6px;border-radius:3px;background:var(--surface2);overflow:hidden;margin:8px 0 10px}.ab-bar i{display:block;height:100%;background:var(--work);border-radius:3px}
 .rplayer{z-index:21}
@@ -438,7 +439,7 @@ code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.92em;backgroun
   .col.stick .cw{padding:2px 0;font-size:0.6471rem}
   .col.stick .legend{font-size:0.6471rem;gap:2px 10px;margin-top:6px;justify-content:center}
   .col.stick .cd b{font-size:0.8235rem}
-  .col.stick .cd .dots .dt{width:5px;height:5px}
+  .col.stick .cd .dots .dt{width:6px;height:6px;border-width:1.5px}
   .sheet{max-width:none}
   /* las hojas empiezan donde empiezan los íconos del menú lateral (no quedan bajo el notch) */
   .scrim{padding-left:calc(6px + var(--sal));padding-right:var(--sar)}
