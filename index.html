@@ -44,6 +44,8 @@ input,select{font:inherit}
 header.top{display:flex;align-items:center;gap:10px;padding:calc(16px + env(safe-area-inset-top)) 0 8px}
 header.top .logo{height:46px;width:auto;aspect-ratio:679/218;display:block;flex:none}
 /* el logo se muestra solo en Coach: en las demás pestañas el título de la pestaña ya dice dónde estás */
+/* en Coach el logo ya ocupa el lugar del título: «Tu coach» repetía la pestaña (en horizontal sigue en el encabezado) */
+@media (orientation: portrait){#v-coach>.hero.vh{display:none}}
 @media (orientation: portrait){html[data-view]:not([data-view=coach]) header.top .logo{display:none}}
 /* logo de la cabecera teñido con el acento del tema: mismos tonos del original, pero de ese color */
 header.top .logo-svg{--lg1:var(--work);--lg2:color-mix(in srgb,var(--work) 74%,#000);--lg3:color-mix(in srgb,var(--work) 30%,#0b0b0b);--lg4:color-mix(in srgb,var(--work) 15%,#070707)}
