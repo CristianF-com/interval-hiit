@@ -154,8 +154,8 @@ function kindChartHTML(H) {
   }).join('');
   return `<h3 class="st-h">Tipo de entrenamiento</h3><div class="chart donut">
     <svg viewBox="0 0 132 132" role="img" aria-label="${esc(t('Tipo de entrenamiento'))}"><circle cx="66" cy="66" r="${r}" fill="none" style="stroke:var(--surface2)" stroke-width="16"/>${arcs}
-      <text x="66" y="63" text-anchor="middle" style="fill:var(--text);font-weight:700;font-size:15px" data-noi18n>${fmtDurS(tot)}</text>
-      <text x="66" y="81" text-anchor="middle" style="fill:var(--muted);font-size:11px">${t('en total')}</text></svg>
+      <text x="66" y="63" text-anchor="middle" style="fill:var(--text);font-weight:700;font-size:0.8824rem" data-noi18n>${fmtDurS(tot)}</text>
+      <text x="66" y="81" text-anchor="middle" style="fill:var(--muted);font-size:0.6471rem">${t('en total')}</text></svg>
     <div class="dn-leg">${list.map(([k, n, c]) => `<div><i style="background:${c}"></i><span>${n}</span><b>${Math.round(sum[k] / tot * 100)}%</b></div>`).join('')}</div>
   </div>`;
 }
@@ -181,12 +181,12 @@ function lineSVG(pts, fmt) {
   const line = pts.map((p, i) => `${i ? 'L' : 'M'}${X(i).toFixed(1)} ${Y(p.v).toFixed(1)}`).join('');
   const area = `${line}L${X(pts.length - 1).toFixed(1)} ${H - B}L${X(0).toFixed(1)} ${H - B}Z`;
   const dl = t => new Date(t).toLocaleDateString(LOC, { day: 'numeric', month: 'short' }).replace('.', '');
-  const grid = [hi, (hi + lo) / 2, lo].map(v => `<line x1="${L}" x2="${W - R}" y1="${Y(v).toFixed(1)}" y2="${Y(v).toFixed(1)}" style="stroke:var(--line)" stroke-dasharray="3 4"/><text x="${L - 6}" y="${(Y(v) + 4).toFixed(1)}" text-anchor="end" style="fill:var(--muted);font-size:10.5px">${fmt(v)}</text>`).join('');
+  const grid = [hi, (hi + lo) / 2, lo].map(v => `<line x1="${L}" x2="${W - R}" y1="${Y(v).toFixed(1)}" y2="${Y(v).toFixed(1)}" style="stroke:var(--line)" stroke-dasharray="3 4"/><text x="${L - 6}" y="${(Y(v) + 4).toFixed(1)}" text-anchor="end" style="fill:var(--muted);font-size:0.6176rem">${fmt(v)}</text>`).join('');
   return `<svg viewBox="0 0 ${W} ${H}" role="img" data-noi18n>
-    <defs><linearGradient id="pgfill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--work);stop-opacity:.28"/><stop offset="1" style="stop-color:var(--work);stop-opacity:0"/></linearGradient></defs>
+    <defs><linearGradient id="pgfill" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--work-ink);stop-opacity:.28"/><stop offset="1" style="stop-color:var(--work-ink);stop-opacity:0"/></linearGradient></defs>
     ${grid}<path d="${area}" fill="url(#pgfill)"/><path d="${line}" fill="none" style="stroke:var(--work)" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>
     ${pts.map((p, i) => `<circle cx="${X(i).toFixed(1)}" cy="${Y(p.v).toFixed(1)}" r="${i === pts.length - 1 ? 5 : 3}" style="fill:${i === pts.length - 1 ? 'var(--work)' : 'var(--bg)'};stroke:var(--work)" stroke-width="2"/>`).join('')}
-    <text x="${L}" y="${H - 6}" style="fill:var(--muted);font-size:10.5px">${dl(pts[0].at)}</text><text x="${W - R}" y="${H - 6}" text-anchor="end" style="fill:var(--muted);font-size:10.5px">${dl(pts[pts.length - 1].at)}</text></svg>`;
+    <text x="${L}" y="${H - 6}" style="fill:var(--muted);font-size:0.6176rem">${dl(pts[0].at)}</text><text x="${W - R}" y="${H - 6}" text-anchor="end" style="fill:var(--muted);font-size:0.6176rem">${dl(pts[pts.length - 1].at)}</text></svg>`;
 }
 function progChartHTML() {
   const { ex: E, sess } = progData();

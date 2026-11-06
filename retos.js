@@ -432,7 +432,7 @@ function rRender() {
   $('#rp-meter').classList.toggle('hidden', !RP.sensOn || rest);
   $('#rp-done').textContent = prep ? 'Empezar ya' : rest ? 'Saltar descanso' : (d.test || lastSet) ? 'Terminar' : 'Serie hecha';
   const pb = $('#rp-close'); pb.innerHTML = RP.paused ? PLAY_SVG : PAUSE_SVG; pb.setAttribute('aria-label', RP.paused ? 'Seguir' : 'Pausa y opciones');
-  const m = $('#rp-anim'); if (m && m.dataset.animId !== R.ex) Anim.mount(m, R.ex);
+  const m = $('#rp-anim'); if (m && m.dataset.animId !== R.ex) Anim.mount(m, R.ex, { label: true });
 }
 function rFinish(partial) {
   if (RP.initial) partial = false; // la prueba inicial vale aunque se corte antes

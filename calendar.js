@@ -81,7 +81,7 @@ function renderCal() {
     const dots = cls.slice(0, nD).map((c, j) => `<i class="dt ${c}" style="left:${slots[j][0]}%;top:${slots[j][1]}%"></i>`).join('');
     cells += `<button class="cd ${k === today ? 'today' : ''} ${k === calSel ? 'sel' : ''} ${t < dayStart(now) ? 'past' : ''}" data-k="${k}"><span class="cin"><b>${d}</b><span class="dots">${dots}</span></span></button>`;
   }
-  const mname = m.toLocaleDateString(LOC, { month: 'long', year: 'numeric' });
+  const mname = (s0 => s0.charAt(0).toUpperCase() + s0.slice(1))(m.toLocaleDateString(LOC, { month: 'long', year: 'numeric' }));
   // próximos 14 días
   const up = [];
   for (let i = 0; i < 14; i++) { const t = addDays(now, i), k = dkey(t); (ag[k] || []).filter(x => x.type !== 'done').forEach(x => up.push({ t, k, x })); }
@@ -91,7 +91,8 @@ function renderCal() {
     <div class="cal-h"><button class="icon-btn" id="cal-prev" aria-label="Mes anterior"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 5l-7 7 7 7"/></svg></button>
       <b>${mname}</b><button class="icon-btn" id="cal-next" aria-label="Mes siguiente"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 5l7 7-7 7"/></svg></button></div>
     <div class="cal">${WD.map(w => `<span class="cw">${w}</span>`).join('')}${cells}</div>
-    <div class="legend"><span><i class="dt plan"></i>Plan</span><span><i class="dt smart"></i>Entrenador</span><span><i class="dt rt"></i>Retos</span>${typeof getDumb === 'function' && getDumb() ? '<span><i class="dt db"></i>Mancuernas</span>' : ''}<span><i class="dt ok"></i>Hecho</span><span><i class="dt part"></i>Incompleto</span></div>
+    <div class="legend"><span class="lg-h">${t('Programado')}</span><span><i class="dt plan"></i>Plan</span><span><i class="dt smart"></i>Entrenador</span><span><i class="dt rt"></i>Retos</span>${typeof getDumb === 'function' && getDumb() ? '<span><i class="dt db"></i>Mancuernas</span>' : ''}${(typeof getAbs === 'function' && getAbs()) || (typeof getAbAi === 'function' && getAbAi()) ? '<span><i class="dt abs"></i>Abdominales</span>' : ''}</div>
+    <div class="legend"><span class="lg-h">${t('Pasado')}</span><span><i class="dt ok"></i>Hecho</span><span><i class="dt part"></i>Incompleto</span></div>
     ${p ? `<h2>Días de entrenamiento del plan</h2>
       <div class="wdpick" id="cal-wd">${WD.map((w, i) => `<button data-wd="${i}" aria-pressed="${planWeekdays(p).includes(i)}">${w}</button>`).join('')}</div>
       <p class="note">${esc(FAM[p.fam].n)} · ${dayRange(p.file).min === dayRange(p.file).max ? dayRange(p.file).max : dayRange(p.file).min + ' a ' + dayRange(p.file).max} días por semana. Los entrenamientos pendientes se reparten en estos días.</p>` : ''}

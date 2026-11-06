@@ -12,7 +12,9 @@ const rnd = a => a[Math.floor(Math.random() * a.length)];
 const shuffle = a => { a = [...a]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
 const clone = o => JSON.parse(JSON.stringify(o));
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
-function toast(t) { const el = $('#toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('on'), 2200); }
+function toast(t) { const el = $('#toast'); el.textContent = t; el.classList.add('on'); clearTimeout(toast.t); toast.t = setTimeout(() => el.classList.remove('on'), Math.max(3000, 1500 + t.length * 45)); }
+// decimales con el separador del idioma (5,2 en español)
+const d1 = v => (+v).toLocaleString(LOC, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 const dateStr = t => new Date(t).toLocaleDateString(LOC, { weekday: 'short', day: 'numeric', month: 'short' });
 
 /* ---------- Almacenamiento (por perfil) ---------- */
@@ -57,7 +59,7 @@ const saveProfiles = p => LS.set('profiles', p);
 // Pedir al navegador que no borre los datos por falta de espacio
 try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch (e) {}
 
-const DEFAULTS = { theme: 'oscuro', dur: 1200, parts: ['all'], level: 2, noJump: false, warmup: true, cooldown: true, vary: false, custom: false,
+const DEFAULTS = { theme: 'auto', dur: 1200, parts: ['all'], level: 2, noJump: false, warmup: true, cooldown: true, vary: false, custom: false,
   cw: 40, cr: 20, cn: 5, cR: 3, crr: 60, voice: true, sound: 'voz', planWarm: false, planCool: false, autoNext: true, prepSec: 10 };
 let S = { ...DEFAULTS };
 const save = () => PS.set('settings', S);
@@ -168,6 +170,7 @@ function deleteProfile(id) {
 }
 function renderWho() {
   $('#who').innerHTML = `${avHTML(PROFILE, '', true)}<span>${esc(PROFILE.name)}</span>`;
+  $('#who').setAttribute('aria-label', t('Perfil: {0}. Cambiar de perfil', PROFILE.name));
 }
 function variantSeg(id, cur, opts = ['f', 'm']) {
   return `<div class="seg" id="${id}">${opts.map(v => `<button data-v="${v}" aria-pressed="${cur === v}">${VARIANTS[v]}</button>`).join('')}</div>`;
@@ -178,6 +181,7 @@ function bindSeg(id, attr, cb) {
 }
 
 function showOnboarding() {
+  $('#who').setAttribute('aria-label', t('Cambiar de perfil'));
   const legacy = legacyData();
   let v = 'f';
   $('#ob-form').innerHTML = `
@@ -185,7 +189,7 @@ function showOnboarding() {
     <div class="field"><input id="ob-name" maxlength="24" placeholder="Tu nombre" autocomplete="off"></div>
     <h2>Versión de los planes</h2>
     ${variantSeg('ob-var', v)}
-    <p class="note">Los planes tienen versión femenina y masculina con pequeñas diferencias de ejercicios. Puedes cambiarla luego.</p>
+    <p class="note">Cambia algunos ejercicios de los planes, las repeticiones de abdominales, el peso sugerido de las mancuernas y el cálculo de calorías con pulsómetro. Puedes cambiarla luego en tu perfil.</p>
     ${legacy ? '<p class="note">Se pasarán a este perfil los entrenamientos que ya tenías guardados.</p>' : ''}
     <div style="height:24px"></div>
     <button class="btn" id="ob-go">Crear perfil</button>
@@ -208,15 +212,19 @@ function showOnboarding() {
 }
 
 /* ---------- Tema de colores ---------- */
-const THEMES = { oscuro: { n: 'INHIIT (oscuro)', meta: '#0e0f12', sw: ['#0e0f12', '#17191e', '#ff5a36', '#35d0bf'] },
+// «Automático» sigue la apariencia del iPhone: Oscuro de noche / con modo oscuro, Naranja (claro) con modo claro
+const THEMES = { auto: { n: 'Automático (según el sistema)', meta: '#0e0f12', sw: ['#0e0f12', '#ff5a36', '#d5d8dd', '#ff9500'] }, oscuro: { n: 'INHIIT (oscuro)', meta: '#0e0f12', sw: ['#0e0f12', '#17191e', '#ff5a36', '#35d0bf'] },
   naranja: { n: 'Naranja clásico', meta: '#2b2c31', sw: ['#2b2c31', '#d5d8dd', '#ff9500', '#eceef1'] },
   lima: { n: 'Verde lima', meta: '#0a0c0b', sw: ['#0a0c0b', '#1c201d', '#c6f135', '#5fd4c4'] } };
+const SYS_LIGHT = window.matchMedia ? matchMedia('(prefers-color-scheme: light)') : { matches: false };
 function applyTheme() {
-  const t = THEMES[S.theme] ? S.theme : 'oscuro';
+  const pick = THEMES[S.theme] ? S.theme : 'auto';
+  const t = pick === 'auto' ? (SYS_LIGHT.matches ? 'naranja' : 'oscuro') : pick;
   document.documentElement.dataset.theme = t;
   const m = document.querySelector('meta[name=theme-color]'); if (m) m.setAttribute('content', THEMES[t].meta);
-  try { localStorage.setItem('intervalo.theme', t); } catch (e) {}
+  try { localStorage.setItem('intervalo.theme', pick); } catch (e) {}
 }
+try { SYS_LIGHT.addEventListener('change', () => { if (!THEMES[S.theme] || S.theme === 'auto') applyTheme(); }); } catch (e) {}
 
 /* ---------- Logo de la cabecera con el color del tema ----------
    Se carga el SVG dentro de la página (no como imagen) para que sus colores sigan el acento del tema (CSS .logo-svg). */
@@ -271,7 +279,8 @@ function sheet(html, onMount, locked, top) {
     onMount && onMount(root); return;
   }
   // top: la hoja baja desde arriba (para hojas con campos); la X queda arriba y la barra para cerrar, abajo
-  root.innerHTML = `<div class="scrim${top ? ' top' : ''}" id="scrim"><div class="sheet${top ? ' top' : ''}" role="dialog"><div class="sh-bar" id="sh-bar"><div class="grab"></div>
+  const nav = SHEET_NAV; SHEET_NAV = '';
+  root.innerHTML = `<div class="scrim${top ? ' top' : ''}${nav ? ' still' : ''}" id="scrim"><div class="sheet${top ? ' top' : ''}${nav ? ' ' + nav : ''}" role="dialog"><div class="sh-bar" id="sh-bar"><div class="grab"></div>
     ${SHEET_BACK.length ? '<button class="icon-btn sh-back" id="sh-back" aria-label="Volver"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>' : ''}
     <button class="icon-btn sh-x" id="sh-x" aria-label="Cerrar"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>${html}${top ? '<div class="sh-foot" id="sh-foot"><div class="grab"></div></div>' : ''}</div></div>`;
   $('#scrim').onclick = e => { if (e.target.id === 'scrim') closeSheet(); };
@@ -289,15 +298,15 @@ function sheet(html, onMount, locked, top) {
 const closeSheet = () => { $('#sheet-root').innerHTML = ''; SHEET_BACK = []; };
 /* Ventanas que se abren desde otra (p. ej. Perfil → Cuenta → Crear cuenta): la nueva muestra «‹» para volver
    a la anterior, en el mismo lugar donde estaba (misma posición de desplazamiento). */
-let SHEET_BACK = [];
+let SHEET_BACK = [], SHEET_NAV = '';   // SHEET_NAV: la hoja siguiente es navegación dentro de la misma hoja (push / pop)
 const sheetFrom = (parent, child) => (...a) => {
   const sh = $('#sheet-root .sheet');
   SHEET_BACK.push({ open: parent, y: sh ? sh.scrollTop : 0 });
-  child(...a);
+  SHEET_NAV = 'push'; child(...a);
 };
 function sheetBack() {
   const prev = SHEET_BACK.pop(); if (!prev) { closeSheet(); return; }
-  prev.open();
+  SHEET_NAV = 'pop'; prev.open();
   const sh = $('#sheet-root .sheet'); if (sh) sh.scrollTop = prev.y;
 }
 // confirmación con el estilo de la app (en lugar del cuadro del navegador)
@@ -327,7 +336,7 @@ function openProfiles() {
     </div>
     <div class="pane hidden" data-pane="pf:set">
     <h2>Apariencia</h2>
-    <div class="theme-pick" id="pf-theme">${Object.entries(THEMES).map(([k, t]) => `<button data-t="${k}" aria-pressed="${(S.theme || 'oscuro') === k}"><span class="sw4">${t.sw.map(c => `<i style="background:${c}"></i>`).join('')}</span>${t.n}</button>`).join('')}</div>
+    <div class="theme-pick" id="pf-theme">${Object.entries(THEMES).map(([k, t]) => `<button data-t="${k}" aria-pressed="${(THEMES[S.theme] ? S.theme : 'auto') === k}"><span class="sw4">${t.sw.map(c => `<i style="background:${c}"></i>`).join('')}</span>${t.n}</button>`).join('')}</div>
     ${(S.avoid || []).length ? `<h2>Zonas a cuidar</h2><p class="note">Los entrenamientos evitan los ejercicios que cargan: <b>${S.avoid.map(k => AREAS[k].n.toLowerCase()).join(', ')}</b>.</p><button class="btn ghost small" id="pf-avoid">Dejar de cuidarlas</button>` : ''}
     <h2>Idioma</h2>
     <div class="seg" id="pf-lang">${Object.entries(LANGS).map(([k, n]) => `<button data-l="${k}" aria-pressed="${LANG === k}" data-noi18n>${n}</button>`).join('')}</div>
@@ -844,8 +853,8 @@ function renderSmart() {
     <p class="sub">${due ? '' : `Próxima sesión: <b>${whenStr(sm.nextAt)}</b>. `}${esc(FOCUS[w.focus].n)} · ~${Math.round(total(buildTimeline(w)) / 60)} min · ${LEVELS[w.level - 1]} · ${w.sk.w}s / ${w.sk.r}s</p>
     <div class="gap"></div>
     <div class="pbar"><i style="width:${pct}%"></i></div>
-    <div class="pmeta"><span>Intensidad ${sm.I.toFixed(1)} de 10</span><span>${sm.last ? 'Última: ' + FB[sm.last.fb].n.toLowerCase() : ''}</span></div>
-    ${deloadOn(sm) ? `<p class="note dl-note">${sm.deload.why === 'hard' ? 'Tus dos últimas sesiones fueron difíciles' : 'Llevas 5 semanas subiendo la intensidad'}: hasta el ${dateStr(sm.deload.until - DAY)} las sesiones son más suaves (intensidad ${Math.max(1, sm.I - 1.5).toFixed(1)}) para que el cuerpo se recupere y después rindas más. <button class="linkbtn" id="sm-skipdl">Saltearla</button></p>` : ''}
+    <div class="pmeta"><span>Intensidad ${d1(sm.I)} de 10</span><span>${sm.last ? 'Última: ' + FB[sm.last.fb].n.toLowerCase() : ''}</span></div>
+    ${deloadOn(sm) ? `<p class="note dl-note">${sm.deload.why === 'hard' ? 'Tus dos últimas sesiones fueron difíciles' : 'Llevas 5 semanas subiendo la intensidad'}: hasta el ${dateStr(sm.deload.until - DAY)} las sesiones son más suaves (intensidad ${d1(Math.max(1, sm.I - 1.5))}) para que el cuerpo se recupere y después rindas más. <button class="linkbtn" id="sm-skipdl">Saltearla</button></p>` : ''}
     <div class="gap"></div>
     <button class="btn ${due ? '' : 'ghost'}" id="sm-go">${due ? 'Empezar' : 'Entrenar igual'}</button>
     ${t ? `<p class="note">Prueba del ${dateStr(t.at)}: ${t.sq} sentadillas · ${t.pu} flexiones${t.puKnee ? ' (rodillas)' : ''} · ${t.ab} abdominales${old ? ' · <b>conviene repetirla</b>' : ''}</p>` : '<p class="note">Sin prueba de capacidad: empiezo por tu nivel y me guío por tus respuestas.</p>'}
@@ -862,7 +871,7 @@ function renderSmart() {
 function openSmartSettings() {
   const sm = getSmart(); let cap = sm.maxDur || 1800; const op = smartOpts(sm);
   const caps = DURS.filter(d => d >= 600);
-  sheet(`<h3>Entrenador inteligente</h3><p class="sub">Intensidad actual ${sm.I.toFixed(1)} de 10 · ${sm.sessions || 0} sesiones hechas.</p>
+  sheet(`<h3>Entrenador inteligente</h3><p class="sub">Intensidad actual ${d1(sm.I)} de 10 · ${sm.sessions || 0} sesiones hechas.</p>
     <h2>Duración máxima de cada sesión</h2>
     <div class="seg" id="ss-cap" style="grid-auto-flow:row;grid-template-columns:repeat(4,1fr)">${caps.map(d => `<button data-c="${d}" aria-pressed="${cap === d}">${d / 60} min</button>`).join('')}</div>
     <h2>Opciones</h2>${smartOptsHTML(op)}
@@ -873,7 +882,7 @@ function openSmartSettings() {
     <button class="btn danger" id="ss-reset">Reiniciar el entrenador</button>`, () => {
     bindSeg('ss-cap', 'c', c => cap = +c);
     bindSmartOpts($('#sheet-root'), op);
-    const nudge = d => { const s2 = getSmart(); s2.I = Math.max(1, Math.min(10, s2.I + d)); s2.log.push({ at: Date.now(), I: s2.I, why: 'manual' }); s2.next = genSmart(s2); setSmart(s2); toast(`Intensidad ${s2.I.toFixed(1)}`); };
+    const nudge = d => { const s2 = getSmart(); s2.I = Math.max(1, Math.min(10, s2.I + d)); s2.log.push({ at: Date.now(), I: s2.I, why: 'manual' }); s2.next = genSmart(s2); setSmart(s2); toast(`Intensidad ${d1(s2.I)}`); };
     $('#ss-down').onclick = () => nudge(-0.5);
     $('#ss-up').onclick = () => nudge(0.5);
     $('#ss-save').onclick = () => { const s2 = getSmart(); s2.maxDur = cap; s2.opts = op; delete s2.db; s2.next = genSmart(s2); setSmart(s2); closeSheet(); renderSmart(); toast('Guardado'); };
@@ -1058,7 +1067,7 @@ function renderPreview() {
   let h = '';
   if (w.warm && w.warm.length) h += `<div class="block"><div class="block-h"><b>Calentamiento</b><span>${w.warm.length} × 30s</span></div>${w.warm.map((id, i) => exRow(id, i, '')).join('')}</div>`;
   if (isPlan) {
-    $('#pv-sub').textContent = w.sub + ` · dificultad media ${avgLevel(w).toFixed(1).replace('.', ',')} de 3${w.edited ? ' (ajustada)' : ''}`;
+    $('#pv-sub').textContent = w.sub + ` · dificultad media ${d1(avgLevel(w))} de 3${w.edited ? ' (ajustada)' : ''}`;
     const nEx = w.rounds.reduce((a, r) => a + r.filter(x => x.id !== 'pause').length, 0);
     $('#pv-stats').innerHTML = `<div class="stat"><b>~${Math.round(total(tl) / 60)}</b><span>minutos</span></div><div class="stat"><b>${w.rounds.length}</b><span>rondas</span></div><div class="stat"><b>${nEx}</b><span>series</span></div>`;
     // agrupa rondas idénticas consecutivas
@@ -1073,7 +1082,7 @@ function renderPreview() {
     const sk = w.sk;
     const rtg = i => w.rtItems && w.rtItems[i] ? (w.rtItems[i].m === 'r' ? `×${w.rtItems[i].v}` : `${w.rtItems[i].v}s`) : '';
     if (w.rtItems) $('#pv-sub').textContent = t('Mi rutina · {0}s de descanso entre ejercicios · {1}s entre rondas', sk.r, sk.rr); else
-    $('#pv-sub').textContent = `${w.smart ? 'Entrenador inteligente · intensidad ' + w.I + ' · ' : ''}${LEVELS[w.level - 1]} · ${sk.w}s trabajo / ${sk.r}s descanso${w.noJump ? ' · sin saltos' : ''} · dificultad media ${avgLevel(w).toFixed(1).replace('.', ',')} de 3${w.edited ? ' (ajustada)' : ''}`;
+    $('#pv-sub').textContent = `${w.smart ? 'Entrenador inteligente · intensidad ' + d1(w.I) + ' · ' : ''}${LEVELS[w.level - 1]} · ${sk.w}s trabajo / ${sk.r}s descanso${w.noJump ? ' · sin saltos' : ''} · dificultad media ${d1(avgLevel(w))} de 3${w.edited ? ' (ajustada)' : ''}`;
     $('#pv-stats').innerHTML = `<div class="stat"><b>${fmt(total(tl))}</b><span>minutos</span></div><div class="stat"><b>${w.rounds.length}</b><span>rondas</span></div><div class="stat"><b>${w.rounds.flat().length}</b><span>intervalos</span></div>`;
     if (!w.vary) h += `<div class="block"><div class="block-h"><b>Circuito × ${w.rounds.length}</b><span>${w.rtItems ? t('{0}s de descanso · {1}s entre rondas', sk.r, sk.rr) : `${sk.w}s / ${sk.r}s · ${sk.rr}s entre rondas`}</span></div>${w.rounds[0].map((id, i) => exRow(id, i, 'all-' + i, rtg(i), true)).join('')}</div>`;
     else w.rounds.forEach((ids, r) => { h += `<div class="block"><div class="block-h"><b>Ronda ${r + 1}</b><span>${sk.w}s / ${sk.r}s</span></div>${ids.map((id, i) => exRow(id, i, r + '-' + i, '', true)).join('')}</div>`; });
@@ -1144,19 +1153,24 @@ const IC = {
   cloud: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4 4 0 0 1-.6-8A6 6 0 0 1 18 9a4.5 4.5 0 0 1-.5 9z"/></svg>'
 };
 const SUBTABS = {
-  coach: [['smart', 'AI HIIT', IC.brain], ['db', 'AI mancuernas', IC.db], ['abs', 'AI abdominales', IC.abs], ['custom', 'A medida', IC.sliders], ['mine', 'Mis rutinas', IC.star]],
-  hist: [['sum', 'Resumen', IC.chart], ['prog', 'Progreso', IC.trend], ['list', 'Sesiones', IC.list], ['aw', 'Logros', IC.medal], ['body', 'Cuerpo', IC.body], ['friends', 'Amigos', IC.people]],
+  coach: [['smart', 'AI HIIT', IC.brain], ['db', 'AI mancuernas', IC.db], ['abs', 'AI abdominales', IC.abs], ['custom', 'Rutinas', IC.star]],
+  hist: [['sum', 'Resumen', IC.chart], ['list', 'Sesiones', IC.list], ['aw', 'Logros', IC.medal], ['body', 'Cuerpo', IC.body], ['friends', 'Amigos', IC.people]],
   pf: [['prof', 'Perfiles', IC.user], ['set', 'Ajustes', IC.gear], ['data', 'Cuenta y datos', IC.cloud]]
 };
-const subtabCur = g => { const v = LS.get('tab.' + g, null); return SUBTABS[g].some(x => x[0] === v) ? v : SUBTABS[g][0][0]; };
+// partes que se muestran juntas (menos subpestañas en iPhone): Rutinas = mis rutinas + armar una a medida; Resumen = resumen + progreso
+const SUBTAB_JOIN = { 'coach:custom': ['coach:mine'], 'hist:sum': ['hist:prog'] };
+const SUBTAB_ALIAS = { coach: { mine: 'custom' }, hist: { prog: 'sum' } };
+const subtabCur = g => { let v = LS.get('tab.' + g, null); if (SUBTAB_ALIAS[g] && SUBTAB_ALIAS[g][v]) v = SUBTAB_ALIAS[g][v]; return SUBTABS[g].some(x => x[0] === v) ? v : SUBTABS[g][0][0]; };
 const subtabsHTML = g => SUBTABS[g].map(([k, n, ic]) => `<button role="tab" data-st="${k}" aria-selected="${k === subtabCur(g)}">${ic}<span>${n}</span></button>`).join('');
 const SUBTAB_SHOW = {};                 // qué dibujar al mostrar cada parte
 function setSubtab(g, k, root = document) {
+  const alias = SUBTAB_ALIAS[g] && SUBTAB_ALIAS[g][k]; if (alias) k = alias;
   LS.set('tab.' + g, k);
   const bar = root.querySelector(`.subtabs[data-group="${g}"]`);
   if (bar) bar.querySelectorAll('[data-st]').forEach(b => b.setAttribute('aria-selected', b.dataset.st === k));
-  root.querySelectorAll(`[data-pane^="${g}:"]`).forEach(p => p.classList.toggle('hidden', p.dataset.pane !== g + ':' + k));
-  const f = SUBTAB_SHOW[g + ':' + k]; if (f) try { f(); } catch (e) { console.error(e); }
+  const on = [g + ':' + k, ...(SUBTAB_JOIN[g + ':' + k] || [])];
+  root.querySelectorAll(`[data-pane^="${g}:"]`).forEach(p => p.classList.toggle('hidden', !on.includes(p.dataset.pane)));
+  on.forEach(id => { const f = SUBTAB_SHOW[id]; if (f) try { f(); } catch (e) { console.error(e); } });
   if (bar) revealChip(bar);
 }
 // deja a la vista la opción elegida moviendo solo la barra de opciones (sin mover la página)
@@ -1175,6 +1189,9 @@ function bindSubtabs(g, root = document) {
     if (root === document) { const pane = document.querySelector(`[data-pane="${g}:${b.dataset.st}"]`); if (pane) { const y = pane.getBoundingClientRect().top + scrollY - bar.offsetHeight - 6; if (scrollY > y) window.scrollTo(0, Math.max(0, y)); } }
   };
   bar.scrollLeft = 0;
+  // pista de que hay más opciones a la derecha: el borde se desvanece mientras queden fuera de pantalla
+  const more = () => bar.classList.toggle('more', bar.scrollLeft + bar.clientWidth < bar.scrollWidth - 4);
+  bar.onscroll = more; requestAnimationFrame(more); addEventListener('resize', more);
   setSubtab(g, subtabCur(g), root);
 }
 // ir directo a una parte (p. ej. desde el anillo de la meta o un aviso)
@@ -1183,6 +1200,7 @@ function show(view) {
   currentView = view;
   if (view === 'favs') { LS.set('tab.coach', 'mine'); view = 'coach'; }   // los guardados están en Coach → Mis rutinas
   currentView = view;
+  document.documentElement.dataset.view = view;
   ['coach', 'preview', 'plans', 'retos', 'cal', 'hist', 'lib'].forEach(v => $('#v-' + v).classList.toggle('hidden', v !== view));
   const tab = view === 'preview' ? previewFrom : view === 'lib' ? 'coach' : view;
   document.querySelectorAll('#tabs button').forEach(b => b.setAttribute('aria-current', b.dataset.tab === tab));
@@ -1850,7 +1868,7 @@ function render() {
     $('#p-side').querySelectorAll('[data-a]').forEach(b => b.onclick = () => setV((+inp.value || 0) + +b.dataset.a));
   }
   const animId = s.k === 'work' ? s.ex : s.next;
-  if (animId && P.animId !== animId) { P.animId = animId; Anim.mount($('#p-anim'), animId); }
+  if (animId && P.animId !== animId) { P.animId = animId; Anim.mount($('#p-anim'), animId, { label: true }); }
   Anim.setPaused($('#p-anim'), P.paused && !s.reps);
   $('#p-play').innerHTML = s.reps ? ICON_DONE : (P.paused ? ICON_PLAY : ICON_PAUSE);
   $('#p-play').setAttribute('aria-label', s.reps ? 'Hecho' : (P.paused ? 'Continuar' : 'Pausa'));
@@ -2030,7 +2048,7 @@ function openMenu() {
   P.menuResume = !wasPaused;
   const w = P.w, prog = isProgrammed(w), canChange = w.kind !== 'test' && w.kind !== 'db';
   const tot = total(P.tl), before = P.tl.slice(0, P.i).reduce((a, x) => a + stepDur(x), 0);
-  const lvl = w.kind === 'plan' ? 'Nivel ' + PLAN_LEVELS[w.level] : w.smart ? 'Intensidad ' + (getSmart() ? getSmart().I.toFixed(1) : w.I) : w.kind === 'test' ? 'Prueba de capacidad' : LEVELS[w.level - 1];
+  const lvl = w.kind === 'plan' ? 'Nivel ' + PLAN_LEVELS[w.level] : w.smart ? 'Intensidad ' + (getSmart() ? d1(getSmart().I) : d1(w.I)) : w.kind === 'test' ? 'Prueba de capacidad' : LEVELS[w.level - 1];
   $('#p-menu').innerHTML = `<div class="pm-card">
     <div class="pm-k">Pausa</div>
     <b class="pm-t">${esc(title(w))}</b>
@@ -2070,7 +2088,7 @@ function changeWorkout(d) {
   } else if (w.smart) {
     const sm = getSmart(); if (!sm) return;
     sm.I = +Math.max(1, Math.min(10, sm.I + d)).toFixed(2); sm.log = [...(sm.log || []), { at: Date.now(), I: sm.I, why: 'cambio' }];
-    sm.next = genSmart(sm); sm.next.smartN = w.smartN; setSmart(sm); nw = clone(sm.next); msg = 'Intensidad ' + sm.I.toFixed(1);
+    sm.next = genSmart(sm); sm.next.smartN = w.smartN; setSmart(sm); nw = clone(sm.next); msg = 'Intensidad ' + d1(sm.I);
   } else {
     const keep = { level: S.level, parts: S.parts, noJump: S.noJump };
     const nl = Math.max(1, Math.min(3, w.level + d));
@@ -2171,7 +2189,7 @@ function setFeedback(fb) {
   const msg = $('#fb-msg');
   if (sm) {
     const n = sm.next, dir = FB[fb].d > 0.5 ? 'algo más intensa' : FB[fb].d > 0 ? 'un poco más exigente' : 'más suave';
-    msg.innerHTML = `Próxima sesión ${lastDone.w.smart ? '<b>' + whenStr(sm.nextAt) + '</b>' : ''}, ${dir}: ${esc(FOCUS[n.focus].n).toLowerCase()} · ~${Math.round(total(buildTimeline(n)) / 60)} min. Intensidad ${sm.I.toFixed(1)}/10.`;
+    msg.innerHTML = `Próxima sesión ${lastDone.w.smart ? '<b>' + whenStr(sm.nextAt) + '</b>' : ''}, ${dir}: ${esc(FOCUS[n.focus].n).toLowerCase()} · ~${Math.round(total(buildTimeline(n)) / 60)} min. Intensidad ${d1(sm.I)}/10.`;
   } else msg.innerHTML = 'Anotado. Haz la prueba de capacidad en el coach para que ajuste tus sesiones.';
   msg.classList.remove('hidden');
 }
@@ -2182,7 +2200,7 @@ function saveTestFromDone() {
   const h = PS.get('history', []); if (h[0] && h[0].w.kind === 'test') { h[0].w.results = r; PS.set('history', h); }
   lastDone.testSaved = true;
   checkAwards(true);
-  $('#d-test').innerHTML = `<div class="now"><div class="wk">Resultado</div><b class="name">Intensidad ${sm.I.toFixed(1)} de 10</b>
+  $('#d-test').innerHTML = `<div class="now"><div class="wk">Resultado</div><b class="name">Intensidad ${d1(sm.I)} de 10</b>
     <p class="sub">Nivel ${LEVELS[levelOfI(sm.I) - 1].toLowerCase()}. Tu próxima sesión está lista: ${esc(FOCUS[sm.next.focus].n).toLowerCase()}, ~${Math.round(total(buildTimeline(sm.next)) / 60)} min. Puedes hacerla hoy o mañana.</p></div>`;
 }
 $('#d-ok').onclick = () => {
