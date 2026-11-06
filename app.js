@@ -1153,7 +1153,7 @@ const IC = {
   cloud: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4 4 0 0 1-.6-8A6 6 0 0 1 18 9a4.5 4.5 0 0 1-.5 9z"/></svg>'
 };
 const SUBTABS = {
-  coach: [['smart', 'AI HIIT', IC.brain], ['db', 'AI mancuernas', IC.db], ['abs', 'AI abdominales', IC.abs], ['custom', 'Rutinas', IC.star]],
+  coach: [['smart', 'HIIT', IC.brain], ['db', 'Mancuernas', IC.db], ['abs', 'Abdominales', IC.abs], ['custom', 'Rutinas', IC.star]],
   hist: [['sum', 'Resumen', IC.chart], ['list', 'Sesiones', IC.list], ['aw', 'Logros', IC.medal], ['body', 'Cuerpo', IC.body], ['friends', 'Amigos', IC.people]],
   pf: [['prof', 'Perfiles', IC.user], ['set', 'Ajustes', IC.gear], ['data', 'Cuenta y datos', IC.cloud]]
 };
