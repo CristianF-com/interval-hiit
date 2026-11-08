@@ -276,6 +276,7 @@ TIMER DE INTERVALOS (timer.js, Coach → Timer)
   PS 'tsession' guarda el timer en curso (si se cierra la app, se ofrece «Continuar» y cuenta el tiempo que pasó).
 - PS 'timers' = timers guardados (van en la copia en la nube). Las plantillas están en TM_PRESETS.
 - Al terminar se guarda en el historial: w.kind 'timer', tlog = [[nombre, tipo, segundos], ...] (cuenta por bloque).
-- Voces: los nombres de las plantillas, «minutos», «Falta un minuto», etc. están grabados para Dora y Alex
-  (Kokoro). Paula, Julio, Ona y Kimetz (AssemblyAI) dicen esas frases con la voz del teléfono hasta grabarlas.
+- Voces: los nombres de las plantillas, «minutos», «Falta un minuto», etc. están grabados para las 6 voces
+  (Dora y Alex con Kokoro; Paula, Julio, Ona y Kimetz con AssemblyAI). Los nombres que escribe la persona
+  se dicen con la voz del teléfono.
 - Prueba: /home/claude/ttimer.mjs
