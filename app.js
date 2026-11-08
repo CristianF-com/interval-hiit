@@ -40,7 +40,7 @@ function saveHistory(h) {
   }
   return LS.set(`p.${PROFILE.id}.history`, h.slice(0, 400));
 }
-const PROFILE_KEYS = ['settings', 'favs', 'history', 'plan', 'plansDone', 'session', 'smart', 'awards', 'retos', 'dumb', 'abs', 'absAi', 'body', 'routines', 'groups'];
+const PROFILE_KEYS = ['settings', 'favs', 'history', 'plan', 'plansDone', 'session', 'smart', 'awards', 'retos', 'dumb', 'abs', 'absAi', 'body', 'routines', 'groups', 'timers', 'tsession'];
 let PROFILE = null;
 const PS = {
   get: (k, d) => LS.get(`p.${PROFILE.id}.${k}`, d),
@@ -691,6 +691,7 @@ function title(w) {
   if (w.kind === 'plan') return w.title;
   if (w.kind === 'test') return 'Prueba de capacidad';
   if (w.kind === 'reto') return w.title;
+  if (w.kind === 'timer') return w.title || 'Timer';
   if (w.kind === 'db') return w.title || 'Mancuernas';
   if (w.kind === 'abs') return w.title || 'Abdominales';
   if (w.rt) return w.rtName || 'Mi rutina';
@@ -1150,10 +1151,11 @@ const IC = {
   people: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><path d="M3 20c.8-3.3 3.2-5 6-5s5.2 1.7 6 5"/><circle cx="17" cy="9" r="2.4"/><path d="M16.5 14.2c2.4.2 4 1.8 4.5 4.8"/></svg>',
   user: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c1.2-3.5 4-5.3 7-5.3s5.8 1.8 7 5.3"/></svg>',
   gear: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19 12a7 7 0 0 0-.1-1.2l2-1.6-2-3.4-2.4 1a7 7 0 0 0-2-1.2L14 3h-4l-.5 2.6a7 7 0 0 0-2 1.2l-2.4-1-2 3.4 2 1.6a7 7 0 0 0 0 2.4l-2 1.6 2 3.4 2.4-1a7 7 0 0 0 2 1.2L10 21h4l.5-2.6a7 7 0 0 0 2-1.2l2.4 1 2-3.4-2-1.6c.1-.4.1-.8.1-1.2z"/></svg>',
+  timer: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2.5M9.5 2h5M12 2v3"/></svg>',
   cloud: '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7 18a4 4 0 0 1-.6-8A6 6 0 0 1 18 9a4.5 4.5 0 0 1-.5 9z"/></svg>'
 };
 const SUBTABS = {
-  coach: [['smart', 'HIIT', IC.brain], ['db', 'Mancuernas', IC.db], ['abs', 'Abdominales', IC.abs], ['custom', 'Rutinas', IC.star]],
+  coach: [['smart', 'HIIT', IC.brain], ['db', 'Mancuernas', IC.db], ['abs', 'Abdominales', IC.abs], ['timer', 'Timer', IC.timer], ['custom', 'Rutinas', IC.star]],
   hist: [['sum', 'Resumen', IC.chart], ['list', 'Sesiones', IC.list], ['aw', 'Logros', IC.medal], ['body', 'Cuerpo', IC.body], ['friends', 'Amigos', IC.people]],
   pf: [['prof', 'Perfiles', IC.user], ['set', 'Ajustes', IC.gear], ['data', 'Cuenta y datos', IC.cloud]]
 };
@@ -1513,6 +1515,7 @@ $('#hist-list').onclick = e => {
   const w = clone(PS.get('history', [])[+r.dataset.rep].w);
   if (w.kind === 'test') { openTestSetup(); return; }
   if (w.kind === 'reto') { openReto(w.reto); return; }
+  if (w.kind === 'timer') { tmOpen(null, w.tm); return; }
   if (w.kind === 'db') { openDbStart(); return; }
   if (w.kind === 'abs') { if (w.ai) openAbAiStart(); else openAbStart(); return; }
   if (w.kind === 'plan') { w.warm = []; w.cool = []; }
@@ -1637,7 +1640,7 @@ function voiceIcon() {
   const spk = '<path d="M4 9v6h4l5 4V5L8 9z"/>';
   const svg = '<svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + spk +
     (S.sound === 'voz' ? '<path d="M16 9a4 4 0 0 1 0 6M19 6a8 8 0 0 1 0 12"/>' : S.sound === 'pitidos' ? '<path d="M16 10.5a2 2 0 0 1 0 3"/>' : '<path d="M17 9l5 6M22 9l-5 6"/>') + '</svg>';
-  ['#p-voice', '#rp-voice'].forEach(id => { const b = $(id); if (!b) return; b.innerHTML = svg; b.setAttribute('aria-label', 'Sonido: ' + SOUND_MODES[S.sound]); });
+  ['#p-voice', '#rp-voice', '#tp-voice'].forEach(id => { const b = $(id); if (!b) return; b.innerHTML = svg; b.setAttribute('aria-label', 'Sonido: ' + SOUND_MODES[S.sound]); });
 }
 function cycleSound() {
   S.sound = S.sound === 'voz' ? 'pitidos' : S.sound === 'pitidos' ? 'silencio' : 'voz'; S.voice = S.sound === 'voz'; save(); voiceIcon();

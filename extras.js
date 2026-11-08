@@ -229,7 +229,7 @@ function openHistDetail(i) {
   const rl = [['sq', 'sentadillas'], ['pu', 'flexiones'], ['ab', 'abdominales'], ['bu', 'burpees']].filter(([k]) => r[k]).map(([k, n]) => `${r[k]} ${n}`).join(' · ');
   sheet(`<h3>${esc(title(x.w))}</h3>
     <p class="sub">${dateStr(x.at)} · ${new Date(x.at - x.secs * 1000).toLocaleTimeString(LOC, { hour: '2-digit', minute: '2-digit' })} · ${fmt(x.secs)} min activos${x.full ? '' : ' · incompleto'}${x.fb ? ' · ' + FB[x.fb].n.toLowerCase() : ''}</p>
-    ${rl ? `<p class="note">Repeticiones: ${rl}</p>` : ''}${tl || r.pl ? `<p class="note">Tiempo: ${[tl, r.pl ? `${fmt(r.pl)} min de plancha` : ''].filter(Boolean).join(' · ')}</p>` : ''}
+    ${x.w.kind === 'timer' && typeof tmTotalsHTML === 'function' ? tmTotalsHTML(x.tlog) : ''}${rl ? `<p class="note">Repeticiones: ${rl}</p>` : ''}${tl || r.pl ? `<p class="note">Tiempo: ${[tl, r.pl ? `${fmt(r.pl)} min de plancha` : ''].filter(Boolean).join(' · ')}</p>` : ''}
     <div class="gap"></div>
     ${x.hr ? hrBlockHTML(x.hr) : '<div class="empty" style="padding:22px 16px">Sin datos de pulso.</div>'}
     <div class="gap"></div>
@@ -242,6 +242,7 @@ function openHistDetail(i) {
       closeSheet(); const w = clone(x.w);
       if (w.kind === 'test') { openTestSetup(); return; }
       if (w.kind === 'reto') { openReto(w.reto); return; }
+      if (w.kind === 'timer') { tmOpen(null, w.tm); return; }
       if (w.kind === 'plan') { w.warm = []; w.cool = []; }
       openPreview(w, 'hist');
     };
@@ -257,6 +258,7 @@ const repCat = id => { id = ex(id).id; for (const k in REP_CAT) if (REP_CAT[k].t
 function repsOf(x, upto) {
   const r = { sq: 0, pu: 0, ab: 0, bu: 0, pl: 0, dm: 0, t: { sq: 0, pu: 0, ab: 0, bu: 0, dm: 0 } };
   const add = (id, reps, secs) => { const k = repCat(id); if (!k) return; if (k === 'pl') { if (!reps) r.pl += Math.round(secs); return; } r[k] += reps; r.t[k] += Math.round(secs); };
+  if (x.w.kind === 'timer') return r;
   if (x.w.kind === 'reto') {
     const R = RETOS[x.w.reto], rp = x.reps || {}; Object.keys(r.t).forEach(k => { r[k] = rp[k] || 0; });
     if (R) (x.w.sets || []).forEach((n, i) => { const k = R.rep; if (r.t[k] != null && r[k]) r.t[k] += Math.round((x.w.times || [])[i] || n * REP_SECS[k]); });

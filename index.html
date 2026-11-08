@@ -688,6 +688,23 @@ input,textarea,select{font-size:0.9412rem}
   #player .ctrl{gap:14px}
   #player .ctrl button{width:46px;height:46px}
   #player .ctrl .main{width:60px;height:60px}
+  /* timer de intervalos: anillo con el tiempo a la izquierda, bloque y totales a la derecha */
+  #tplayer .p-top,#tplayer .p-main,#tplayer .p-bottom{max-width:860px}
+  #tplayer .bar{max-width:828px}
+  #tplayer .p-top{padding-top:calc(6px + env(safe-area-inset-top));padding-bottom:4px}
+  #tplayer .p-main{display:grid;grid-template-columns:auto minmax(0,460px);grid-template-areas:"ring phase" "ring name" "ring tot" "ring sum";align-content:center;justify-content:center;column-gap:32px;row-gap:0;text-align:left;padding:4px 24px}
+  #tplayer .p-main>*{justify-self:start}
+  #tplayer .tp-ring{grid-area:ring;width:min(58vh,240px);align-self:center}
+  #tplayer .tp-num{font-size:min(3.5294rem,15vh)}
+  #tplayer #tp-phase{grid-area:phase;font-size:0.8235rem}
+  #tplayer #tp-name{grid-area:name;font-size:clamp(26px,9vh,2.4706rem);margin:2px 0 4px}
+  #tplayer .tp-tot{grid-area:tot;justify-content:flex-start;margin-top:4px}
+  #tplayer .tp-sum{grid-area:sum;justify-content:flex-start}
+  #tplayer .p-bottom{display:flex;align-items:center;gap:16px;padding-top:6px;padding-bottom:calc(8px + env(safe-area-inset-bottom))}
+  #tplayer .p-bottom .next{flex:1;min-width:0;margin:0}
+  #tplayer .ctrl{gap:14px}
+  #tplayer .ctrl button{width:46px;height:46px}
+  #tplayer .ctrl .main{width:60px;height:60px}
   .rplayer .p-top,.rplayer .p-bottom,.rplayer .p-main{max-width:820px}
   .rplayer .p-top{padding-top:calc(6px + env(safe-area-inset-top));padding-bottom:4px}
   .rplayer .p-main{display:grid;grid-template-columns:auto auto;grid-template-areas:"anim phase" "anim name" "anim num" "anim small" "anim meter" "anim help";align-content:center;justify-content:center;column-gap:28px;row-gap:0;text-align:left;padding:4px 20px}
@@ -768,6 +785,38 @@ input,textarea,select{font-size:0.9412rem}
 .seg button,.subtabs button,.chip,.btn.small,.wdpick button,.opt-tgl{min-height:44px}
 .subtabs button,.chip{display:inline-flex;align-items:center;justify-content:center}
 /* «Reducir movimiento» del sistema: sin deslizamientos, giros ni animaciones repetidas (las figuras muestran posiciones fijas, ver anim.js) */
+/* timer de intervalos */
+:root{--easy:#5fb3ff}
+.player.easy{--c:var(--easy)}
+.tp-ring{width:min(72vw,320px,40vh)}
+.tp-num{position:absolute;inset:0;display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:min(4.7059rem,19vw);font-variant-numeric:tabular-nums;line-height:1}
+.tp-tot{display:flex;align-items:baseline;justify-content:center;gap:8px;margin-top:16px;font-variant-numeric:tabular-nums}
+.tp-tot span{color:var(--muted);font-size:0.7647rem;font-weight:600}
+.tp-tot b{font-family:var(--display);font-size:1.4118rem;margin-right:10px}
+.tp-sum{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 14px;margin-top:10px;font-size:0.7647rem;color:var(--muted);max-width:420px}
+.tp-sum span{display:inline-flex;align-items:center;gap:5px}.tp-sum b{color:var(--text);font-variant-numeric:tabular-nums}
+.tp-sum i,.tp-dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--kc,var(--muted));flex:none}
+.tp-dot{margin-right:7px;vertical-align:1px}
+.k-w{--kc:var(--work)}.k-e{--kc:var(--easy)}.k-r{--kc:var(--rest)}.k-p{--kc:var(--prep)}
+.next b .tp-dot{margin-right:6px}
+.tm-mini{display:flex;gap:2px;height:5px;width:100%;max-width:220px;margin:5px 0 4px;border-radius:3px;overflow:hidden}
+.tm-mini i{background:var(--kc);min-width:3px}
+.tm-list{display:flex;flex-direction:column;gap:10px}
+.tm-blk{background:var(--surface);border:1px solid var(--line);border-left:5px solid var(--kc);border-radius:14px;padding:10px 10px 12px 12px}
+.tm-r1{display:flex;align-items:center;gap:4px}
+.tm-r1 input{flex:1;min-width:0;background:transparent;border:0;border-bottom:1px solid var(--line);border-radius:0;color:var(--text);font-weight:700;font-size:1rem;padding:8px 2px}
+.tm-r2{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-top:10px}
+.tm-r2 .seg{flex:1 1 100%}
+.tm-in{display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:0.8235rem}
+.tm-in input{width:72px;min-height:44px;text-align:center;background:var(--bg);border:1px solid var(--line);border-radius:10px;color:var(--text);font-size:1rem;font-variant-numeric:tabular-nums}
+.tm-repv{margin-top:12px}
+.tm-adv{grid-template-columns:1fr 1fr 1fr;padding:0;margin-top:14px}
+.tm-sum{font-weight:600}
+.tm-tot .t b{display:flex;align-items:center}
+.tm-tv{font-family:var(--display);font-size:1.1765rem;font-variant-numeric:tabular-nums}
+.tm-resume .btn{width:auto;flex:none;padding:0 16px}
+[data-theme=naranja] .player.easy{--c:var(--easy)}
+[data-theme=naranja] .player .tp-sum b{color:inherit}
 /* Aumentar contraste (Accesibilidad › Pantalla): texto secundario igual al principal, bordes y divisores marcados */
 @media (prefers-contrast: more){
   :root{--muted:var(--text);--line:color-mix(in srgb,var(--text) 55%,transparent);--work-ink:var(--work)}
@@ -809,6 +858,7 @@ input,textarea,select{font-size:0.9412rem}
     <div class="pane" data-pane="coach:smart"><div id="smart"></div></div>
     <div class="pane hidden" data-pane="coach:db"><div id="dumb"></div></div>
     <div class="pane hidden" data-pane="coach:abs"><div id="abs"></div></div>
+    <div class="pane hidden" data-pane="coach:timer"><div id="timers"></div></div>
     <div class="pane hidden" data-pane="coach:mine"><div id="routines"></div><div id="hist-favs"></div></div>
     <div class="pane hidden" data-pane="coach:custom">
     <h2 class="or-h">A medida</h2>
@@ -902,6 +952,30 @@ input,textarea,select{font-size:0.9412rem}
 </div></nav>
 
 <!-- PLAYER -->
+<div class="player tplayer hidden" id="tplayer">
+  <div class="p-top">
+    <button class="icon-btn" id="tp-close" aria-label="Pausa y opciones"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <div class="meta" id="tp-meta"></div>
+    <button class="icon-btn" id="tp-voice" aria-label="Voz"></button>
+  </div>
+  <div class="bar"><i id="tp-bar"></i></div>
+  <div class="p-main">
+    <div class="phase" id="tp-phase"></div>
+    <div class="exname" id="tp-name" data-noi18n></div>
+    <div class="ring tp-ring"><svg viewBox="0 0 100 100"><circle class="bg" cx="50" cy="50" r="46"/><circle class="fg" id="tp-arc" cx="50" cy="50" r="46" stroke-dasharray="289.03" stroke-dashoffset="0"/></svg><div class="tp-num" id="tp-num" role="timer">0:00</div></div>
+    <div class="tp-tot" id="tp-tot"></div>
+    <div class="tp-sum" id="tp-sum"></div>
+  </div>
+  <div class="pmenu hidden" id="tp-menu"></div>
+  <div class="p-bottom">
+    <div class="next" id="tp-next"></div>
+    <div class="ctrl">
+      <button id="tp-prev" aria-label="Bloque anterior"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h2v14H6zM20 5v14L9 12z"/></svg></button>
+      <button id="tp-play" class="main" aria-label="Pausa"></button>
+      <button id="tp-skip" aria-label="Bloque siguiente"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg></button>
+    </div>
+  </div>
+</div>
 <div class="player hidden" id="player">
   <div class="p-top">
     <button class="icon-btn" id="p-close" aria-label="Salir"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
@@ -1002,5 +1076,6 @@ input,textarea,select{font-size:0.9412rem}
 <script src="stats.js"></script>
 <script src="cloud.js"></script>
 <script src="more.js"></script>
+<script src="timer.js"></script>
 </body>
 </html>

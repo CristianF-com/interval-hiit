@@ -264,3 +264,18 @@ REGLAS DE DISEÑO
 - Movimiento: respetar prefers-reduced-motion (la animación del ejercicio pasa a poses fijas) y
   prefers-contrast: more (texto secundario igual al principal, bordes de 2 px).
 - Avisos (toast) arriba, con role="status", y duran según el largo del texto.
+
+TIMER DE INTERVALOS (timer.js, Coach → Timer)
+- Solo reloj, sin ejercicios. Bloques con nombre propio y tipo: Fuerte (color de trabajo), Suave (azul, --easy)
+  o Descanso (color de descanso). Cada bloque en minutos y segundos.
+- Repetir: por rondas, por tiempo total (la última ronda se corta para cerrar justo; el total incluye
+  calentamiento y enfriamiento, no la preparación) o sin final (hasta que se termine a mano).
+- Avisa en cada cambio con un pitido distinto por tipo y la voz («Lento. 10 minutos.»), cuenta 3-2-1,
+  «Falta un minuto» en bloques de 5 min o más y «10 segundos» en descansos de 1 min o más.
+- El tiempo se mide con el reloj del teléfono: si se bloquea la pantalla, al volver se pone al día.
+  PS 'tsession' guarda el timer en curso (si se cierra la app, se ofrece «Continuar» y cuenta el tiempo que pasó).
+- PS 'timers' = timers guardados (van en la copia en la nube). Las plantillas están en TM_PRESETS.
+- Al terminar se guarda en el historial: w.kind 'timer', tlog = [[nombre, tipo, segundos], ...] (cuenta por bloque).
+- Voces: los nombres de las plantillas, «minutos», «Falta un minuto», etc. están grabados para Dora y Alex
+  (Kokoro). Paula, Julio, Ona y Kimetz (AssemblyAI) dicen esas frases con la voz del teléfono hasta grabarlas.
+- Prueba: /home/claude/ttimer.mjs
