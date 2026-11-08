@@ -52,6 +52,9 @@ function vplan(text, idx) {
     else vnorm(part).split(' ').filter(Boolean).forEach(w => {
       if (VNUM[w] && idx[VNUM[w]] && !idx[w]) w = VNUM[w];
       // números de 301 a 999: «cuatrocientos» + «doce»
+      // números de 1000 a 9999: «mil» / «2» + «mil» y el resto (los retos largos pasan las mil repeticiones)
+      if (/^\d+$/.test(w) && !idx[w] && +w >= 1000 && +w < 10000 && idx.mil) { const m = Math.floor(+w / 1000), r = +w % 1000; if (m > 1) toks.push({ w: String(m) }); toks.push({ w: 'mil' });
+        if (r) { if (idx[String(r)] || r <= 300) toks.push({ w: String(r) }); else { const c = Math.floor(r / 100) * 100, x = r % 100; toks.push({ w: String(c) }); if (x) toks.push({ w: String(x) }); } } return; }
       if (/^\d+$/.test(w) && !idx[w] && +w > 300 && +w < 1000) { const c = Math.floor(+w / 100) * 100, r = +w % 100; toks.push({ w: String(c) }); if (r) toks.push({ w: String(r) }); return; }
       toks.push({ w });
     });

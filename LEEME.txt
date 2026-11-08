@@ -280,3 +280,6 @@ TIMER DE INTERVALOS (timer.js, Coach → Timer)
   (Dora y Alex con Kokoro; Paula, Julio, Ona y Kimetz con AssemblyAI). Los nombres que escribe la persona
   se dicen con la voz del teléfono.
 - Prueba: /home/claude/ttimer.mjs
+- Revisión de voces: /home/claude/tvoz.mjs arma todas las frases que dice la app (anuncios de ejercicios,
+  números, rondas, retos, logros y timer) y avisa cuáles no están grabadas en alguna de las 6 voces.
+  Los números de 1000 a 9999 se dicen con «mil» + el resto.
