@@ -84,9 +84,10 @@ const abTogglesHTML = () => `<div class="toggles">
       <button class="tg" data-abo="abExtra" role="switch" aria-checked="${!!S.abExtra}"><span>Serie extra<small>Una serie más del último ejercicio para ir un poco más allá</small></span><i class="sw"></i></button>
       <button class="tg" data-abo="abWarm" role="switch" aria-checked="${S.abWarm !== false}"><span>Calentamiento<small>3 movimientos suaves de 30 s antes</small></span><i class="sw"></i></button>
       <button class="tg" data-abo="abCool" role="switch" aria-checked="${!!S.abCool}"><span>Estiramientos al final<small>3 estiramientos de 30 s</small></span><i class="sw"></i></button>
+      <div class="tg-row"><span>Pausa para acomodarte<small>Antes de empezar y entre calentamiento o estiramientos</small></span>${accSegHTML('ab-acc')}</div>
       ${gapRowHTML('ab-gap')}</div>`;
 function bindAbOpts(el) {
-  bindFolds(el); el.querySelectorAll('#ab-gap').forEach(g => g.onclick = e => { const x = e.target.closest('[data-v]'); if (!x) return; g.querySelectorAll('button').forEach(y => y.setAttribute('aria-pressed', y === x)); S.sideGap = +x.dataset.v; save(); });
+  bindFolds(el); el.querySelectorAll('#ab-acc').forEach(g => g.onclick = e => { const x = e.target.closest('[data-v]'); if (!x) return; g.querySelectorAll('button').forEach(y => y.setAttribute('aria-pressed', y === x)); setAccSec(+x.dataset.v); }); el.querySelectorAll('#ab-gap').forEach(g => g.onclick = e => { const x = e.target.closest('[data-v]'); if (!x) return; g.querySelectorAll('button').forEach(y => y.setAttribute('aria-pressed', y === x)); S.sideGap = +x.dataset.v; save(); });
   el.querySelectorAll('[data-abo]').forEach(b => b.onclick = () => { const k = b.dataset.abo, on = b.getAttribute('aria-checked') !== 'true'; S[k] = on; save(); b.setAttribute('aria-checked', on); if (k === 'abExtra') { renderAbs(); renderAbAi(); } });
 }
 // el plan de abdominales se ve en Planes; esto lo refresca donde esté a la vista

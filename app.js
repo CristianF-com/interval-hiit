@@ -341,6 +341,10 @@ function openProfiles() {
     <h2>Idioma</h2>
     <div class="seg" id="pf-lang">${Object.entries(LANGS).map(([k, n]) => `<button data-l="${k}" aria-pressed="${LANG === k}" data-noi18n>${n}</button>`).join('')}</div>
     <p class="note">Cambia el idioma de toda la app. Las voces grabadas (Dora, Alex, Paula, Julio, Ona y Kimetz) son solo en español; en inglés se usa la voz del teléfono.</p>
+    <h2>Pausas</h2>
+    <div class="toggles"><div class="tg-row"><span>Pausa para acomodarte<small>Antes de empezar y entre calentamiento o estiramientos</small></span>${accSegHTML('pf-acc')}</div>
+    ${gapRowHTML('pf-gap')}</div>
+    <p class="note">Valen para todos los entrenamientos. También se cambian en las opciones de cada coach y en el menú de pausa.</p>
     <h2>Voz y pulso</h2>
     <div class="row"><button class="btn ghost small" id="pf-voice">Voz del entrenador</button><button class="btn ghost small" id="pf-hr">Pulsómetro y zonas</button></div>
     </div>
@@ -361,6 +365,7 @@ function openProfiles() {
     $('#pf-voice').onclick = sheetFrom(openProfiles, openVoiceSettings);
     bindSeg('pf-theme', 't', t => { S.theme = t; save(); applyTheme(); });
     bindSeg('pf-lang', 'l', l => { if (l !== LANG) setLang(l); });
+    bindAcc('pf-acc'); bindGap('pf-gap');
     const pa = $('#pf-avoid'); if (pa) pa.onclick = () => { S.avoid = []; save(); closeSheet(); toast('Ya no se cuida ninguna zona'); };
     $('#pf-backup').onclick = sheetFrom(openProfiles, openBackup);
     $('#pf-cloud').onclick = sheetFrom(openProfiles, () => openCloud());
@@ -837,10 +842,10 @@ function renderSmart() {
       <div class="wk">Entrenador inteligente · HIIT</div>
       <b class="name">HIIT a tu medida</b>
       <p class="sub">Sesiones progresivas, una cada dos días. Después de cada una me dices si fue fácil, bien o difícil y ajusto la siguiente. Puedes medir tu nivel con una prueba de 3 minutos o empezar directamente.</p>
-      ${optFold('sm-opts', `${smartOptsHTML(smartOpts(null))}
+      ${optFold('sm-opts', `${smartOptsHTML(smartOpts(null))}${pauseRowsHTML('sm0')}
       <p class="note">La duración, las zonas, el nivel y los tiempos los calculo yo según tus resultados. Estas opciones se pueden cambiar después en Ajustes, y el calentamiento y los estiramientos también antes de cada sesión.</p>`)}
       <div class="gap"></div><button class="btn" id="sm-start">¡Empezar!</button></div>`;
-    bindSmartOpts(el, smartOpts(null), o => PS.set('smartOpts', o)); bindFolds(el);
+    bindSmartOpts(el, smartOpts(null), o => PS.set('smartOpts', o)); bindFolds(el); bindPauses('sm0');
     $('#sm-start').onclick = openSmartSetup;
     return;
   }
@@ -859,9 +864,9 @@ function renderSmart() {
     <div class="gap"></div>
     <button class="btn ${due ? '' : 'ghost'}" id="sm-go">${due ? 'Empezar' : 'Entrenar igual'}</button>
     ${t ? `<p class="note">Prueba del ${dateStr(t.at)}: ${t.sq} sentadillas · ${t.pu} flexiones${t.puKnee ? ' (rodillas)' : ''} · ${t.ab} abdominales${old ? ' · <b>conviene repetirla</b>' : ''}</p>` : '<p class="note">Sin prueba de capacidad: empiezo por tu nivel y me guío por tus respuestas.</p>'}
-    ${optFold('sm-opts', smartOptsHTML(smartOpts(sm)) + '<p class="note">Al cambiarlas se vuelve a armar la próxima sesión. La duración máxima y la intensidad están en Ajustes.</p>')}
+    ${optFold('sm-opts', smartOptsHTML(smartOpts(sm)) + pauseRowsHTML('sm') + '<p class="note">Al cambiarlas se vuelve a armar la próxima sesión. La duración máxima y la intensidad están en Ajustes.</p>')}
     <div class="row" style="margin-top:10px"><button class="btn ghost small" id="sm-retest">${t ? 'Repetir prueba' : 'Hacer la prueba'}</button><button class="btn ghost small" id="sm-set">Ajustes</button></div></div>`;
-    bindFolds(el);
+    bindFolds(el); bindPauses('sm');
     bindSmartOpts(el, smartOpts(sm), o => { const s2 = getSmart(); s2.opts = { ...o }; delete s2.db; s2.next = genSmart(s2); setSmart(s2); const sub = el.querySelector('.now .sub'); if (sub) { const w2 = s2.next; sub.innerHTML = `${Date.now() >= (s2.nextAt || 0) ? '' : `Próxima sesión: <b>${whenStr(s2.nextAt)}</b>. `}${esc(FOCUS[w2.focus].n)} · ~${Math.round(total(buildTimeline(w2)) / 60)} min · ${LEVELS[w2.level - 1]} · ${w2.sk.w}s / ${w2.sk.r}s`; } });
   // antes de empezar se ve la sesión y se elige calentamiento, estiramientos y pausa de ese día
   $('#sm-go').onclick = () => openPreview(clone(getSmart().next), 'coach');
@@ -962,6 +967,9 @@ const sideGap = () => GAP_OPTS.includes(S.sideGap) ? S.sideGap : 4;
 const gapSegHTML = id => `<div class="seg" id="${id}">${GAP_OPTS.map(v => `<button data-v="${v}" aria-pressed="${sideGap() === v}">${v ? v + ' s' : t('No')}</button>`).join('')}</div>`;
 const gapRowHTML = (id, small) => `<div class="tg-row"><span>Pausa para cambiar de lado<small>${small || 'En ejercicios por lado, el reloj se detiene a la mitad para darte vuelta'}</small></span>${gapSegHTML(id)}</div>`;
 const bindGap = id => { if ($('#' + id)) bindSeg(id, 'v', v => { S.sideGap = +v; save(); }); };
+// las dos pausas juntas, para las opciones de cada coach
+const pauseRowsHTML = pfx => `<div class="toggles pause-rows"><div class="tg-row"><span>Pausa para acomodarte<small>Antes de empezar y entre calentamiento o estiramientos</small></span>${accSegHTML(pfx + '-acc')}</div>${gapRowHTML(pfx + '-gap')}</div>`;
+const bindPauses = pfx => { bindAcc(pfx + '-acc'); bindGap(pfx + '-gap'); };
 
 /* ---------- Línea de tiempo ---------- */
 function buildTimeline(w) {

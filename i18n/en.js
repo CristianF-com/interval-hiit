@@ -1863,7 +1863,9 @@ I18N = {
 "Pausa para cambiar de lado": "Pause to switch sides",
 "En ejercicios por lado, el reloj se detiene a la mitad para darte vuelta": "In one-side-at-a-time exercises, the clock stops halfway so you can switch",
 "En los ejercicios por lado que quedan": "In the remaining one-side exercises",
-"cambia de lado": "switch sides"
+"cambia de lado": "switch sides",
+"Pausas": "Pauses",
+"Valen para todos los entrenamientos. También se cambian en las opciones de cada coach y en el menú de pausa.": "They apply to every workout. You can also change them in each coach's options and in the pause menu."
 };
 I18N_PAT = [
 [
