@@ -283,3 +283,8 @@ TIMER DE INTERVALOS (timer.js, Coach → Timer)
 - Revisión de voces: /home/claude/tvoz.mjs arma todas las frases que dice la app (anuncios de ejercicios,
   números, rondas, retos, logros y timer) y avisa cuáles no están grabadas en alguna de las 6 voces.
   Los números de 1000 a 9999 se dicen con «mil» + el resto.
+- Pausa para cambiar de lado (S.sideGap: 0, 2, 4 o 6 s; 4 por defecto): en ejercicios por lado por tiempo, a la
+  mitad dice «Cambia de lado» y el reloj del ejercicio se detiene esos segundos (P.sw). Se cambia en las opciones
+  del entrenamiento, de mancuernas, de abdominales y en el menú de pausa. Prueba: /home/claude/tgap.mjs
+- Retos: la pantalla encendida (wake) se pide al principio de startReto, antes del permiso de sensores; si se
+  pide después, el iPhone la ignora y la pantalla se bloquea (pasaba en sentadillas, que usa el sensor).

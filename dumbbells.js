@@ -118,10 +118,10 @@ function dbWorkout(st, kgs) {
 const dbOptsHTML = () => optFold('db-opts', `<div class="toggles">
       <button class="tg" data-dbo="dbWarm" role="switch" aria-checked="${S.dbWarm !== false}"><span>Calentamiento<small>4 movimientos suaves de 30 s antes</small></span><i class="sw"></i></button>
       <button class="tg" data-dbo="dbCool" role="switch" aria-checked="${!!S.dbCool}"><span>Estiramientos al final<small>4 estiramientos de 30 s</small></span><i class="sw"></i></button>
-      <div class="tg-row"><span>Pausa para acomodarte<small>Antes de empezar y entre calentamiento o estiramientos</small></span>${accSegHTML('db-acc')}</div></div>
+      <div class="tg-row"><span>Pausa para acomodarte<small>Antes de empezar y entre calentamiento o estiramientos</small></span>${accSegHTML('db-acc')}</div>${gapRowHTML('db-gap')}</div>
     <p class="note">También se pueden cambiar antes de cada sesión. El nivel y los pesos están en Ajustes.</p>`);
 function bindDbOpts(el) {
-  bindFolds(el); bindAcc('db-acc');
+  bindFolds(el); bindAcc('db-acc'); bindGap('db-gap');
   el.querySelectorAll('[data-dbo]').forEach(b => b.onclick = () => { const k = b.dataset.dbo, on = b.getAttribute('aria-checked') !== 'true'; S[k] = on; save(); b.setAttribute('aria-checked', on); });
 }
 function renderDumb() {
@@ -194,10 +194,10 @@ function openDbStart() {
     <h2>Para esta sesión</h2><div class="toggles">
       <button class="tg" data-dbo="dbWarm" role="switch" aria-checked="${S.dbWarm !== false}"><span>Calentamiento<small>4 movimientos suaves de 30 s antes</small></span><i class="sw"></i></button>
       <button class="tg" data-dbo="dbCool" role="switch" aria-checked="${!!S.dbCool}"><span>Estiramientos<small>4 estiramientos de 30 s al final</small></span><i class="sw"></i></button>
-      <div class="tg-row"><span>Pausa para acomodarte<small>Antes de empezar y entre calentamiento o estiramientos</small></span>${accSegHTML('dbw-acc')}</div></div>
+      <div class="tg-row"><span>Pausa para acomodarte<small>Antes de empezar y entre calentamiento o estiramientos</small></span>${accSegHTML('dbw-acc')}</div>${gapRowHTML('dbw-gap')}</div>
     <div class="gap"></div><button class="btn" id="dbw-go">Empezar</button>`, () => {
     $('#sheet-root').querySelectorAll('[data-dbo]').forEach(b => b.onclick = () => { const k = b.dataset.dbo, on = b.getAttribute('aria-checked') !== 'true'; S[k] = on; save(); b.setAttribute('aria-checked', on); });
-    bindAcc('dbw-acc');
+    bindAcc('dbw-acc'); bindGap('dbw-gap');
     const redraw = () => { $('#dbw-rows').innerHTML = rows(); const v = kgs[s.ids[0]], same = s.ids.every(id => kgs[id] === v); $('#dbw-all').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', same && +b.dataset.w === v)); };
     $('#dbw-all').onclick = e => { const b = e.target.closest('[data-w]'); if (!b) return; s.ids.forEach(id => kgs[id] = +b.dataset.w); redraw(); };
     $('#dbw-rows').onclick = e => { const b = e.target.closest('[data-a]'); if (!b) return; const id = b.dataset.k, i = ws.indexOf(kgs[id]); kgs[id] = ws[Math.max(0, Math.min(ws.length - 1, i + +b.dataset.a))]; redraw(); };

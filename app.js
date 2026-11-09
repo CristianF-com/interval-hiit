@@ -60,7 +60,7 @@ const saveProfiles = p => LS.set('profiles', p);
 try { navigator.storage && navigator.storage.persist && navigator.storage.persist(); } catch (e) {}
 
 const DEFAULTS = { theme: 'auto', dur: 1200, parts: ['all'], level: 2, noJump: false, warmup: true, cooldown: true, vary: false, custom: false,
-  cw: 40, cr: 20, cn: 5, cR: 3, crr: 60, voice: true, sound: 'voz', planWarm: false, planCool: false, autoNext: true, prepSec: 10 };
+  cw: 40, cr: 20, cn: 5, cR: 3, crr: 60, voice: true, sound: 'voz', planWarm: false, planCool: false, autoNext: true, prepSec: 10, sideGap: 4 };
 let S = { ...DEFAULTS };
 const save = () => PS.set('settings', S);
 
@@ -954,6 +954,14 @@ function setAccSec(v) {
   if (typeof RP !== 'undefined' && RP.phase === 'prep') RP.restEnd = Math.min(RP.restEnd, now + v * 1000);
 }
 const bindAcc = id => { if ($('#' + id)) bindSeg(id, 'v', v => setAccSec(+v)); };
+/* ---------- Pausa para cambiar de lado (0, 2, 4 o 6 s) ---------- */
+// En ejercicios por lado (abducción de cadera, plancha lateral…) el reloj se detiene a la mitad
+// para darse vuelta sin perder tiempo de trabajo.
+const GAP_OPTS = [0, 2, 4, 6];
+const sideGap = () => GAP_OPTS.includes(S.sideGap) ? S.sideGap : 4;
+const gapSegHTML = id => `<div class="seg" id="${id}">${GAP_OPTS.map(v => `<button data-v="${v}" aria-pressed="${sideGap() === v}">${v ? v + ' s' : t('No')}</button>`).join('')}</div>`;
+const gapRowHTML = (id, small) => `<div class="tg-row"><span>Pausa para cambiar de lado<small>${small || 'En ejercicios por lado, el reloj se detiene a la mitad para darte vuelta'}</small></span>${gapSegHTML(id)}</div>`;
+const bindGap = id => { if ($('#' + id)) bindSeg(id, 'v', v => { S.sideGap = +v; save(); }); };
 
 /* ---------- Línea de tiempo ---------- */
 function buildTimeline(w) {
@@ -1228,7 +1236,8 @@ function sessHTML(w) {
     ${tg('warm', !!(w.warm && w.warm.length), 'Calentamiento', '5 movimientos suaves de 30 s antes')}
     ${tg('cool', !!(w.cool && w.cool.length), 'Estiramientos', '5 estiramientos de 30 s al final')}
     ${w.kind === 'plan' ? tg('auto', S.autoNext !== false, 'Pasar solo al siguiente', 'En ejercicios por repeticiones, cuando ya sé tu ritmo (3 series o más)') : ''}
-    <div class="tg-row"><span>Pausa para acomodarte<small>Antes de empezar y entre calentamiento o estiramientos</small></span>${accSegHTML('pv-acc')}</div></div>
+    <div class="tg-row"><span>Pausa para acomodarte<small>Antes de empezar y entre calentamiento o estiramientos</small></span>${accSegHTML('pv-acc')}</div>
+    ${gapRowHTML('pv-gap')}</div>
     ${(S.avoid || []).length ? `<p class="note">Cuidando: <b>${S.avoid.map(k => AREAS[k].n.toLowerCase()).join(', ')}</b>. Los ejercicios que cargan esas zonas ya están cambiados. <button class="linkbtn" id="pv-avoid">Dejar de cuidarlas</button></p>` : ''}`;
 }
 function bindSess(root, w, after) {
@@ -1240,6 +1249,7 @@ function bindSess(root, w, after) {
     w.sessSet = true; b.setAttribute('aria-checked', on); after && after();
   });
   bindSeg('pv-acc', 'v', v => { setAccSec(+v); after && after(); });
+  bindGap('pv-gap');
   const av = root.querySelector('#pv-avoid'); if (av) av.onclick = () => { S.avoid = []; save(); toast('Ya no se cuida ninguna zona'); after && after(); };
 }
 // al tocar una pestaña de abajo, Coach e Historial vuelven siempre a su primera opción
@@ -1736,7 +1746,7 @@ function step(i, silent, reason) {
   if (P.tl[i] && P.tl[i].k === 'work' && !P.tl[i].soft) P.logOpen = { i, at: P.activeMs };
   if (i >= P.tl.length) { finish(true, reason); return; }
   const s = cur();
-  P.stepMs = 0; P.remain = s.reps ? 0 : s.dur * 1000; P.endAt = performance.now() + P.remain; P.lastSec = null; P.repDone = null; P.half = false; P.autoAt = 0; P.autoLast = null;
+  P.stepMs = 0; P.remain = s.reps ? 0 : s.dur * 1000; P.endAt = performance.now() + P.remain; P.lastSec = null; P.repDone = null; P.half = false; P.sw = 0; P.autoAt = 0; P.autoLast = null;
   render(); saveSession();
   if (silent) return;
   if (s.k === 'work') beep(1046, 320, S.sound === 'voz' ? .16 : .3);
@@ -1750,6 +1760,8 @@ function tick() {
   const s = cur();
   if (s.reps) { P.stepMs += dt; autoTick(s); if (P.i < P.tl.length && cur() === s) paint(); }
   else {
+    // cambio de lado: el reloj del ejercicio queda quieto mientras dura la pausa
+    if (P.sw > 0) { P.sw -= dt; P.endAt += dt; if (P.sw <= 0) { P.sw = 0; beep(1046, 260, S.sound === 'voz' ? .16 : .3); } }
     const rem = P.endAt - now;
     if (rem <= 0) { step(P.i + 1, false, 'auto'); return; }
     P.remain = rem;
@@ -1766,7 +1778,7 @@ function tick() {
       if (done !== P.repDone) { if (P.repDone != null && done > P.repDone && S.abTick !== false && done < s.cnt) beep(1320, 40, .07); P.repDone = done;
         const left = s.cnt - done; if (left === 10 && s.cnt >= 16) say('Faltan diez.'); }
     }
-    if (s.k === 'work' && ex(s.ex).s && !P.half && rem <= s.dur * 500) { P.half = true; beep(988, 200, .25); say('Cambia de lado'); }
+    if (s.k === 'work' && ex(s.ex).s && !P.half && rem <= s.dur * 500) { P.half = true; beep(988, 200, .25); say('Cambia de lado'); if (sideGap()) P.sw = sideGap() * 1000; }
     paint();
   }
   if (now - P.lastSave > 3000) saveSession();
@@ -1889,6 +1901,7 @@ function paint() {
     // en el último segundo de un ejercicio dice «Último»
     const last = s.k === 'work' && sec === 1 && s.dur >= 5 && !s.cnt;
     if (s.cnt) { const left = Math.max(0, s.cnt - Math.floor((s.dur * 1000 - rem) / 1000 / s.pace)); $('#p-num').innerHTML = `${left}<small>${t(left === 1 ? 'rep. queda' : 'reps quedan')}</small>`; $('#p-num').classList.remove('word'); }
+    else if (P.sw > 0 && s.k === 'work') { $('#p-num').innerHTML = `${Math.ceil(P.sw / 1000)}<small>s</small>`; $('#p-num').classList.remove('word'); }
     else { $('#p-num').textContent = last ? 'Último' : sec; $('#p-num').classList.toggle('word', last); }
     $('#p-arc').style.strokeDashoffset = 289.03 * (1 - rem / (s.dur * 1000));
     el = before + (s.dur - rem / 1000);
@@ -1906,7 +1919,7 @@ function paint() {
   else if (s.reps) { const exp = expectedSecs(s); setSide(`<span class="side">Toca ✓ al terminar${exp ? ` · tu ritmo: ~${fmt(exp)}` : ''}</span>`); }
   // en cualquier pausa (inicio, descansos, entre calentamiento y estiramientos) se puede pasar directo al siguiente
   else if (s.k !== 'work') setSide(`<button class="btn ghost small skiprest" id="p-skiprest">${s.k === 'prep' ? 'Empezar ya' : 'Saltar pausa'} <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg></button>`);
-  else setSide(e && e.s ? `<span class="side">${P.half ? 'Lado izquierdo' : 'Lado derecho'}</span>` : '');
+  else setSide(e && e.s ? `<span class="side">${P.sw > 0 ? 'Cambia de lado' : P.half ? 'Lado izquierdo' : 'Lado derecho'}</span>` : '');
 }
 function togglePause() {
   if (!P.running) return;
@@ -2061,12 +2074,13 @@ function openMenu() {
     <button class="btn" data-m="go">▶ Continuar</button>
     <button class="btn ghost" data-m="end">Terminar<small>${prog ? 'Queda pendiente para repetirlo otro día' : 'Se guarda en el historial'}</small></button>
     ${prog ? `<button class="btn ghost" data-m="skip">Terminar y saltar<small>${w.kind === 'plan' ? 'Marca este día y pasa al siguiente del plan' : 'Pasa a la siguiente sesión del entrenador'}</small></button>` : ''}
+    ${P.tl.slice(P.i).some(x => x.k === 'work' && x.ex && ex(x.ex).s && !x.reps) ? `<div class="acc-row pm-acc"><span>Pausa para cambiar de lado<small>En los ejercicios por lado que quedan</small></span>${gapSegHTML('pm-gap')}</div>` : ''}
     ${P.tl.slice(P.i).some(x => x.acc) ? `<div class="acc-row pm-acc"><span>Pausa para acomodarte<small>Las que quedan en esta sesión</small></span>${accSegHTML('pm-acc')}</div>` : ''}
     ${canChange ? `<button class="btn ghost" data-m="chg">Cambiar entrenamiento<small>Elige otro más fácil, igual o más difícil</small></button>
     <div class="pm-chg hidden" id="pm-chg"><button class="btn small ghost" data-d="-1">Más fácil</button><button class="btn small ghost" data-d="0">Otro igual</button><button class="btn small ghost" data-d="1">Más difícil</button></div>` : ''}
   </div>`;
   $('#p-menu').classList.remove('hidden');
-  bindAcc('pm-acc');
+  bindAcc('pm-acc'); bindGap('pm-gap');
 }
 $('#p-menu').onclick = e => {
   if (e.target.id === 'p-menu') { menuContinue(); return; }
