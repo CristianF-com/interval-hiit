@@ -85,10 +85,10 @@ async function vPlay(text, voice) {
   let bufs;
   try { bufs = await Promise.all(plan.map(p => p.id ? getBuf(voice, p.id) : null)); } catch (e) { return false; }
   if (my !== vGen) return true; // ya se pidió otra frase
-  const ctx = audioCtx();
-  // audio frenado (por ejemplo al desbloquear el iPhone): se espera un momento a que vuelva;
-  // si no vuelve, la frase se dice con la voz del teléfono en lugar de quedar en cola para más tarde
-  if (ctx.state !== 'running') { await acWait(ctx, 400); if (my !== vGen) return true; if (ctx.state !== 'running') return false; }
+  let ctx = audioCtx();
+  // audio frenado (por ejemplo al desbloquear el iPhone): se espera un momento a que vuelva (más si se está
+  // recuperando); si no vuelve, la frase se dice con la voz del teléfono en lugar de quedar en cola para más tarde
+  if (ctx.state !== 'running') { await acWait(ctx, acFixing ? 2500 : 400); if (my !== vGen) return true; ctx = audioCtx(); if (ctx.state !== 'running') return false; }
   let t = ctx.currentTime + 0.03;
   plan.forEach((p, i) => {
     if (p.gap != null) { t += p.gap; return; }
@@ -125,21 +125,66 @@ function vPreload(tl) {
 // el audio en iPhone solo arranca dentro de un toque: cualquier toque lo reactiva si quedó suspendido
 // (por ejemplo después de pedir permiso a los sensores o de una llamada)
 document.addEventListener('pointerdown', () => { try { if (!AC || AC.state !== 'running') audioCtx(); } catch (e) {} }, true);
-const acWait = (ctx, ms) => new Promise(res => { if (ctx.state === 'running') return res(); const t0 = performance.now(); ctx.resume().catch(() => {}); const iv = setInterval(() => { if (ctx.state === 'running' || performance.now() - t0 > ms) { clearInterval(iv); res(); } }, 40); });
-// al bloquear el teléfono se corta lo que estaba sonando; al volver, si el audio quedó trabado
-// («interrupted» en iPhone) se descarta ese contexto y el próximo sonido crea uno nuevo
+document.addEventListener('touchend', () => { try { if (AC && AC.state !== 'running') AC.resume().catch(() => {}); } catch (e) {} }, { passive: true, capture: true });
+const acWait = (ctx, ms) => new Promise(res => { if (ctx.state === 'running') return res(); const t0 = performance.now(); ctx.resume().catch(() => {}); const iv = setInterval(() => { if ((AC || ctx).state === 'running' || performance.now() - t0 > ms) { clearInterval(iv); res(); } }, 40); });
+/* ---------- Audio después de bloquear y desbloquear el iPhone ----------
+   Al bloquear, iOS interrumpe el audio. Al volver puede quedar de tres formas: «suspended» o «interrupted»
+   (hay que reanudarlo, y recién desbloqueado el primer intento suele fallar), o «running» pero mudo (el reloj
+   del audio no avanza). Por eso:
+   1) al ocultarse la app se suspende a propósito: un contexto suspendido por la app vuelve mejor que uno
+      interrumpido por el sistema;
+   2) al volver se reintenta varias veces durante unos segundos, comprobando que el reloj del audio avance;
+      si dice «running» pero está mudo se suspende y reanuda, y si nada alcanza se crea un contexto nuevo;
+   3) mientras hay un entrenamiento, reto o timer en pantalla, un vigilante repite la comprobación. */
+const acSleep = ms => new Promise(r => setTimeout(r, ms));
+const acRace = (p, ms) => Promise.race([Promise.resolve(p).catch(() => {}), acSleep(ms)]);
+// ¿suena de verdad? el estado es «running» y el reloj del audio avanza
+const acAlive = (ctx, ms = 160) => new Promise(res => { const t0 = ctx.currentTime; setTimeout(() => res(ctx.state === 'running' && ctx.currentTime > t0), ms); });
+let acFixing = false, AUDIO_WANT = false;
+async function acRecover() {
+  if (acFixing || !AC || document.visibilityState !== 'visible') return;
+  acFixing = true;
+  try {
+    for (let n = 0; n < 14 && AC && document.visibilityState === 'visible'; n++) {   // unos 6 segundos de intentos
+      const ctx = AC;
+      // reactivar la sesión de audio del sistema antes de reanudar (a veces queda desactivada tras el bloqueo)
+      if (AUDIO_WANT && (n === 2 || n === 7)) { try { navigator.audioSession.type = 'auto'; navigator.audioSession.type = 'transient'; } catch (e) {} }
+      if (ctx.state !== 'running') await acRace(ctx.resume(), 350);
+      if (await acAlive(ctx)) return;
+      if (ctx.state === 'running') {   // «running» pero mudo
+        await acRace(ctx.suspend(), 300); await acRace(ctx.resume(), 350);
+        if (await acAlive(ctx)) return;
+      }
+      if (n === 6 && AC === ctx) {   // nada alcanzó: contexto nuevo (los audios ya descargados se vuelven a usar)
+        try { ctx.close(); } catch (e) {}
+        AC = null; try { audioCtx(); } catch (e) {}
+      }
+      await acSleep(220);
+    }
+  } finally { acFixing = false; }
+}
 document.addEventListener('visibilitychange', () => {
-  if (document.visibilityState === 'hidden') { vStop(); try { speechSynthesis.cancel(); } catch (e) {} return; }
-  if (!AC || AC.state === 'running') return;
-  const old = AC; acWait(old, 600).then(() => {
-    if (old.state === 'running' || AC !== old) return;
-    try { old.close(); } catch (e) {}
-    AC = null; try { audioSession(true); audioCtx(); } catch (e) {}
-  });
+  if (document.visibilityState === 'hidden') {
+    vStop(); try { speechSynthesis.cancel(); } catch (e) {}
+    try { if (AC && AC.state === 'running') AC.suspend().catch(() => {}); } catch (e) {}
+    return;
+  }
+  try { speechSynthesis.cancel(); } catch (e) {}
+  acRecover();
 });
+window.addEventListener('pageshow', () => acRecover());
+window.addEventListener('focus', () => acRecover());
+// vigilante: con un reproductor en pantalla, si el audio no está sonando se intenta recuperarlo
+let acLastT = -1;
+setInterval(() => {
+  if (!AC || acFixing || document.visibilityState !== 'visible' || !document.querySelector('.player:not(.hidden)')) { acLastT = -1; return; }
+  const stuck = AC.state !== 'running' || AC.currentTime === acLastT;
+  acLastT = AC.currentTime;
+  if (stuck) acRecover();
+}, 1500);
 // iPhone: con la sesión de audio «transient» los pitidos y la voz suenan aunque el interruptor de silencio esté activado
 // y bajan un poco la música que estés escuchando en lugar de cortarla
-function audioSession(on) { try { if (navigator.audioSession) navigator.audioSession.type = on ? 'transient' : 'auto'; } catch (e) {} }
+function audioSession(on) { AUDIO_WANT = !!on; try { if (navigator.audioSession) navigator.audioSession.type = on ? 'transient' : 'auto'; } catch (e) {} }
 const _startWorkout = startWorkout;
 startWorkout = function (w, resume) { audioSession(true); try { audioCtx(); } catch (e) {} _startWorkout(w, resume); try { vPreload(P.tl); } catch (e) {} };
 

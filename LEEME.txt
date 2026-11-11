@@ -288,3 +288,7 @@ TIMER DE INTERVALOS (timer.js, Coach → Timer)
   del entrenamiento, de mancuernas, de abdominales y en el menú de pausa. Prueba: /home/claude/tgap.mjs
 - Retos: la pantalla encendida (wake) se pide al principio de startReto, antes del permiso de sensores; si se
   pide después, el iPhone la ignora y la pantalla se bloquea (pasaba en sentadillas, que usa el sensor).
+- Audio tras bloquear/desbloquear el iPhone (voice.js, acRecover): al ocultarse la app se suspende el audio a
+  propósito; al volver se reintenta ~6 s comprobando que el reloj del audio avance («running» pero mudo se
+  suspende y reanuda; si nada alcanza, contexto nuevo), y un vigilante repite la comprobación cada 1,5 s
+  mientras hay un reproductor en pantalla. Prueba de la lógica: /home/claude/taud.mjs (no reemplaza probar en iPhone).
