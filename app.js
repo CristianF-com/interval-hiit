@@ -1786,7 +1786,7 @@ function tick() {
       if (done !== P.repDone) { if (P.repDone != null && done > P.repDone && S.abTick !== false && done < s.cnt) beep(1320, 40, .07); P.repDone = done;
         const left = s.cnt - done; if (left === 10 && s.cnt >= 16) say('Faltan diez.'); }
     }
-    if (s.k === 'work' && ex(s.ex).s && !P.half && rem <= s.dur * 500) { P.half = true; beep(988, 200, .25); say('Cambia de lado'); if (sideGap()) P.sw = sideGap() * 1000; }
+    if (s.k === 'work' && ex(s.ex).s && !P.half && rem <= s.dur * 500) { P.half = true; beep(988, 200, .25); say('Cambia de lado'); if (sideGap()) P.sw = sideGap() * 1000; mountPlayerAnim(s); }
     paint();
   }
   if (now - P.lastSave > 3000) saveSession();
@@ -1891,11 +1891,17 @@ function render() {
     $('#p-side').querySelectorAll('[data-a]').forEach(b => b.onclick = () => setV((+inp.value || 0) + +b.dataset.a));
   }
   const animId = s.k === 'work' ? s.ex : s.next;
-  if (animId && P.animId !== animId) { P.animId = animId; Anim.mount($('#p-anim'), animId, { label: true }); }
+  mountPlayerAnim(s);
   Anim.setPaused($('#p-anim'), P.paused && !s.reps);
   $('#p-play').innerHTML = s.reps ? ICON_DONE : (P.paused ? ICON_PLAY : ICON_PAUSE);
   $('#p-play').setAttribute('aria-label', s.reps ? 'Hecho' : (P.paused ? 'Continuar' : 'Pausa'));
   paint();
+}
+// animación del reproductor; en ejercicios por lado, la versión de cada lado si existe (cambia a la mitad)
+function mountPlayerAnim(s) {
+  const animId = s.k === 'work' ? s.ex : s.next; if (!animId) return;
+  const side = s.k === 'work' && !s.reps && ex(s.ex).s ? (P.half ? 'L' : 'R') : '', key = animId + side;
+  if (P.animId !== key) { P.animId = key; Anim.mount($('#p-anim'), animId, { label: true, side }); }
 }
 function paint() {
   const s = cur(); if (!s) return;

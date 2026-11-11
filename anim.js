@@ -357,7 +357,7 @@ const Anim = (() => {
     wall_lateral_pull_downs: ['wall_pull', {}],
     bridge: 'bridge', single_leg_bridge: 'bridge_single', crab_bridge: 'crab', sl_crab_bridge: 'crab_single', reverse_plank: 'reverse_plank', triceps_dip: 'dip',
     quadruped_limb_raises: 'bird_dog', quadruped_knee_to_elbow: 'quad_knee', donkey_kicks: 'donkey', fire_hydrant: 'hydrant_rear', cat_cow: 'cat_cow',
-    hip_abduction: 'abduction', hip_adduction: 'adduction', bent_leg_cross_overs: 'cross_front',
+    hip_abduction: 'abduction', hip_adduction: 'adduction', bent_leg_cross_overs: 'cross_top', 'bent_leg_cross_overs@R': 'cross_top_r', 'bent_leg_cross_overs@L': 'cross_top_l',
     punches: 'punches', crossing_punches: 'punch_cross_front', arm_circles_forward: 'circles_fwd', arm_circles_backward: 'circles_back', hip_openers: 'hip_open_front',
     childs_pose: 'child', cobblers_stretch: 'butterfly', dynamic_calf_stretch: 'calf_stretch', kneeling_hip_flexor_stretch: 'hip_flexor',
     lying_figure_4_stretch: 'figure4', overhead_triceps_stretch: 'triceps', shoulder_cross_stretch: 'shoulder', standing_quadriceps_stretch: 'quad_stretch',
@@ -485,6 +485,17 @@ const Anim = (() => {
   const KD = m(LW, { kLL: 0.55, kLR: 0.55, kSL: 0.42, kSR: 0.42 });
   T.knee_drops = () => k([m(KD, { tL: 176, sL: 176, tR: 184, sR: 184 }), m(KD, { tL: 128, sL: 128, tR: 134, sR: 134 }), m(KD, { tL: 176, sL: 176, tR: 184, sR: 184 }), m(KD, { tL: 226, sL: 226, tR: 232, sR: 232 })], 3600, { anchor: 'hip', anchorY: 'hip', armsBack: true, legsFront: true });
   const CF = m(LW, { tL: 172, sL: 190, tR: 188, sR: 170, kSL: 0.7, kSR: 0.7 });
+  // cruce de pierna flexionada visto desde arriba (boca arriba, cabeza a la derecha, brazos en cruz sobre la colchoneta):
+  // la rodilla se dobla, cruza por encima de la otra pierna hacia el lado contrario y vuelve; luego la otra pierna
+  const SUP = { v: 't', t: 90, hd: 0, uL: 16, fL: 22, uR: 164, fR: 158, kAL: 0.82, kAR: 0.82, tL: -85, sL: -85, tR: -95, sR: -95, pL: -90, pR: -90 };
+  const SUP_KR = m(SUP, { tR: -100, sR: -80, kLR: 0.5, kSR: 0.55 });          // rodilla derecha arriba (en escorzo)
+  const SUP_XR = m(SUP, { t: 86, tR: -28, sR: -128, pR: -150 });               // cruzada hacia el otro lado
+  const SUP_KL = m(SUP, { tL: -80, sL: -100, kLL: 0.5, kSL: 0.55 });
+  const SUP_XL = m(SUP, { t: 94, tL: -152, sL: -52, pL: -30 });
+  T.cross_top = () => k([SUP, SUP_KR, SUP_XR, SUP_XR, SUP_KR, SUP, SUP_KL, SUP_XL, SUP_XL, SUP_KL], 6400, { anchor: 'sh', anchorY: 'sh', ground: false, face: true });
+  // en el reproductor, una pierna por mitad del ejercicio (lado derecho y después izquierdo)
+  T.cross_top_r = () => k([SUP, SUP_KR, SUP_XR, SUP_XR, SUP_KR], 3400, { anchor: 'sh', anchorY: 'sh', ground: false, face: true });
+  T.cross_top_l = () => k([SUP, SUP_KL, SUP_XL, SUP_XL, SUP_KL], 3400, { anchor: 'sh', anchorY: 'sh', ground: false, face: true });
   T.cross_front = () => k([CF, m(CF, { tR: 236, sR: 208 }), CF, m(CF, { tL: 124, sL: 152 })], 3600, { anchor: 'hip', anchorY: 'hip', armsBack: true, legsFront: true });
   // golpes cruzados de frente
   const GF = m(F0, { uL: -28, fL: 150, uR: 28, fR: -150, tL: -14, sL: -8, tR: 14, sR: 8 });
@@ -578,7 +589,7 @@ const Anim = (() => {
       if (p.ancPrev && ki > 0) { const q = keys[ki - 1], Jq = fk(q); p.ox = Jq[p.ancPrev][0] + q.ox - J[p.ancPrev][0]; }
       p.oy = tpl.anchorY ? ay0 - J[tpl.anchorY][1] : -lowest(J) - (p.air || 0);
     });
-    const anim = { id, v: keys[0].v, keys, ms: tpl.ms, props: tpl.props || [], open: !!tpl.open, ground: tpl.ground !== false, anchorY: tpl.anchorY, badge: tpl.badge, hands: tpl.hands != null ? !!tpl.hands : !!keys[0].sup && /^(hand|elbow)/.test(anchor), armsBack: !!tpl.armsBack, db: tpl.db || null, legsFront: !!tpl.legsFront, armsFront: !!tpl.armsFront, farShade: !!tpl.farShade, noFix: !!tpl.noFix };
+    const anim = { id, v: keys[0].v, face: !!tpl.face, keys, ms: tpl.ms, props: tpl.props || [], open: !!tpl.open, ground: tpl.ground !== false, anchorY: tpl.anchorY, badge: tpl.badge, hands: tpl.hands != null ? !!tpl.hands : !!keys[0].sup && /^(hand|elbow)/.test(anchor), armsBack: !!tpl.armsBack, db: tpl.db || null, legsFront: !!tpl.legsFront, armsFront: !!tpl.armsFront, farShade: !!tpl.farShade, noFix: !!tpl.noFix };
     // encuadre: recorre el ciclo y calcula la caja que ocupa
     let x0 = 1e9, x1 = -1e9, y0 = 1e9;
     for (let i = 0; i < 48; i++) {
@@ -1001,8 +1012,9 @@ const Anim = (() => {
       html += circ(at(-fw[0] * 6.5 - up[0] * 4.5, -fw[1] * 6.5 - up[1] * 4.5), 5, C.hair);
       html += circ(at(fw[0] * 3.2 - up[0] * 1.8, fw[1] * 3.2 - up[1] * 1.8), 8.8, C.skin);
     } else if (top) {
-      // desde arriba se ve la coronilla
-      html += circ(at(up[0] * 1.5, up[1] * 1.5), 9.6, C.hair);
+      // desde arriba se ve la coronilla; boca arriba (face), la cara con el pelo hacia la coronilla
+      if (a.face) { html += circ(at(up[0] * 2.4, up[1] * 2.4), 10.4, C.hair); html += circ(at(-up[0] * 1.4, -up[1] * 1.4), 8.6, C.skin); }
+      else html += circ(at(up[0] * 1.5, up[1] * 1.5), 9.6, C.hair);
     } else {
       // de frente: pelo arriba y a los lados, flequillo cubriendo parte de la frente
       html += circ(at(up[0] * 2.2, up[1] * 2.2), 11.5, C.hair);
@@ -1148,7 +1160,9 @@ const Anim = (() => {
       c.parts.forEach(pt => live.add(pt)); combos.add(c); kick();
       return c.parts[0];
     }
-    const inst = svgFor(id, (e.t === 'x' ? (e.p || '')[0] : ''), !!opts.label);
+    // por lado: si hay una versión de un solo lado (id@R / id@L) se usa esa
+    const sid = opts.side && MAP[id + '@' + opts.side] ? id + '@' + opts.side : id;
+    const inst = svgFor(sid, (e.t === 'x' ? (e.p || '')[0] : ''), !!opts.label);
     if (opts.speed) inst.speed = opts.speed;
     el.appendChild(inst.svg);
     // en el reproductor el esquema de manos es ilegible: se reemplaza por una etiqueta de texto

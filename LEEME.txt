@@ -305,3 +305,6 @@ TIMER: ACTIVIDAD, CALENDARIO Y PANTALLA BLOQUEADA
   bloqueo (Media Session: pausa, anterior, siguiente). Con eso activo no se suspende el audio al ocultar la app.
   EN PRUEBA: depende del iPhone; hay que confirmarlo en el dispositivo. Pausa la música de otras apps.
 - Herramientas y pruebas: ver tools/LEEME.txt.
+- Animaciones por lado: si existe MAP['<ejercicio>@R'] y MAP['<ejercicio>@L'], el reproductor muestra solo ese
+  lado y cambia a la mitad (mountPlayerAnim). Primer caso: cruce de pierna flexionada (cross_top_r / cross_top_l),
+  vista desde arriba, boca arriba (opción face: se ve la cara). Prueba: tools/pruebas/tanimside.mjs

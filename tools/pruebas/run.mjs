@@ -9,7 +9,7 @@ const OUT = process.env.OUT || path.join(os.tmpdir(), 'inhiit');
 ['', 'shots', 'en'].forEach(d => fs.mkdirSync(path.join(OUT, d), { recursive: true }));
 if (!process.env.PW_CHROME && fs.existsSync('/opt/pw-browsers/chromium')) process.env.PW_CHROME = '/opt/pw-browsers/chromium';
 const SUITE = ['t2b', 'ttabs', 'tfeat', 'trt', 'tdb', 'tsm', 'tabai', 'tabs', 'tabsplan', 'tstart', 'tcal', 'tov', 'tlink', 'treopen', 'tcloud', 'tkb2', 'tgaps', 'trm', 'tsmart',
-  'tgap', 'tpaus', 'taud', 'ttimer', 'ttimer2', 'ten', 'tvoz'];
+  'tgap', 'tpaus', 'taud', 'tanimside', 'ttimer', 'ttimer2', 'ten', 'tvoz'];
 const MIME = { html: 'text/html', js: 'text/javascript', mjs: 'text/javascript', css: 'text/css', json: 'application/json', svg: 'image/svg+xml', png: 'image/png', mp3: 'audio/mpeg', mp4: 'video/mp4', webmanifest: 'application/manifest+json', woff2: 'font/woff2' };
 const srv = http.createServer((q, r) => {
   let p = decodeURIComponent(q.url.split('?')[0]); if (p.endsWith('/')) p += 'index.html';
