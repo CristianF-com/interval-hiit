@@ -1,0 +1,149 @@
+1040	Pulsing squat
+1041	Stay low in the squat and make small bounces.
+1042	Air punches
+1043	High guard, throw straight punches alternating, fast and controlled.
+1044	Push-up jacks
+1045	Push-up jumping your legs open as you lower.
+1046	Push-up with shoulder tap
+1047	Push-up and, as you come up, tap the opposite shoulder without rocking your hips.
+1048	Push-up to side plank
+1049	Do a push-up and rotate into a side plank with your arm up. Alternate.
+1050	Hands slightly wider than your shoulders, lower your chest almost to the floor.
+1051	Bird dog knee to elbow
+1052	On all fours, extend the opposite arm and leg and bring them together under your body.
+1053	Bird dog
+1054	On all fours, extend the opposite arm and leg and alternate.
+1055	Quick feet
+1056	Short, very fast steps in place, on your toes.
+1057	Reverse crunch
+1058	Knees to chest lifting your hips off the floor. Lower slowly.
+1059	Reverse plank
+1060	Seated, hands behind you, lift your hips until you're in a straight line.
+1061	Rockstar jump
+1062	Jump high kicking your heels back and arching your body slightly.
+1063	Easy Russian twist
+1064	Seated with feet on the floor, lean your torso back and twist side to side.
+1065	Russian twist
+1066	Seated with feet raised, twist side to side touching the floor.
+1067	Scissors
+1068	Legs straight and raised, cross them alternating up and down.
+1069	Shoulder stretch
+1070	Cross one arm in front of your chest and hold it with the other.
+1071	Side lunge with touch
+1072	Side lunge touching the floor with the opposite hand. Alternate.
+1073	Side lunge
+1074	Wide step to the side, bend that knee with the other leg straight.
+1075	Side plank crunch
+1076	In a side plank, bring your top knee and elbow together.
+1077	Star side plank
+1078	Side plank with top arm and leg stretched toward the ceiling.
+1079	Side-to-side push-up
+1080	Hands wider than your shoulders. Lower bringing your chest toward one hand (that arm bends and the other stays almost straight), come up to the center and repeat toward the other hand. The diagram shows where the chest goes.
+1081	Single-leg bridge
+1082	One leg straight in the air, lift your hips with the other.
+1083	Single-leg deadlift
+1084	Hinge your torso forward while the other leg rises behind you.
+1085	Single-leg V-up
+1086	Lift your torso and one leg at the same time to touch your foot. Alternate.
+1087	Sit-up
+1088	Come up until you're sitting and lower with control, one vertebra at a time.
+1089	Plank skier
+1090	In a high plank, jump both knees to one side, then the other.
+1091	Skier jumps
+1092	Feet together, jump sideways from side to side.
+1093	Single-leg balance
+1094	Standing on one leg, the other knee up. Hold your balance.
+1095	Single-leg crab bridge
+1096	Crab bridge with one leg straight in the air.
+1097	Single-leg toe reach
+1098	On one leg, hinge over and touch the standing foot with the opposite hand.
+1099	Single-leg shin reach
+1100	On one leg, hinge over and touch your shin with the opposite hand.
+1101	Skater
+1102	Jump side to side landing on one foot, the other leg crosses behind.
+1103	Squat jacks
+1104	Jump your feet open into a squat and close again.
+1105	Squat with side kick
+1106	Squat and, as you come up, kick to the side; alternate legs.
+1107	Star jump
+1108	From a squat, jump opening your arms and legs into a star.
+1109	Squat to high knee
+1110	Squat and, as you come up, raise one knee. Alternate.
+1111	Squat to knee jump
+1112	Squat and jump bringing one knee up. Alternate.
+1113	Squat
+1114	Feet hip-width apart, lower as if sitting down. Chest up.
+1115	Squat quick feet
+1116	Half squat, short and very fast steps without coming up.
+1117	Staggered push-ups
+1118	One hand further forward than the other. Do a push-up and switch the forward hand on the next one.
+1119	Quad stretch
+1120	Standing, hold the top of your foot and bring your heel to your glutes.
+1121	Star jacks
+1122	Jump opening your arms and legs as wide as you can in a star shape.
+1123	Star toe touch
+1124	Lying in a star, lift the opposite arm and leg and touch your toes.
+1125	Straight-leg bicycle crunch
+1126	Bicycle crunch with straight legs, elbow toward the opposite leg.
+1127	Superman
+1128	Face down, lift your arms and legs at the same time and hold for a second.
+1129	Superman pull
+1130	Face down, arms overhead, pull your elbows toward your waist.
+1131	Tabletop crunch
+1132	Legs in tabletop (knees at 90°), lift your shoulders with your abs.
+1133	Touchdown lunge
+1134	Reverse lunge touching the floor with the opposite hand.
+1135	Triceps dips
+1136	Hands on a chair or bench behind you, bend your elbows backward.
+1137	Tuck jumps
+1138	Jump high bringing your knees to your chest. Land softly.
+1139	Ultimate burpee
+1140	Burpee with a push-up, shoulder taps in the plank and a tuck jump.
+1141	Up-down push-up
+1142	Go from low to high plank, do a push-up and come back down.
+1143	Up-down plank
+1144	From low plank to high plank, coming up one arm and then the other.
+1145	V-up
+1146	Raise your legs and torso at the same time into a V, touch your feet at the top.
+1147	High-knee march
+1148	March in place lifting your knees high and moving your arms.
+1149	Walking lunge
+1150	Move forward chaining lunges. If there's no room, alternate in place.
+1151	Wall slide
+1152	Back against the wall, arms up in a W, lower your elbows without lifting them off.
+1153	Wall chest stretch
+1154	Forearm on a wall or doorframe, rotate your torso to the opposite side.
+1155	Wall sit
+1156	Back against the wall, knees at 90°. Hold.
+1157	Open mountain climber with twist
+1158	In a high plank, place one foot outside the hand on the same side and open that arm toward the ceiling, twisting your torso. Return and switch sides.
+1159	Wide high knees
+1160	High knees with your feet wider than your hips.
+1161	Wide knee push-up
+1162	Hands wide apart and knees down, lower with control.
+1163	Wide-leg V-up
+1164	V-up with your legs open, touch the floor between them at the top.
+1165	Wide push-ups
+1166	Hands wide apart, lower with control. Works the chest more.
+1167	Windshield wipers
+1168	Lying down, legs up together, lower them to one side and the other with control.
+1169	First steps
+1170	To start from scratch: short timed sessions, 3 days a week.
+1171	Active and energized
+1172	Full body with a mix of cardio and strength to build your pace.
+1173	Strength for runners
+1174	Legs, hips and core to complement your runs. 3 days a week.
+1175	Fit and strong
+1176	Short, intense plan, all timed and without burpees.
+1177	Shape up with planks
+1178	Lots of plank variations for a firm core and strong shoulders.
+1179	Abs and core
+1180	Six weeks focused on abs, obliques and midsection.
+1181	12-week transformation
+1182	The long plan: strength and cardio with reps that go up week by week.
+1183	Advanced transformation
+1184	The demanding 12-week version for those who already have a base.
+1185	Classic 12 weeks
+1186	Classic 12-week plan, with a mixed version.
+1187	12-week continuation
+1188	To keep going after finishing a 12-week plan.

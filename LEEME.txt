@@ -279,16 +279,29 @@ TIMER DE INTERVALOS (timer.js, Coach → Timer)
 - Voces: los nombres de las plantillas, «minutos», «Falta un minuto», etc. están grabados para las 6 voces
   (Dora y Alex con Kokoro; Paula, Julio, Ona y Kimetz con AssemblyAI). Los nombres que escribe la persona
   se dicen con la voz del teléfono.
-- Prueba: /home/claude/ttimer.mjs
-- Revisión de voces: /home/claude/tvoz.mjs arma todas las frases que dice la app (anuncios de ejercicios,
+- Prueba: tools/pruebas/ttimer.mjs
+- Revisión de voces: tools/pruebas/tvoz.mjs arma todas las frases que dice la app (anuncios de ejercicios,
   números, rondas, retos, logros y timer) y avisa cuáles no están grabadas en alguna de las 6 voces.
   Los números de 1000 a 9999 se dicen con «mil» + el resto.
 - Pausa para cambiar de lado (S.sideGap: 0, 2, 4 o 6 s; 4 por defecto): en ejercicios por lado por tiempo, a la
   mitad dice «Cambia de lado» y el reloj del ejercicio se detiene esos segundos (P.sw). Se cambia en las opciones
-  del entrenamiento, de mancuernas, de abdominales y en el menú de pausa. Prueba: /home/claude/tgap.mjs
+  del entrenamiento, de mancuernas, de abdominales y en el menú de pausa. Prueba: tools/pruebas/tgap.mjs
 - Retos: la pantalla encendida (wake) se pide al principio de startReto, antes del permiso de sensores; si se
   pide después, el iPhone la ignora y la pantalla se bloquea (pasaba en sentadillas, que usa el sensor).
 - Audio tras bloquear/desbloquear el iPhone (voice.js, acRecover): al ocultarse la app se suspende el audio a
   propósito; al volver se reintenta ~6 s comprobando que el reloj del audio avance («running» pero mudo se
   suspende y reanuda; si nada alcanza, contexto nuevo), y un vigilante repite la comprobación cada 1,5 s
-  mientras hay un reproductor en pantalla. Prueba de la lógica: /home/claude/taud.mjs (no reemplaza probar en iPhone).
+  mientras hay un reproductor en pantalla. Prueba de la lógica: tools/pruebas/taud.mjs (no reemplaza probar en iPhone).
+
+TIMER: ACTIVIDAD, CALENDARIO Y PANTALLA BLOQUEADA
+- Actividad (TM_ACT en timer.js): MET [descanso, suave, fuerte] por actividad; las calorías se calculan con el
+  tipo de cada bloque y el peso del perfil (entry.kcal) y entran en estadísticas y en la tarjeta para compartir.
+- Programar: c.wd = días de la semana (lunes = 0). buildAgenda agrega { type: 'timer', id } esos días (60 días);
+  el de hoy desaparece cuando ya hay una sesión de ese timer en el historial.
+- Al abrir la app, si hoy hay algo programado sin hacer (plan, coach, reto, timer…), se abre en Calendario;
+  si hay una sesión para retomar o no hay nada, en Coach (tmOpenOnToday, al final de timer.js).
+- Pantalla bloqueada (S.tmBg, activada por defecto; se apaga en Coach → Timer → Opciones): bgAudio() en voice.js
+  reproduce silencio.mp3 en bucle, pone la sesión de audio en «playback» y publica el bloque en la pantalla de
+  bloqueo (Media Session: pausa, anterior, siguiente). Con eso activo no se suspende el audio al ocultar la app.
+  EN PRUEBA: depende del iPhone; hay que confirmarlo en el dispositivo. Pausa la música de otras apps.
+- Herramientas y pruebas: ver tools/LEEME.txt.

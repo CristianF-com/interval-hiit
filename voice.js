@@ -165,6 +165,7 @@ async function acRecover() {
 }
 document.addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden') {
+    if (BG_KEEP) return;   // timer con avisos en segundo plano: el audio sigue
     vStop(); try { speechSynthesis.cancel(); } catch (e) {}
     try { if (AC && AC.state === 'running') AC.suspend().catch(() => {}); } catch (e) {}
     return;
@@ -182,6 +183,34 @@ setInterval(() => {
   acLastT = AC.currentTime;
   if (stuck) acRecover();
 }, 1500);
+/* ---------- Avisos con la pantalla bloqueada (timer) ----------
+   Una pista casi muda en bucle mantiene viva la app y su audio con el teléfono bloqueado, como una app de música.
+   La sesión pasa a «playback» (suena aunque esté bloqueado; pausa la música de otras apps) y la pantalla de
+   bloqueo muestra el bloque actual con pausa, anterior y siguiente (Media Session). */
+let BG_KEEP = false, bgEl = null;
+function bgAudio(on, h) {
+  BG_KEEP = !!on;
+  try {
+    if (on) {
+      try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) {}
+      if (!bgEl) { bgEl = new Audio('silencio.mp3'); bgEl.loop = true; bgEl.preload = 'auto'; bgEl.setAttribute('playsinline', ''); }
+      const p = bgEl.play(); if (p && p.catch) p.catch(() => {});
+      if ('mediaSession' in navigator && h) {
+        const set = (a, f) => { try { navigator.mediaSession.setActionHandler(a, f); } catch (e) {} };
+        set('play', () => { try { bgEl.play().catch(() => {}); audioCtx(); } catch (e) {} h.play(); }); set('pause', () => { h.pause(); try { bgEl.play().catch(() => {}); } catch (e) {} });
+        set('nexttrack', h.next); set('previoustrack', h.prev); set('seekforward', null); set('seekbackward', null); set('seekto', null);
+      }
+    } else {
+      if (bgEl) bgEl.pause();
+      if ('mediaSession' in navigator) { ['play', 'pause', 'nexttrack', 'previoustrack'].forEach(a => { try { navigator.mediaSession.setActionHandler(a, null); } catch (e) {} }); try { navigator.mediaSession.metadata = null; navigator.mediaSession.playbackState = 'none'; } catch (e) {} }
+    }
+  } catch (e) {}
+}
+function bgMeta(title, album, secs) {
+  if (!BG_KEEP || !('mediaSession' in navigator)) return;
+  try { navigator.mediaSession.metadata = new MediaMetadata({ title, artist: 'INHIIT', album, artwork: [{ src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png' }, { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png' }] }); } catch (e) {}
+}
+function bgState(paused) { if (!BG_KEEP || !('mediaSession' in navigator)) return; try { navigator.mediaSession.playbackState = paused ? 'paused' : 'playing'; } catch (e) {} if (!paused && bgEl && bgEl.paused) { try { bgEl.play().catch(() => {}); } catch (e) {} } }
 // iPhone: con la sesión de audio «transient» los pitidos y la voz suenan aunque el interruptor de silencio esté activado
 // y bajan un poco la música que estés escuchando en lugar de cortarla
 function audioSession(on) { AUDIO_WANT = !!on; try { if (navigator.audioSession) navigator.audioSession.type = on ? 'transient' : 'auto'; } catch (e) {} }

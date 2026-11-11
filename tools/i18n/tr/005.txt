@@ -1,0 +1,170 @@
+870	Crab bridge
+871	Seated, hands behind you, lift your hips until your body forms a table.
+872	Cross punches
+873	Diagonal punches twisting your torso and pivoting your back foot.
+874	Crunch
+875	Knees bent, lift your shoulders off the floor using your abs.
+876	Curtsy lunge
+877	Take one leg diagonally behind the other and lower down.
+878	Donkey kick
+879	On all fours, push your heel toward the ceiling with your knee at 90°.
+880	Dynamic calf stretch
+881	Heel on the floor in front, toes up, lean in and back rhythmically.
+882	Fire hydrant
+883	On all fours, open your knee out to the side without twisting your torso.
+884	Flat-out burpee with tuck jump
+885	Burpee with your chest to the floor and a final jump bringing your knees to your chest.
+886	Flat-out burpee
+887	Lower until you're lying face down, jump back in and jump up.
+888	Forward jump squat
+889	From a squat, jump forward as far as you can and walk back.
+890	Forward lunge
+891	Step forward, both knees at 90°, push back through your heel.
+892	Frog squat
+893	Go very low with your hands on the floor between your feet and come up.
+894	High knees
+895	Run in place lifting your knees to hip height.
+896	High plank
+897	Hands under your shoulders, arms straight. Don't let your hips sag.
+898	High plank double knee
+899	In a high plank, bring the same knee to your chest twice in a row.
+900	High plank jacks
+901	In a high plank, jump your legs open and closed.
+902	High plank star jump
+903	In a high plank, jump opening your feet and bringing them forward.
+904	High plank jumps
+905	In a high plank, jump both feet toward your hands and back.
+906	High plank cross knee
+907	Bring your knee toward the opposite elbow in a high plank. Alternate.
+908	High plank knee taps
+909	In a high plank, lower your knees to touch the floor and come back up.
+910	High plank knee to elbow
+911	Bring your knee toward the elbow on the same side. Alternate.
+912	High plank leg raise
+913	In a high plank, lift one straight leg and alternate without moving your hips.
+914	High plank arm and leg raise
+915	In a high plank, lift the opposite arm and leg at the same time.
+916	High side plank
+917	Supported on one hand with your arm straight, hips high and body aligned.
+918	Hip abduction
+919	Lying on your side, lift your top leg straight and lower slowly.
+920	Hip adduction
+921	Lying on your side, top foot in front; lift your bottom leg.
+922	Hip opener
+923	Knee to chest and rotate it outward drawing a circle. Alternate.
+924	Squat with arm swing
+925	Squat down swinging your arms back and come up swinging them overhead.
+926	Inchworm with tuck jump
+927	Walk your hands out to a plank, walk back and finish with a tuck jump.
+928	Inchworm
+929	Standing, walk your hands out to a high plank and walk back.
+930	Wall push-ups
+931	Hands on the wall at chest height, bring your chest in and push.
+932	Jog in place
+933	Light jog on your toes, arms active.
+934	Jump lunge
+935	In a lunge, jump and switch legs in the air.
+936	Jump squat
+937	Squat down and jump explosively. Land softly.
+938	Jumping jacks
+939	Jump opening your legs and raising your arms, then close again.
+940	Plyo knee push-up
+941	With knees down, push hard so your hands leave the floor.
+942	Knee push-up with shoulder tap
+943	Push-up with knees down and, as you come up, tap the opposite shoulder.
+944	Knee push-up to side plank
+945	Push-up with knees down and rotate into a side plank with your arm up.
+946	Knee push-ups
+947	Knees down, body straight from knees to head.
+948	Knee side-to-side push-up
+949	Knees down and hands wider than your shoulders. Lower bringing your chest toward one hand (that arm bends and the other stays almost straight), come up to the center and repeat toward the other hand. The diagram shows where the chest goes.
+950	Knee staggered push-up
+951	Knees down and one hand further forward than the other. Do a push-up and switch the forward hand on the next one.
+952	Tuck crunch
+953	Balanced while seated, tuck your knees and torso together and open again.
+954	Knee up-down push-up
+955	With knees down, go from forearms to hands and back, with a push-up.
+956	Knee up-down plank
+957	With knees down, go from forearms to hands and back.
+958	Hip flexor stretch
+959	One knee on the floor and the other foot in front. Push your hips forward without arching your back and reach the arm on the knee side up.
+960	Side jump with touch
+961	Jump side to side and touch the floor with your hand on each landing.
+962	Side jumps
+963	Jump side to side as far as you can, landing on both feet.
+964	Leg raises
+965	Lying down, raise your straight legs to 90° and lower without touching the floor.
+966	Push-up with arm and leg raise
+967	Push-up and, as you come up, lift the opposite arm and leg.
+968	Low plank
+969	Forearms under your shoulders, body in a straight line. Squeeze your abs and glutes.
+970	Low plank reach
+971	Reach one arm forward and alternate without moving your hips.
+972	Low plank crunch
+973	In a low plank, lift your hips contracting your abs and come back.
+974	Low plank double knee
+975	In a low plank, bring the same knee to your chest twice in a row.
+976	Low plank cross knee
+977	Bring your knee toward the opposite elbow in a low plank. Alternate.
+978	Low plank knee taps
+979	In a low plank, touch the floor with your knees and come back up.
+980	Low plank knee to elbow
+981	Low plank hip twist
+982	Rotate your hips to one side and the other, almost touching the floor.
+983	Side plank
+984	Supported on one forearm, hips high and body aligned from head to feet.
+985	Side plank leg raise
+986	In a side plank, lift your top leg and lower it.
+987	Side plank with twist
+988	In a side plank, thread your arm under your body as you twist and come back.
+989	Lunge to knee jump
+990	Reverse lunge and jump bringing that knee up to your chest.
+991	Lunge to front kick
+992	Reverse lunge and, as you come up, kick forward with that leg.
+993	Lunge to high knee
+994	Reverse lunge and, as you come up, bring that knee to your chest.
+995	Lunge with twist
+996	Forward lunge twisting your torso toward the front leg.
+997	Lying figure 4
+998	On your back with knees bent, cross one ankle over the opposite knee (making a 4). Lift the supporting foot and pull that thigh toward your chest.
+999	Marching wall sit
+1000	In a wall sit, lift one foot and then the other.
+1001	Modified high side plank
+1002	Side plank on your hand with the bottom knee down.
+1003	Low-impact jacks
+1004	Step one leg out to the side while raising your arms. Alternate.
+1005	Modified side plank
+1006	Side plank on your forearm with the bottom knee down.
+1007	Modified side plank with lifts
+1008	Side plank with knee down, raise and lower your hips.
+1009	Mountain climbers
+1010	In a high plank, bring your knees to your chest alternating, fast.
+1011	Narrow knee push-up
+1012	Hands together under your chest and knees down, elbows tucked.
+1013	Narrow push-ups
+1014	Hands together under your chest, elbows tucked to your body. Lots of triceps.
+1015	Narrow squat
+1016	Feet together, squat down keeping your heels on the floor.
+1017	Narrow to wide push-up
+1018	Alternate a narrow and a wide push-up, jumping your hands.
+1019	Turned-out calf raise
+1020	Toes pointing out, rise onto your toes and lower slowly.
+1021	Overhead squat
+1022	Arms straight overhead during the whole squat.
+1023	Triceps stretch
+1024	Elbow up behind your head, gently push it with the other hand.
+1025	Breathe and recover.
+1026	Pendulum lunge
+1027	Forward lunge and, without putting your foot down, swing it back into another lunge.
+1028	Pike push-ups
+1029	Hips high in an inverted V, lower your head toward the floor.
+1030	Pivot lunge
+1031	Side lunge pivoting on one foot to turn your body.
+1032	Plank to down dog
+1033	From a high plank, push your hips up and back into a V and return.
+1034	Sumo jump squat
+1035	Feet wide, squat down and jump bringing your heels together in the air.
+1036	Sumo squat
+1037	Feet very wide and toes out, lower with a straight back.
+1038	Prone X
+1039	Face down with arms and legs in an X, lift everything at once and hold.

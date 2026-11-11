@@ -1,0 +1,17 @@
+HERRAMIENTAS (no forman parte de la app; el service worker no las guarda)
+
+pruebas/   Pruebas automáticas con Playwright.
+           node tools/pruebas/run.mjs            corre todas (unos 10 minutos)
+           node tools/pruebas/run.mjs ttimer ten corre solo esas
+           GitHub las corre solas en cada cambio (.github/workflows/pruebas.yml).
+           ten  = no queda ningún texto sin traducir al inglés.
+           tvoz = todas las frases que dice la app están grabadas en las 6 voces.
+           tbig, tmeasure y taudit son herramientas de medición y capturas (no están en la lista automática).
+
+i18n/      Traducción al inglés. Se edita tr/extra.txt (texto exacto ⇥ traducción) o tr/patterns.txt
+           (con {0}, {1}…) y se regenera i18n/en.js con:  python3 tools/i18n/build_en.py
+
+voces/     Grabación de frases nuevas (lista en un JSON: ["Frase uno.", "Frase dos."]).
+           Dora y Alex (Kokoro, local):   KOKORO_DIR=carpeta python3 tools/voces/gen_list_kokoro.py . frases.json dora alex
+           Paula, Julio, Ona y Kimetz:    AAI_KEY=… python3 tools/voces/gen_list_aai.py . frases.json paula julio ona kimetz
+           La clave de AssemblyAI va solo en la variable AAI_KEY: nunca en un archivo ni en el repositorio.

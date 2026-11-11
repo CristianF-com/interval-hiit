@@ -340,7 +340,7 @@ code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.92em;backgroun
 .cd.sel{border-color:var(--work-ink)}
 /* tema Naranja: el día de hoy/elegido con el naranja de los botones; los retos con color propio (su --reto es gris oscuro, el de las tarjetas) */
 :root[data-theme="naranja"] .cd.today,:root[data-theme="naranja"] .cd.sel{border-color:var(--work)}:root[data-theme="naranja"] .cd.sel{background:var(--dark2);border-color:var(--dark2)}:root[data-theme="naranja"] .cd.sel b{color:#fff}:root[data-theme="naranja"] .cd.sel .dt.part{border-color:var(--dark-muted);background:linear-gradient(90deg,var(--dark-muted) 50%,transparent 50%)}
-:root[data-theme="naranja"] .dt.rt{border-color:#2f7de1}
+:root[data-theme="naranja"] .dt.rt{border-color:#2f7de1}:root[data-theme="naranja"] .dt.timer{border-color:#c026d3}
 .cd .dots{position:absolute;inset:0;pointer-events:none}.cd .dots .dt{position:absolute;transform:translate(-50%,-50%)}.dt.more{width:auto;height:6px;border:0;font-size:0.4706rem;line-height:6px;color:var(--muted);background:none}
 /* calendario: el ESTADO va por forma (aro = programado, lleno = hecho, medio = incompleto) y el TIPO por color */
 /* anillo con borde (no sombra) y tamaño par: en el iPhone la sombra interior en medio píxel dejaba el hueco corrido */
@@ -376,7 +376,7 @@ code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.92em;backgroun
 .rday.cur{background:color-mix(in srgb,var(--work) 10%,transparent)}
 .rday.cur .dn{background:var(--work);color:#111}
 .rday .t{flex:1;min-width:0}.rday .t b{display:block;overflow-wrap:anywhere}.rday .t small{color:var(--muted)}
-.dt.rt{border-color:var(--reto)}.dt.db{border-color:#a78bfa}.dt.abs,.dt.absai{border-color:#ff7eb6}
+.dt.rt{border-color:var(--reto)}.dt.timer{border-color:#22c3e6}.dt.db{border-color:#a78bfa}.dt.abs,.dt.absai{border-color:#ff7eb6}
 .legend .lg-g{display:contents}.legend .lg-h{color:var(--text);font-weight:600}
 .ab-bar{height:6px;border-radius:3px;background:var(--surface2);overflow:hidden;margin:8px 0 10px}.ab-bar i{display:block;height:100%;background:var(--work);border-radius:3px}
 .rplayer{z-index:21}
@@ -810,6 +810,8 @@ input,textarea,select{font-size:0.9412rem}
 .tm-in{display:inline-flex;align-items:center;gap:6px;color:var(--muted);font-size:0.8235rem}
 .tm-in input{width:72px;min-height:44px;text-align:center;background:var(--bg);border:1px solid var(--line);border-radius:10px;color:var(--text);font-size:1rem;font-variant-numeric:tabular-nums}
 .tm-repv{margin-top:12px}
+.tm-act{display:flex;align-items:center;gap:12px;margin-top:12px;color:var(--muted);font-size:0.8235rem;font-weight:600}
+.tm-act select{flex:1;min-width:0;min-height:44px;padding:9px 12px;border-radius:12px;border:1px solid var(--line);background:var(--surface);color:var(--text);font-size:0.9412rem;font-weight:600}
 .tm-adv{grid-template-columns:1fr 1fr 1fr;padding:0;margin-top:14px}
 .tm-sum{font-weight:600}
 .tm-tot .t b{display:flex;align-items:center}

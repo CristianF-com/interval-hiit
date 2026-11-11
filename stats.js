@@ -49,7 +49,7 @@ function computeStats() {
       const ps = ((CATALOG[it.id] || {}).p || '').split('').filter(c => ST_PARTS[c]);
       ps.forEach(c => { parts[c] = (parts[c] || 0) + it.secs / ps.length; });
     });
-    kcal += x.hr && x.hr.kcal ? x.hr.kcal : k;
+    kcal += x.hr && x.hr.kcal ? x.hr.kcal : (k || x.kcal || 0);
   });
   // rachas de días seguidos
   const ds = [...days].sort((a, b) => a - b); let best = 0, run = 0, prev = null;

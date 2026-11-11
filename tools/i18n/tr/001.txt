@@ -1,0 +1,180 @@
+150	For exercises with reps, once I know your pace (3 sets or more)
+151	For this session
+152	Get-ready pause
+153	Before starting and between warm-up or stretching moves
+154	No exercises match that combination
+155	New workout
+156	Your
+157	How did it go? I'll adjust next week's level based on your answer.
+158	· current
+159	Next:
+160	Workout
+161	Extra workout
+162	Weeks
+163	Plan settings
+164	See other plans
+165	Plans
+166	Programs from 3 to 12 weeks. Progress is saved to your profile automatically.
+167	Other plans
+168	Choose a plan
+169	Completed plans
+170	=
+171	Reps and time
+172	All timed
+173	No burpees
+174	Mixed
+175	Version
+176	Days per week
+177	How many push-ups can you do in a row?
+178	Starting level
+179	The level adjusts at the end of each week based on how it went.
+180	Start plan
+181	Switch plan
+182	Plan started. Let's go, week 1!
+183	Level
+184	Current week
+185	← Previous
+186	Next →
+187	Quit the plan
+188	Week
+189	Plan updated
+190	The plan's progress will be deleted. Your workout history stays.
+191	Quit
+192	Plan completed! Congratulations 🎉
+193	Day
+194	Extra
+195	· already done
+196	Stretch
+197	Mobility
+198	No exercise matches.
+199	=
+200	✓ Using your file
+201	Saved
+202	You haven't saved any yet. Generate one in the coach and tap ☆ Save.
+203	Show less
+204	Show all
+205	Delete saved workout
+206	Delete
+207	session
+208	Your sessions will show up here.
+209	this week
+210	min this week
+211	total min
+212	· incomplete
+213	Sessions
+214	Complete your first workout.
+215	Unfinished workout
+216	Resume
+217	Discard workout
+218	The unfinished workout will be discarded.
+219	Discard
+220	, each side
+221	You did it!
+222	Go!
+223	Now:
+224	. Start with the right side
+225	Get ready. First:
+226	How many did you do? Write it down. Next:
+227	Round complete.
+228	Voice and beeps
+229	Beeps only
+230	Silent
+231	Sound:
+232	Voice on
+233	Tap ▶ to continue
+234	Next exercise in 10 seconds.
+235	+10 seconds
+236	Last one.
+237	10 seconds. Get ready.
+238	Halfway!
+239	Switch sides
+240	Changed to
+241	Go!
+242	· next
+243	With dumbbell
+244	Without dumbbell
+245	· Exercise
+246	Time left approx.
+247	Last
+248	Next
+249	Done
+250	Continue
+251	Pause
+252	· paused
+253	Count your reps
+254	Next exercise in
+255	+10 s · more time
+256	Skip to next
+257	Start now
+258	Skip pause
+259	Left side
+260	Right side
+261	Let's keep going
+262	Intensity
+263	Stays pending to repeat another day
+264	Saved to history
+265	Marks this day and moves to the next one in the plan
+266	Moves to the coach's next session
+267	Finish and skip
+268	The ones left in this session
+269	Change workout
+270	Pick an easier, similar or harder one
+271	Another similar one
+272	▶ Continue
+273	Finish
+274	=
+275	This plan is no longer active
+276	You're already at the highest level
+277	You're already at the lowest level
+278	It's already the highest level
+279	It's already the lowest level
+280	New workout ·
+281	=
+282	Week complete!
+283	Workout complete! Great job.
+284	Done!
+285	Skipped
+286	Session saved
+287	active time
+288	Test done!
+289	Test interrupted
+290	Check or type your reps
+291	in 1 minute
+292	Save results
+293	I'll adjust the next session
+294	How did it go?
+295	=
+296	a bit more intense
+297	a bit more demanding
+298	gentler
+299	Noted. Take the fitness test in the coach so I can adjust your sessions.
+300	Missing the number of
+301	Result
+302	Day marked as done
+303	=
+304	=
+305	=
+306	Z1 Very easy
+307	Z2 Easy
+308	Z3 Moderate
+309	Z4 Hard
+310	Z5 Max
+311	Heart rate
+312	avg bpm
+313	max bpm
+314	approx. kcal
+315	Heart rate monitor connected
+316	Couldn't connect. Is the strap on and free?
+317	Heart rate monitor disconnected
+318	Heart rate monitor reconnected
+319	Lost the heart rate monitor
+320	Connect heart rate monitor
+321	Not connected
+322	This browser can't connect via Bluetooth
+323	Heart rate monitor
+324	This browser doesn't allow connecting Bluetooth devices.
+325	On iPhone
+326	Install the free browser
+327	Bluefy
+328	(App Store) and open the app from it with its https address. The ♥ button to connect the strap shows up there.
+329	On Android or PC

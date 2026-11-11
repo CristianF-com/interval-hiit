@@ -1,0 +1,150 @@
+720	Dumbbell coach
+721	Strength at home
+722	Builds two sessions that alternate, one every two days, and puts them on the calendar. When you start you pick your dumbbell weight and it calculates the reps to keep the level.
+723	Start with dumbbells
+724	Due today.
+725	Next:
+726	No strength test: weights are estimated from your body weight and corrected with your feedback.
+727	Repeat strength test
+728	Measure my level
+729	Enter your weight in Profile → Edit current
+730	so the first calculations are more accurate.
+731	Next I'll suggest a 4-exercise strength test to calculate your real level. If you skip it, I start from an estimate based on your body weight and the level you chose.
+732	Create and measure my level
+733	Create without test
+734	Turn off dumbbells
+735	Two full-body sessions that alternate (A and B), every other day.
+736	Weights you own (kg per dumbbell)
+737	Enter at least one weight
+738	Sessions created · they show up on the calendar
+739	Your weights and strength progress are deleted. History stays.
+740	heavy for you
+741	light: do them slowly
+742	Choose the dumbbell weight. Reps adjust to keep the level.
+743	Same weight for all
+744	Per exercise
+745	4 gentle 30 s moves before
+746	4 stretches of 30 s at the end
+747	Next time I'll suggest fewer reps with the same weight.
+748	Next time I'll suggest more reps or more weight.
+749	I'll raise the challenge a bit for next time.
+750	kg lifted
+751	Reps are calculated when you start, based on the weight you choose.
+752	It moves on to the next session, in two days.
+753	Turn off dumbbells?
+754	active day
+755	active days
+756	total time
+757	streak / best streak (days)
+758	workout this week
+759	workouts this week
+760	time this week
+761	Stats
+762	Body parts trained
+763	Total
+764	Best
+765	your weight (
+766	kg)
+767	70 kg: enter your weight in Profile → Edit current
+768	Challenge
+769	Most in a row
+770	Time
+771	Speed
+772	At first
+773	Now
+774	Change
+775	Seconds per rep based on how long you take to tap ✓ in rep exercises (and in challenges). With 3 sets of an exercise I already know your pace and, if “Auto-advance to the next” is on, I warn you 10 s before moving on.
+776	in the morning
+777	at noon
+778	in the afternoon
+779	at night
+780	Favorite exercise
+781	Average per workout
+782	Longest workout
+783	Best week
+784	You usually train
+785	Average heart rate
+786	Other data
+787	Your coach
+788	Or build your own
+789	Choose time, zones and level. The coach builds the circuit.
+790	Duration
+791	Zones
+792	Mixes dumbbell exercises into the circuit
+793	5 gentle moves before, with a short get-ready pause between them
+794	5 stretches of 30 s, with a short get-ready pause between them
+795	Custom timings
+796	Set work, rest and rounds by hand
+797	Work (s)
+798	Rest (s)
+799	Exercises per round
+800	Rounds
+801	Rest between rounds (s)
+802	Generate workout
+803	See all exercises
+804	↻ Another
+805	☆ Save
+806	History
+807	Coach
+808	↶ Remove one
+809	☆ Save this workout
+810	✓ Mark the day as done
+811	Who's
+812	Each profile keeps its own plan, progress, history and settings on this device.
+813	=
+814	HIIT coach and 3 to 12-week training plans.
+815	Install app
+816	Search exercise…
+817	Previous
+818	Sound
+819	Remove one rep
+820	180° jump squat
+821	Squat down and jump turning half a turn. Alternate the direction.
+822	180° jump
+823	Jump turning half a turn in the air and land softly with your knees bent.
+824	March with arm swings
+825	March in place swinging your arms wide forward and back.
+826	Beginner burpee
+827	Hands to the floor, step your feet back one at a time, come back and stand up.
+828	Squat with knee to elbow
+829	Squat and, as you come up, bring your knee toward the opposite elbow, twisting your torso.
+830	Sumo squat with arm circles
+831	Hold a sumo squat while making small circles with your arms straight.
+832	4-count burpee
+833	Hands to the floor, jump to plank, jump back in and stand up. No final jump.
+834	Alternating scissors
+835	In a lunge position, jump and switch legs in the air with little height.
+836	6-count burpee
+837	Hands to the floor, jump to plank, push-up, jump in, stand up and jump.
+838	Low plank with side taps
+839	In a low plank, bring one foot out to the side, tap and come back. Alternate.
+840	Alligator push-up
+841	Do a push-up and move forward one step moving one hand and the opposite foot at the same time, as if crawling. Repeat and go back.
+842	Backward arm circles
+843	Arms straight out to the sides, backward circles getting bigger.
+844	Forward arm circles
+845	Arms straight out to the sides, forward circles getting bigger.
+846	Reverse lunge
+847	Step back and lower your knee almost to the floor. Alternate legs.
+848	Dead bug
+849	On your back, extend the opposite arm and leg while keeping your lower back pressed to the floor.
+850	Bent-leg cross-over
+851	On your back, cross your bent knee over your body to the opposite side.
+852	Bicycle crunch
+853	Bring your elbow toward the opposite knee while extending the other leg.
+854	Glute bridge
+855	On your back with feet on the floor, lift your hips squeezing your glutes.
+856	Butt-kicker jump squat
+857	Squat and jump bringing your heels toward your glutes.
+858	Calf raise
+859	Standing, rise onto your toes and lower slowly.
+860	Cat-cow
+861	On all fours, slowly arch and round your back following your breath.
+862	Child's pose
+863	Knees apart, hips to your heels and arms stretched forward.
+864	Clap jacks
+865	Jump opening your legs and arms out to the sides; as you close, clap in front of your chest.
+866	Butterfly
+867	Seated, soles of your feet together, let your knees drop toward the floor.
+868	Commander plank
+869	From low plank to high plank, coming up one arm and then the other, without twisting your hips.

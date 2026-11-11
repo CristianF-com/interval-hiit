@@ -1,0 +1,32 @@
+name: Pruebas
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+concurrency:
+  group: pruebas-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  pruebas:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Instalar Playwright
+        working-directory: tools/pruebas
+        run: |
+          npm install --no-audit --no-fund
+          npx playwright install --with-deps chromium
+      - name: Correr las pruebas
+        run: node tools/pruebas/run.mjs
+      - name: Guardar capturas si algo falla
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: capturas
+          path: /tmp/inhiit
+          retention-days: 7

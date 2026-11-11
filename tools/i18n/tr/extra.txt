@@ -1,0 +1,788 @@
+hoy	today
+mañana	tomorrow
+entrena	training
+Toca ✓ al terminar	Tap ✓ when done
+prueba	test
+min	min
+series	sets
+rondas	rounds
+reps	reps
+seguidas	in a row
+repeticiones	reps
+segundos	seconds
+entrenamientos	workouts
+logros	achievements
+sesiones	sessions
+· prueba	· test
+Calentamiento	Warm-up
+lado izquierdo	left side
+lado derecho	right side
+izquierda	left
+derecha	right
+ninguno	none
+Uno	One
+uno	one
+dos	two
+tres	three
+cero	zero
+abdominal	sit-up
+sentadilla	squat
+dominada	pull-up
+press	press
+curl	curl
+Idioma	Language
+Cambia el idioma de toda la app. Las voces grabadas (Dora, Alex, Paula, Julio, Ona y Kimetz) son solo en español; en inglés se usa la voz del teléfono.	Changes the language of the whole app. The recorded voices (Dora, Alex, Paula, Julio, Ona and Kimetz) are Spanish only; in English the phone's voice is used.
+Pasa a la etapa	Moves to stage
+¡Prueba superada!	Test passed!
+lento	slow
+normal	normal
+Nivel	Level
+Fuerza	Strength
+pausa	paused
+Sin pulso	No heart rate
+minutos	minutes
+intervalos	intervals
+Próxima sesión	Next session
+Cambiar por otro ejercicio	Swap for another exercise
+Programas para llegar a muchas repeticiones de un ejercicio, con pruebas al final de cada etapa.	Programs to reach lots of reps of one exercise, with tests at the end of each stage.
+Elige desde dónde empiezas.	Choose where to start.
+Descansar entre sesiones es parte del programa.	Resting between sessions is part of the program.
+Los datos viven en este teléfono; con la copia en la nube los recuperas si cambias de móvil o se borra el navegador.	Your data lives on this phone; with the cloud backup you get it back if you change phones or the browser is cleared.
+Escríbelos separados por comas. Si son ajustables, pon los pesos que puedes armar.	Separate them with commas. If they're adjustable, enter the weights you can build.
+Más peso	More weight
+Menos peso	Less weight
+también puedes tocar la pantalla	you can also tap the screen
+una mancuerna	one dumbbell
+Ponte en posición.	Get into position.
+Abrir	Open
+Repetir	Repeat
+…o pega aquí el texto de una copia	…or paste the text of a backup here
+kg por mancuerna	kg per dumbbell
+FC máxima (ppm)	Max heart rate (bpm)
+El calentamiento y los estiramientos también se pueden cambiar antes de cada sesión.	Warm-up and stretching can also be changed before each session.
+faltan	to go
+Tu coach	Your
+HIIT	HIIT coach
+¿Por qué lo pasas?	Why are you skipping it?
+Muy difícil	Too hard
+Lo cambio por una versión más fácil en lo que queda	I'll swap it for an easier version for the rest
+Muy fácil	Too easy
+Lo cambio por una versión más difícil en lo que queda	I'll swap it for a harder version for the rest
+Dolor o molestia	Pain or discomfort
+Elijo la zona y ajusto los ejercicios que quedan	Pick the area and I'll adjust the remaining exercises
+Otro motivo	Other reason
+Solo pasar al siguiente	Just skip to the next
+▶ Seguir con este ejercicio	▶ Keep doing this exercise
+¿Dónde te molesta?	Where does it hurt?
+Cambio los ejercicios que quedan por otros que no carguen esa zona. Si el dolor es fuerte o no se va, para y consulta a un profesional.	I'll swap the remaining exercises for others that don't load that area. If the pain is strong or doesn't go away, stop and see a professional.
+Rodillas	Knees
+Muñecas y manos	Wrists and hands
+Tobillos y gemelos	Ankles and calves
+Codos y bíceps	Elbows and biceps
+Espalda baja	Lower back
+Cuello	Neck
+Cadera	Hips
+Cuidarla también en las próximas sesiones	Also protect it in upcoming sessions
+Se puede quitar en Perfil → Zonas a cuidar	You can remove it in Profile → Areas to protect
+Ajustar y pasar al siguiente	Adjust and skip to the next
+Elige al menos una zona	Choose at least one area
+Ningún ejercicio de los que quedan carga esa zona	None of the remaining exercises load that area
+Cuidando:	Protecting:
+Los ejercicios que cargan esas zonas ya están cambiados.	Exercises that load those areas have already been swapped.
+Dejar de cuidarlas	Stop protecting them
+Ya no se cuida ninguna zona	No areas are being protected now
+Zonas a cuidar	Areas to protect
+Los entrenamientos evitan los ejercicios que cargan:	Workouts avoid exercises that load:
+Los audios se descargan a medida que se usan. Para tenerlos todos sin internet, guárdalos ahora (unos 15 MB).	Audio clips download as they're used. To have them all without internet, save them now (about 15 MB).
+Dora, Alex, Paula, Julio, Ona y Kimetz son voces grabadas en español. «Voz del teléfono» usa la del iPhone o del navegador.	Dora, Alex, Paula, Julio, Ona and Kimetz are recorded Spanish voices. "Phone voice" uses the iPhone's or browser's voice.
+Primera dominada	First pull-up
+Dominadas negativas	Negative pull-ups
+Dominadas asistidas	Assisted pull-ups
+Dominadas sueltas	Single pull-ups
+negativas	negatives
+asistidas	assisted
+Sube a la barra con un salto o desde una silla, con la barbilla por encima, y baja lo más lento que puedas (unos 5 segundos) hasta tener los brazos estirados. Cuenta una al llegar abajo.	Get up to the bar with a jump or from a chair, chin above it, and lower as slowly as you can (about 5 seconds) until your arms are straight. Count one when you reach the bottom.
+Con una banda elástica enganchada a la barra bajo las rodillas o los pies, o con un pie apoyado en una silla para ayudarte lo justo. Sube hasta pasar la barbilla por encima de la barra y baja controlando.	With a resistance band hooked on the bar under your knees or feet, or with one foot on a chair to help just enough. Pull up until your chin clears the bar and lower with control.
+Una dominada completa por serie, con descansos largos para llegar fresco a cada una. Si una no sale, haz una negativa lenta en su lugar, pero no la cuentes.	One full pull-up per set, with long rests so you're fresh for each one. If one doesn't come, do a slow negative instead, but don't count it.
+Versión {0}	Version {0}
+Actualizando a la versión {0}…	Updating to version {0}…
+Buscando actualizaciones…	Checking for updates…
+Sin conexión: se abre la versión guardada	Offline: opening the saved version
+Tu coach HIIT	Your HIIT coach
+4 estiramientos de 30 s	4 stretches of 30 s
+Al cambiarlas se vuelve a armar la próxima sesión. La duración máxima y la intensidad están en Ajustes.	Changing them rebuilds the next session. Maximum duration and intensity are in Settings.
+También se pueden cambiar antes de cada sesión. El nivel y los pesos están en Ajustes.	They can also be changed before each session. Level and weights are in Settings.
+Ahora se guarda con un usuario anónimo de este teléfono: si borras la app o cambias de teléfono, no hay forma de recuperarlo. Vincula un correo y tus datos quedan en tu cuenta.	Right now it's saved with an anonymous user on this phone: if you delete the app or change phones, there's no way to get it back. Link an email and your data stays in your account.
+Antes de cambiar nada te muestro qué contiene	Before changing anything I'll show you what it contains
+Cerrar sesión	Sign out
+Conectando…	Connecting…
+Correo o contraseña incorrectos.	Wrong email or password.
+Cuenta y guardado automático	Account and auto-save
+Demasiados intentos. Espera unos minutos.	Too many attempts. Wait a few minutes.
+Después te muestro lo que tienes guardado y eliges si restaurarlo.	Then I'll show you what you have saved and you choose whether to restore it.
+Entrar	Sign in
+Entrar con Google	Sign in with Google
+Entrar con tu cuenta	Sign in to your account
+Esa cuenta de Google ya está en uso: usa «Ya tengo una cuenta: entrar».	That Google account is already in use: use “I already have an account: sign in”.
+Esa cuenta todavía no tiene nada guardado	That account has nothing saved yet
+Escribe correo y contraseña	Enter email and password
+Escribe la contraseña.	Enter the password.
+Escribe tu correo arriba	Enter your email above
+Ese correo no es válido.	That email isn't valid.
+Ese correo ya tiene una cuenta: usa «Ya tengo una cuenta: entrar».	That email already has an account: use “I already have an account: sign in”.
+Ese método de acceso no está activado en Firebase.	That sign-in method isn't enabled in Firebase.
+Esta cuenta ya está vinculada.	This account is already linked.
+Falta autorizar esta dirección en Firebase para entrar con Google. Usa correo y contraseña.	This address isn't authorized in Firebase for Google sign-in yet. Use email and password.
+Guardado automático en la nube.	Automatic cloud save.
+Guardado en la nube	Saved to the cloud
+Guardando…	Saving…
+Guardar ahora	Save now
+Hay datos más nuevos en tu cuenta	There's newer data in your account
+La contraseña debe tener al menos 6 caracteres.	The password must be at least 6 characters.
+Listo: la nube tiene lo de este teléfono	Done: the cloud now has this phone's data
+Listo: tus datos quedan en tu cuenta	Done: your data is now in your account
+Lo de la nube se reemplaza por lo de aquí	The cloud data is replaced with this phone's
+Los datos de este teléfono no se borran. Se seguirán guardando con un usuario anónimo nuevo hasta que vuelvas a entrar.	This phone's data isn't deleted. It will keep saving with a new anonymous user until you sign in again.
+No hay ninguna cuenta con ese correo.	There's no account with that email.
+No se pudo abrir Google aquí. Usa correo y contraseña.	Google couldn't open here. Use email and password.
+No se pudo completar. Prueba de nuevo.	Couldn't finish. Try again.
+No se pudo guardar	Couldn't save
+No se pudo guardar la última vez	The last save failed
+No se pudo leer lo guardado en la nube	Couldn't read the cloud data
+Olvidé mi contraseña	I forgot my password
+Para recuperar todo en otro teléfono: Perfil → Cuenta y guardado automático → «Ya tengo una cuenta: entrar», con	To get everything back on another phone: Profile → Account and auto-save → “I already have an account: sign in”, with
+Protege tu progreso	Protect your progress
+Quedarme con lo de este teléfono	Keep this phone's data
+Se cerró la ventana de Google antes de terminar.	The Google window closed before finishing.
+Se guardaron desde otro teléfono el	It was saved from another phone on
+Sesión cerrada	Signed out
+Sesión iniciada	Signed in
+Si Google no abre dentro de la app instalada, usa correo y contraseña.	If Google doesn't open inside the installed app, use email and password.
+Sin conexión	Offline
+Sin conexión. Prueba de nuevo con internet.	Offline. Try again with internet.
+Sin conexión: se guardará cuando vuelva internet	Offline: it will save when internet is back
+Te enviamos un correo para cambiar la contraseña	We sent you an email to change your password
+Todavía no se guardó nada en la nube	Nothing saved to the cloud yet
+Todos los perfiles (historial, pulso, planes, retos, entrenador y logros) se guardan solos en la nube después de cada entrenamiento.	All profiles (history, heart rate, plans, challenges, coach and achievements) are saved to the cloud automatically after each workout.
+Tu cuenta	Your account
+Usuario anónimo de este teléfono	Anonymous user on this phone
+Ver y restaurar	View and restore
+Vincula un correo para recuperarlo en otro teléfono.	Link an email to get it back on another phone.
+Vincular con Google	Link with Google
+Vincular correo	Link email
+Ya tengo una cuenta: entrar	I already have an account: sign in
+¿Ya tienes una cuenta?	Already have an account?
+Correo	Email
+Contraseña	Password
+Contraseña (mínimo 6)	Password (at least 6)
+Recupera lo que guardaste en la nube	Get back what you saved in the cloud
+Restaurar desde un archivo	Restore from a file
+Copia en archivo (iCloud Drive / Google Drive)	Backup file (iCloud Drive / Google Drive)
+Un archivo que guardas tú, por si quieres una copia aparte.	A file you save yourself, in case you want a separate copy.
+Se cerró la sesión de tu cuenta: vuelve a entrar desde Perfil	Your account was signed out: sign in again from Profile
+Ya tengo cuenta	I already have an account
+Crea tu cuenta	Create your account
+Ahora se guarda con un usuario anónimo de este teléfono: si borras la app o cambias de teléfono, no hay forma de recuperarlo. Crea una cuenta y todo queda sincronizado entre tus dispositivos.	Right now it's saved with an anonymous user on this phone: if you delete the app or change phones, there's no way to get it back. Create an account and everything stays in sync across your devices.
+Crear cuenta con correo	Create account with email
+Crear cuenta con Google	Create account with Google
+¿Ya tienes cuenta?	Already have an account?
+Crea una cuenta para recuperarlo en otro teléfono.	Create an account to get it back on another phone.
+Listo: cuenta creada	Done: account created
+Para mantener todo sincronizado entre tus dispositivos	To keep everything in sync across your devices
+Crear cuenta	Create account
+Te lo recuerdo en unos días	I'll remind you in a few days
+Ahora no	Not now
+Ese correo ya tiene una cuenta: usa «Ya tengo cuenta».	That email already has an account: use “I already have an account”.
+Esa cuenta de Google ya está en uso: usa «Ya tengo cuenta».	That Google account is already in use: use “I already have an account”.
+Para recuperar todo en otro teléfono: Perfil → Cuenta y guardado automático → «Ya tengo cuenta», con	To get everything back on another phone: Profile → Account and auto-save → “I already have an account”, with
+Firebase rechazó el guardado: falta publicar las reglas de Firestore.	Firebase rejected the save: the Firestore rules aren't published.
+Falta crear la base de datos Firestore en Firebase.	The Firestore database hasn't been created in Firebase.
+Falta activar el acceso «Anónimo» en Firebase.	The “Anonymous” sign-in isn't enabled in Firebase.
+No hay conexión con Firebase. Prueba de nuevo.	Can't reach Firebase. Try again.
+La sesión venció: cierra y vuelve a abrir la app.	The session expired: close and reopen the app.
+Repite la contraseña	Repeat the password
+Las contraseñas no coinciden	The passwords don't match
+Creando cuenta…	Creating account…
+Entrando…	Signing in…
+Tus datos se pasan a la cuenta y quedan sincronizados entre tus dispositivos.	Your data moves to the account and stays in sync across your devices.
+Constancia semanal	Weekly consistency
+Últimas 8 semanas	Last 8 weeks
+Sesiones	Sessions
+Minutos	Minutes
+Esta	This wk
+Tipo de entrenamiento	Workout type
+Entrenamiento libre	Free workout
+Pruebas de capacidad	Fitness tests
+en total	in total
+Verde lima	Lime green
+Progreso de tiempos	Time progress
+Duración de cada sesión	Length of each session
+s por repetición	s per rep
+igual que al principio	same as at the start
+sesiones	sessions
+Minutos que duró cada sesión completa (las últimas 20).	Minutes each full session took (last 20).
+Segundos por repetición en cada sesión, según cuándo tocas ✓ (las últimas 20). Más bajo es más rápido.	Seconds per rep in each session, based on when you tap ✓ (last 20). Lower is faster.
+Elegir foto	Choose photo
+Quitar	Remove
+Acomoda tu foto	Adjust your photo
+Arrastra para moverla; acércala con el control o con dos dedos.	Drag to move it; zoom with the slider or two fingers.
+Acercar	Zoom
+Usar foto	Use photo
+No se pudo abrir esa imagen	Couldn't open that image
+¿Qué copia restauras?	Which backup do you restore?
+En la nube hay dos copias. Usa el respaldo si la última quedó mal o le falta algo.	There are two copies in the cloud. Use the backup if the latest one went wrong or is missing something.
+Última copia	Latest copy
+Respaldo	Backup
+Lo más reciente que se guardó.	The most recent save.
+Una copia anterior, de hasta unos días antes.	An earlier copy, from up to a few days before.
+Restaurar la última copia	Restore the latest copy
+Restaurar el respaldo	Restore the backup
+Antes de cambiar nada te muestro qué contiene la que elijas.	Before changing anything I'll show you what the one you choose contains.
+Restaurar desde la nube	Restore from the cloud
+Todavía no hay nada guardado en la nube	Nothing saved in the cloud yet
+No se pudo leer esa copia: prueba con la otra	Couldn't read that copy: try the other one
+Abriendo la foto…	Opening the photo…
+Dora (Español latino)	Dora (Latin American Spanish)
+Alex (Español latino)	Alex (Latin American Spanish)
+Paula (Español latino)	Paula (Latin American Spanish)
+Julio (Español latino)	Julio (Latin American Spanish)
+Ona (Español México)	Ona (Mexican Spanish)
+Kimetz (Español México)	Kimetz (Mexican Spanish)
+A medida	Custom
+Agrega al menos un ejercicio	Add at least one exercise
+Agregar ejercicio	Add exercise
++ Agregar ejercicio	+ Add exercise
+Agregar foto	Add photo
+Amigos	Friends
+Arma tus circuitos con los ejercicios que quieras y compártelos con un link o un código QR.	Build circuits with any exercises you like and share them with a link or a QR code.
+Borrar foto	Delete photo
+Borrar la primera	Delete the first
+Borrar la segunda	Delete the second
+Borrar registro	Delete entry
+Borrar rutina	Delete routine
+Brazo	Arm
+Cargando…	Loading…
+Cintura	Waist
+Cadera	Hips
+Comparar	Compare
+Comparar las dos fotos	Compare the two photos
+Compartir	Share
+Compartir link	Share link
+Compartir mi sesión	Share my session
+Compartir «	Share “
+Completa solo lo que quieras medir hoy. Las medidas se toman siempre en el mismo lugar y a la misma hora (mejor en ayunas).	Fill in only what you want to measure today. Measure always at the same spot and time (ideally before eating).
+Con dos registros o más aparece el gráfico. Toca una medida para verla.	The chart appears with two entries or more. Tap a measurement to see it.
+Copiar link	Copy link
+Crea tu cuenta para no perder tu progreso	Create your account so you don't lose your progress
+Crea un grupo, comparte el código y compitan por quién entrena más cada semana. Se ve solo el nombre del perfil, las sesiones y los minutos de la semana.	Create a group, share the code and compete to see who trains most each week. Only the profile name, sessions and minutes of the week are shown.
+Creando…	Creating…
+Crear	Create
+Crear grupo	Create group
++ Crear grupo	+ Create group
+Cuenta y datos	Account and data
+Cuerpo	Body
+Cuántas sesiones o minutos quieres entrenar por semana (de lunes a domingo). Cuenta todo: planes, coach, mancuernas, retos y rutinas.	How many sessions or minutes you want to train per week (Monday to Sunday). Everything counts: plans, coach, dumbbells, challenges and routines.
+Código de 6 letras	6-letter code
+Descargar imagen	Download image
+Dos sesiones difíciles seguidas: empieza una semana de descarga	Two hard sessions in a row: a deload week starts
+Editar rutina	Edit routine
+El código tiene 6 letras o números	The code has 6 letters or numbers
+Escribe al menos un valor	Enter at least one value
+Ese link de rutina no es válido	That routine link isn't valid
+Este navegador no permite guardar fotos.	This browser can't store photos.
+Foto guardada	Photo saved
+Fotos de progreso	Progress photos
+Guardando la foto…	Saving the photo…
+Guardar en Mis rutinas	Save to My routines
+Inteligente	Smart
+Invitación copiada	Invitation copied
+Invitar	Invite
+Link copiado	Link copied
+Llevas 5 semanas entrenando: toca una semana de descarga	5 weeks of training: time for a deload week
+Llevas 5 semanas subiendo la intensidad	You've been raising the intensity for 5 weeks
+Tus dos últimas sesiones fueron difíciles	Your last two sessions were hard
+Mantén apretada la imagen para guardarla o compartirla.	Press and hold the image to save or share it.
+Meta guardada	Goal saved
+Meta semanal	Weekly goal
+Mis rutinas	My routines
+Muslo	Thigh
+No existe un grupo con ese código	There's no group with that code
+No se pudo cargar el ranking.	Couldn't load the ranking.
+No se pudo conectar con la nube. Prueba de nuevo en un rato.	Couldn't connect to the cloud. Try again in a while.
+No se pudo copiar	Couldn't copy
+No se pudo crear	Couldn't create
+No se pudo guardar la foto	Couldn't save the photo
+No se pudo preparar la imagen	Couldn't prepare the image
+No se pudo unir	Couldn't join
+Nombre de la rutina	Routine name
+Nombre del grupo (p. ej. Los del gym)	Group name (e.g. Gym crew)
+Nueva rutina	New routine
++ Nueva rutina	+ New routine
+Pecho	Chest
+Peso	Weight
+Peso y medidas	Weight and measurements
++ Registrar peso o medidas	+ Log weight or measurements
+Ponle un nombre	Give it a name
+Preparando la imagen…	Preparing the image…
+Probarla ahora	Try it now
+Progreso	Progress
+Quien abra el link (o escanee el código con la cámara) puede guardar la rutina en su app.	Anyone who opens the link (or scans the code with the camera) can save the routine in their app.
+Registra tu peso (y si quieres, cintura, cadera y otras medidas) cada semana o cada dos para ver cómo cambian. El peso también se usa para calcular las calorías.	Log your weight (and if you like, waist, hips and other measurements) every week or two to see how they change. Your weight is also used to estimate calories.
+Registrado	Saved
+Registros	Entries
+Resumen	Summary
+Rutina compartida	Shared routine
+Rutina guardada	Routine saved
+Salir del grupo	Leave group
+Saltearla	Skip it
+Se borra de este teléfono y no se puede recuperar.	It's deleted from this phone and can't be recovered.
+Semana de descarga salteada	Deload week skipped
+Semana de descarga	Deload week
+descarga	deload
+Sin conexión: el ranking se ve con internet.	Offline: the ranking needs internet.
+Sin resultados.	No results.
+Solo quedan en este teléfono (no se suben a la nube). Toca dos para compararlas.	They stay only on this phone (not uploaded to the cloud). Tap two to compare them.
+Todavía no agregaste ejercicios.	You haven't added exercises yet.
+Tu sesión	Your session
+Unirme	Join
+Unirme a un grupo	Join a group
+Unirme con un código	Join with a code
+Ver todos los registros	See all entries
+pulso medio	average heart rate
+día de racha	day streak
+días de racha	day streak
+minutos	minutes
+tú	you
+ENTRENAMIENTO COMPLETADO	WORKOUT COMPLETE
+¡Meta semanal cumplida!	Weekly goal reached!
+Perfil	Profile
+Perfiles	Profiles
+Ajustes	Settings
+{0} min	{0} min
+Código: {0} · esta semana	Code: {0} · this week
+Dejas de aparecer en el ranking de «{0}».	You'll no longer appear in the “{0}” ranking.
+Duración aprox.: {0} min (sin calentamiento ni estiramientos)	Approx. length: {0} min (without warm-up or stretches)
+Grupo creado. Código: {0}	Group created. Code: {0}
+Meta: {0} min por semana	Goal: {0} min per week
+Rutina «{0}» para INHIIT	“{0}” routine for INHIIT
+Semana: {0} de {1} min	Week: {0} of {1} min
+Semana: {0} de {1} sesiones	Week: {0} of {1} sessions
+Sumate a mi grupo «{0}» en INHIIT para ver quién entrena más esta semana. Código: {1}	Join my group “{0}” on INHIIT to see who trains most this week. Code: {1}
+Te faltan {0} min · quedan {1} días	{0} min to go · {1} days left
+Te uniste a «{0}»	You joined “{0}”
+{0} de {1} min esta semana	{0} of {1} min this week
+{0} de {1} sesiones esta semana	{0} of {1} sessions this week
+{0} ejercicios · {1} rondas · {2} min	{0} exercises · {1} rounds · {2} min
+¡Meta cumplida! Llevas {0} esta semana.	Goal reached! {0} this week.
+Te falta {0} sesión · quedan {1} días	{0} session to go · {1} days left
+Te faltan {0} sesiones · quedan {1} días	{0} sessions to go · {1} days left
+Meta: {0} sesión por semana	Goal: {0} session per week
+Meta: {0} sesiones por semana	Goal: {0} sessions per week
+{0} sesión	{0} session
+{0} sesiones	{0} sessions
+{0} día entre una y otra	{0} day between them
+{0} días entre una y otra	{0} days between them
+Tu	Your
+coach	coach
+AI HIIT	AI HIIT
+AI mancuernas	AI dumbbells
+Repeticiones	Reps
+Segundos	Seconds
+rep	reps
+s	s
+{0} rep	{0} reps
+{0} s	{0} s
+Entre rondas (s)	Between rounds (s)
+El descanso es entre un ejercicio y otro. En los ejercicios por repeticiones se toca ✓ al terminar la serie.	Rest is between one exercise and the next. For rep-based exercises, tap ✓ when you finish the set.
+Arma tus circuitos con los ejercicios que quieras, cada uno por tiempo o por repeticiones, y compártelos con un link o un código QR.	Build circuits with any exercises you like, each by time or by reps, and share them with a link or a QR code.
+Mi rutina · {0}s de descanso entre ejercicios · {1}s entre rondas	My routine · {0}s rest between exercises · {1}s between rounds
+{0}s de descanso · {1}s entre rondas	{0}s rest · {1}s between rounds
+Sumaste 100 sentadillas en ejercicios por repeticiones.	You did 100 squats in rep-based exercises.
+Sumaste 500 sentadillas en ejercicios por repeticiones.	You did 500 squats in rep-based exercises.
+Sumaste 1000 sentadillas en ejercicios por repeticiones.	You did 1000 squats in rep-based exercises.
+Sumaste 100 flexiones en ejercicios por repeticiones.	You did 100 push-ups in rep-based exercises.
+Sumaste 500 flexiones en ejercicios por repeticiones.	You did 500 push-ups in rep-based exercises.
+Sumaste 1000 flexiones en ejercicios por repeticiones.	You did 1000 push-ups in rep-based exercises.
+Sumaste 100 abdominales en ejercicios por repeticiones.	You did 100 crunches in rep-based exercises.
+Sumaste 500 abdominales en ejercicios por repeticiones.	You did 500 crunches in rep-based exercises.
+Sumaste 1000 abdominales en ejercicios por repeticiones.	You did 1000 crunches in rep-based exercises.
+Sumaste 50 burpees en ejercicios por repeticiones.	You did 50 burpees in rep-based exercises.
+Sumaste 250 burpees en ejercicios por repeticiones.	You did 250 burpees in rep-based exercises.
+15 minutos de sentadillas	15 minutes of squats
+Sumaste 15 minutos haciendo sentadillas, por tiempo o por repeticiones.	You spent 15 minutes doing squats, timed or by reps.
+60 minutos de sentadillas	60 minutes of squats
+Sumaste 60 minutos haciendo sentadillas, por tiempo o por repeticiones.	You spent 60 minutes doing squats, timed or by reps.
+10 minutos de flexiones	10 minutes of push-ups
+Sumaste 10 minutos haciendo flexiones, por tiempo o por repeticiones.	You spent 10 minutes doing push-ups, timed or by reps.
+30 minutos de flexiones	30 minutes of push-ups
+Sumaste 30 minutos haciendo flexiones, por tiempo o por repeticiones.	You spent 30 minutes doing push-ups, timed or by reps.
+10 minutos de abdominales	10 minutes of crunches
+Sumaste 10 minutos haciendo abdominales, por tiempo o por repeticiones.	You spent 10 minutes doing crunches, timed or by reps.
+30 minutos de abdominales	30 minutes of crunches
+Sumaste 30 minutos haciendo abdominales, por tiempo o por repeticiones.	You spent 30 minutes doing crunches, timed or by reps.
+5 minutos de burpees	5 minutes of burpees
+Sumaste 5 minutos haciendo burpees, por tiempo o por repeticiones.	You spent 5 minutes doing burpees, timed or by reps.
+20 minutos de burpees	20 minutes of burpees
+Sumaste 20 minutos haciendo burpees, por tiempo o por repeticiones.	You spent 20 minutes doing burpees, timed or by reps.
+Crea un grupo, comparte el código y compitan por quién entrena más cada semana. Se ve el nombre del perfil, las sesiones y minutos de la semana, la racha, los logros y los retos en curso.	Create a group, share the code and compete to see who trains most each week. Others see the profile name, sessions and minutes of the week, streak, awards and challenges in progress.
+{0} semana seguida	{0} week in a row
+{0} semanas seguidas	{0} weeks in a row
+{0} logro	{0} award
+{0} logros	{0} awards
+{0} reps esta semana	{0} reps this week
+etapa {0}/3	stage {0}/3
+día {0}/{1}	day {0}/{1}
+récord {0}	best {0}
+Invitación a un grupo	Group invitation
+¿Ya tienes INHIIT en la pantalla de inicio? Ábrela desde su ícono y entra con este código en Historial → Amigos → «Unirme con un código».	Already have INHIIT on your home screen? Open it from its icon and use this code in History → Friends → “Join with a code”.
+¿Ya tienes INHIIT en la pantalla de inicio? Copia el link, abre la app desde su ícono y pégalo en Coach → Mis rutinas → «Pegar link de rutina».	Already have INHIIT on your home screen? Copy the link, open the app from its icon and paste it in Coach → My routines → “Paste routine link”.
+El navegador y la app instalada guardan los datos por separado, por eso acá no aparece tu cuenta.	The browser and the installed app keep their data separately, which is why your account doesn’t show up here.
+Copiar código	Copy code
+Seguir en el navegador	Continue in the browser
+Código copiado	Code copied
+Pegar código o link	Paste code or link
+No encontré un código en lo que copiaste	No code found in what you copied
+Pegar link de rutina	Paste routine link
+Copia primero el link de la rutina	Copy the routine link first
+Si ya tienes la app, ábrela y entra con el código en Historial → Amigos.	If you already have the app, open it and enter the code in History → Friends.
+Crunch de aductores	Adductor crunch
+Toque de puntas con piernas arriba	Straight-leg toe touches
+Elevación de cadera con piernas arriba	Legs-up hip raise
+Tijeras cruzadas	Scissor legs
+Crunch cruzado combinado	Crossover crunch combo
+Caída de rodillas a los lados	Knee drops
+Crunch con brazos arriba	Crunch reach up
+Crunch con toque de rodillas	Knee-touch crunch
+Elevación de piernas flexionadas	Bent-knee leg raises
+Crunch en mesa con giro	Tabletop crunch with twist
+Crunch con extensión de piernas	Stretch crunch
+Plancha lateral	Side plank
+Elevación lateral de piernas	Side leg lifts
+Plancha lateral con elevación	Side plank with lift
+Crunch oblicuo	Oblique crunch
+Doble rodilla en cuadrupedia	Double knee lifts
+Enhebrar la aguja	Thread the needle
+Crunch de aductores (derecha)	Adductor crunch (right)
+Toque de puntas con piernas arriba (derecha)	Straight-leg toe touches (right)
+Elevación de cadera con piernas arriba (derecha)	Legs-up hip raise (right)
+Tijeras cruzadas (derecha)	Scissor legs (right)
+Crunch cruzado combinado (derecha)	Crossover crunch combo (right)
+Caída de rodillas a los lados (derecha)	Knee drops (right)
+Crunch con brazos arriba (derecha)	Crunch reach up (right)
+Crunch con toque de rodillas (derecha)	Knee-touch crunch (right)
+Elevación de piernas flexionadas (derecha)	Bent-knee leg raises (right)
+Crunch en mesa con giro (derecha)	Tabletop crunch with twist (right)
+Crunch con extensión de piernas (derecha)	Stretch crunch (right)
+Plancha lateral (derecha)	Side plank (right)
+Elevación lateral de piernas (derecha)	Side leg lifts (right)
+Plancha lateral con elevación (derecha)	Side plank with lift (right)
+Crunch oblicuo (derecha)	Oblique crunch (right)
+Doble rodilla en cuadrupedia (derecha)	Double knee lifts (right)
+Enhebrar la aguja (derecha)	Thread the needle (right)
+Crunch de aductores (izquierda)	Adductor crunch (left)
+Toque de puntas con piernas arriba (izquierda)	Straight-leg toe touches (left)
+Elevación de cadera con piernas arriba (izquierda)	Legs-up hip raise (left)
+Tijeras cruzadas (izquierda)	Scissor legs (left)
+Crunch cruzado combinado (izquierda)	Crossover crunch combo (left)
+Caída de rodillas a los lados (izquierda)	Knee drops (left)
+Crunch con brazos arriba (izquierda)	Crunch reach up (left)
+Crunch con toque de rodillas (izquierda)	Knee-touch crunch (left)
+Elevación de piernas flexionadas (izquierda)	Bent-knee leg raises (left)
+Crunch en mesa con giro (izquierda)	Tabletop crunch with twist (left)
+Crunch con extensión de piernas (izquierda)	Stretch crunch (left)
+Plancha lateral (izquierda)	Side plank (left)
+Elevación lateral de piernas (izquierda)	Side leg lifts (left)
+Plancha lateral con elevación (izquierda)	Side plank with lift (left)
+Crunch oblicuo (izquierda)	Oblique crunch (left)
+Doble rodilla en cuadrupedia (izquierda)	Double knee lifts (left)
+Enhebrar la aguja (izquierda)	Thread the needle (left)
+Boca arriba con las piernas hacia el techo, abiertas en V. Despega los hombros y lleva las manos al centro, entre los pies.	Lie on your back with your legs up in a V. Lift your shoulders and reach your hands to the middle, between your feet.
+Piernas rectas hacia el techo. Despega los hombros y estira los brazos para tocar las puntas de los pies.	Legs straight up to the ceiling. Lift your shoulders and reach your arms to touch your toes.
+Piernas rectas hacia el techo y brazos en el suelo. Empuja los pies hacia arriba despegando la cadera, sin impulso, y baja lento.	Legs straight up and arms on the floor. Push your feet up lifting your hips, without swinging, and lower slowly.
+Boca arriba, piernas rectas un poco despegadas del suelo. Ábrelas y crúzalas alternando cuál queda arriba, con la zona lumbar pegada al suelo.	On your back, legs straight just off the floor. Open and cross them, alternating which one is on top, keeping your lower back down.
+Boca arriba, un tobillo apoyado sobre la rodilla contraria. Lleva el codo opuesto hacia esa rodilla girando el tronco.	On your back with one ankle over the opposite knee. Bring the opposite elbow toward that knee, twisting your torso.
+Boca arriba, brazos abiertos y rodillas flexionadas en el aire. Baja las rodillas juntas hacia un lado sin despegar los hombros y vuelve al centro; alterna.	On your back, arms out and knees bent in the air. Lower both knees to one side without lifting your shoulders and come back to center; alternate.
+Rodillas flexionadas y brazos estirados hacia el techo. Despega los hombros empujando las manos hacia arriba.	Knees bent and arms reaching to the ceiling. Lift your shoulders, pushing your hands up.
+Rodillas flexionadas y manos sobre los muslos. Sube deslizando las manos hasta tocar las rodillas y baja lento.	Knees bent, hands on your thighs. Curl up sliding your hands to your knees and lower slowly.
+Boca arriba con las rodillas flexionadas. Sube las piernas hasta que los muslos queden verticales y baja sin apoyar los pies.	On your back with knees bent. Raise your legs until your thighs are vertical and lower without touching the floor.
+Piernas en posición de mesa (rodillas a 90°). Sube en crunch llevando el codo hacia la rodilla contraria; alterna.	Legs in tabletop (knees at 90°). Crunch up bringing your elbow toward the opposite knee; alternate.
+Recoge las rodillas hacia el pecho mientras subes el tronco y estira las piernas al bajar, sin apoyar los pies.	Pull your knees to your chest as you lift your torso, and extend your legs as you lower, without touching the floor.
+Apoyado en el antebrazo, cuerpo alineado y cadera alta. Mantén la posición sin dejar caer la cadera.	On your forearm, body aligned and hips high. Hold without letting your hips drop.
+Tumbado de lado con las piernas juntas y rectas. Súbelas juntas unos centímetros y baja lento.	Lie on your side with legs together and straight. Lift them together a few inches and lower slowly.
+Plancha lateral sobre la mano: sube la pierna y el brazo de arriba y bájalos sin dejar caer la cadera.	Side plank on your hand: raise your top leg and arm and lower them without dropping your hips.
+Rodillas flexionadas y caídas hacia un lado, hombros mirando al techo. Sube el tronco llevando el hombro hacia la cadera.	Knees bent and dropped to one side, shoulders facing the ceiling. Lift your torso bringing your shoulder toward your hip.
+En cuatro apoyos con las rodillas apenas despegadas del suelo: lleva una rodilla hacia el pecho dos veces seguidas y estírala atrás.	On all fours with knees just off the floor: bring one knee to your chest twice in a row, then extend it back.
+Plancha lateral sobre el antebrazo: pasa el brazo de arriba por debajo del cuerpo girando el tronco y vuelve a abrirlo.	Side plank on your forearm: thread your top arm under your body, twisting your torso, and open it back up.
+Entrenador de abdominales	Abs coach
+Abdominales en casa	Abs at home
+AI abdominales	AI abs
+Abdominales	Abs
+Un plan de 3 niveles (10, 15 y 25 días) con sesiones cortas y días de descanso. Cada sesión se ajusta según cómo te fue la anterior y aparece en el calendario.	A 3-level plan (10, 15 and 25 days) with short sessions and rest days. Each session adapts to how the last one went and shows up in your calendar.
+Empezar abdominales	Start abs
+Ritmo guiado	Guided pace
+Marca cada repetición como el plan original; apagado, haces las repeticiones a tu ritmo y tocas ✓	Paces every rep like the original plan; when off, you do the reps at your own pace and tap ✓
+Sonido en cada repetición	Sound on every rep
+Un toque suave para seguir el ritmo	A soft tick to keep the pace
+Serie extra	Extra set
+Una serie más del último ejercicio para ir un poco más allá	One more set of the last exercise to go the extra mile
+3 movimientos suaves de 30 s antes	3 gentle 30 s moves first
+3 estiramientos de 30 s	3 stretches of 30 s
+Tres niveles con días de entrenamiento y de descanso fijos. Las repeticiones suben día a día y se ajustan según cómo te va.	Three levels with set training and rest days. Reps go up day by day and adapt to how you are doing.
+{0} días de entrenamiento · {1} ejercicios por sesión	{0} training days · {1} exercises per session
+¿No sabes cuál elegir? Haz todos los crunches que puedas en 1 minuto: menos de 25, principiante; de 25 a 44, intermedio; 45 o más, avanzado.	Not sure which one? Do as many crunches as you can in 1 minute: under 25, beginner; 25 to 44, intermediate; 45 or more, advanced.
+Según tu última prueba de capacidad te sugiero {0}.	Based on your last fitness test I suggest {0}.
+Crear plan	Create plan
+Empezar el nivel de nuevo	Restart the level
+Desactivar abdominales	Turn off abs
+¿Empezar el nivel de nuevo?	Restart the level?
+Vuelves al día 1 de este nivel. El ajuste personal se mantiene.	You go back to day 1 of this level. Your personal adjustment is kept.
+Empezar de nuevo	Start over
+Se borra tu avance en el plan. El historial se mantiene.	Your plan progress is deleted. Your history is kept.
+Plan creado · aparece en el calendario	Plan created · it shows up in your calendar
+Día {0} de {1}	Day {0} of {1}
+Toca hoy.	Due today.
+Próxima: {0}.	Next: {0}.
+{0} series × {1} rep · ~{2} min	{0} sets × {1} reps · ~{2} min
+ajuste personal {0} %	personal adjustment {0}%
+Volviste después de unos días: retomamos un poco más suave.	You are back after a few days: we restart a bit easier.
+¡Nivel completado!	Level complete!
+Terminaste los {0} días del nivel {1}.	You finished the {0} days of the {1} level.
+Pasar a {0}	Move up to {0}
+Repetir el nivel un poco más exigente	Repeat the level a bit harder
+Seguir: últimos 10 días más exigentes	Keep going: last 10 days, harder
+Nivel {0}	Level {0}
+{0} series de cada ejercicio con {1} s de descanso · ~{2} min	{0} sets of each exercise with {1} s rest · ~{2} min
+Para esta sesión	For this session
+Programado para {0}	Scheduled for {0}
+Pasado al {0}	Moved to {0}
+{0} ejercicios	{0} exercises
+{0} series	{0} sets
+día {0}	day {0}
+Hacerlo ahora	Do it now
+Las repeticiones de los próximos días se ajustan según cómo te vaya.	Reps for the coming days adapt to how you do.
+La próxima vez repetimos este día con algunas repeticiones menos.	Next time we repeat this day with a few fewer reps.
+La próxima vez subo un poco más las repeticiones.	Next time I will raise the reps a bit more.
+Seguimos con el plan.	We carry on with the plan.
+reps quedan	reps left
+rep. queda	rep left
+Faltan diez.	Ten to go.
+repeticiones	reps
+extra	extra
+¡Nivel completado!	Level complete!
+Repeticiones guiadas	Guided reps
+Para empezar: 3 o 4 ejercicios básicos por sesión, de 6 a 26 repeticiones.	To get started: 3 or 4 basic exercises per session, 6 to 26 reps.
+Más ejercicios y repeticiones, con oblicuos y planchas laterales.	More exercises and reps, with obliques and side planks.
+Sesiones largas y exigentes, con planchas dinámicas y hasta 50 repeticiones.	Long, demanding sessions with dynamic planks and up to 50 reps.
+{0} días	{0} days
+Siguiente:	Next:
+Hecho	Done
+después, un día de descanso	then a rest day
+{0} de {1} días	{0} of {1} days
+{0} sesiones	{0} sessions
+Ajustes	Settings
+Ver en el Coach	See in Coach
+Plan diario de abdominales con días de descanso. Se puede combinar con cualquier otro plan.	Daily abs plan with rest days. It can be combined with any other plan.
+Día {0}	Day {0}
+Coach inteligente de abdominales	Smart abs coach
+Abdominales a tu medida	Abs made for you
+Mide tu capacidad con una prueba corta y arma cada sesión con ejercicios de abdomen superior, oblicuos e inferior. No tiene fecha de fin: la dificultad sube de a poco según cómo te va.	Measures your capacity with a short test and builds each session with upper, oblique and lower abs exercises. It has no end date: difficulty goes up little by little based on how you are doing.
+Medir mi nivel y empezar	Measure my level and start
+¿Prefieres un plan cerrado de 10, 15 o 25 días? Están en Planes.	Prefer a fixed 10, 15 or 25-day plan? They are in Plans.
+Sesión {0}	Session {0}
+descarga	deload
+Nivel {0}	Level {0}
+{0} ejercicios · {1} series · ~{2} min	{0} exercises · {1} sets · ~{2} min
+Sesión de descarga: un poco más suave para recuperar y seguir subiendo.	Deload session: a bit easier to recover and keep progressing.
+Prueba del {0}: {1} crunches	Test on {0}: {1} crunches
+plancha {0} s	plank {0} s
+conviene repetirla	worth repeating
+Repetir la prueba	Repeat the test
+Prueba de abdominales	Abs test
+Dos ejercicios con buena técnica. Descansa 2 minutos entre uno y otro.	Two exercises with good form. Rest 2 minutes in between.
+Todos los que puedas en 1 minuto	As many as you can in 1 minute
+Opcional: cuánto aguantas con buena postura	Optional: how long you hold with good form
+Usé el resultado de tu última prueba de capacidad. Puedes cambiarlo.	I used the result of your last fitness test. You can change it.
+Guardar y recalcular	Save and recalculate
+Calcular mi nivel	Calculate my level
+Anota cuántos crunches hiciste	Enter how many crunches you did
+aparece en el calendario	it shows up in your calendar
+Coach de abdominales	Abs coach
+Ajustar la dificultad	Adjust difficulty
+Más fácil	Easier
+Más difícil	Harder
+Cada toque mueve el nivel medio punto. El coach igual lo sigue ajustando con tus respuestas.	Each tap moves the level half a point. The coach keeps adjusting it with your answers.
+Historial del nivel	Level history
+Desactivar el coach de abdominales	Turn off the abs coach
+Se borran tu nivel y tus pruebas. El historial se mantiene.	Your level and tests are deleted. Your history is kept.
+Desactivar	Turn off
+prueba	test
+te resultó fácil	it felt easy
+bien	good
+te costó	it was hard
+sesión hecha	session done
+volviste después de unos días	back after a few days
+ajuste manual	manual adjustment
+La próxima sesión será un poco más suave.	Next session will be a bit easier.
+La próxima sesión sube un poco más.	Next session goes up a bit more.
+La próxima sesión sube un poco.	Next session goes up a little.
+se ajusta según la sesión anterior	adapts to the previous session
+Los ejercicios y las repeticiones se eligen después de la sesión anterior, según cómo te fue.	Exercises and reps are chosen after the previous session, based on how it went.
+Empezar día {0}	Start day {0}
+Hacer el día {0} ahora	Do day {0} now
+Empezar	Start
+Entrenar igual	Train anyway
+Abdomen superior	Upper abs
+Oblicuos	Obliques
+Abdomen inferior	Lower abs
+¡Empezar!	Start!
+Medir mi nivel	Measure my level
+Empezar sin prueba	Start without a test
+Entrenador inteligente · HIIT	AI coach · HIIT
+HIIT a tu medida	HIIT made for you
+Sesiones progresivas, una cada dos días. Después de cada una me dices si fue fácil, bien o difícil y ajusto la siguiente. Puedes medir tu nivel con una prueba de 3 minutos o empezar directamente.	Progressive sessions, one every two days. After each one you tell me if it was easy, good or hard and I adjust the next one. You can measure your level with a 3-minute test or start right away.
+Entrenador inteligente · Mancuernas	AI coach · Dumbbells
+Entrenador inteligente · Abdominales	AI coach · Abs
+Sesiones de HIIT progresivas, una cada dos días, que se ajustan según cómo te va.	Progressive HIIT sessions, one every two days, that adapt to how you are doing.
+Con la prueba de capacidad (3 minutos: sentadillas, flexiones y abdominales) calculo tu nivel real. Si empiezas sin prueba, parto del nivel elegido y lo ajusto con tus respuestas.	With the fitness test (3 minutes: squats, push-ups and sit-ups) I work out your real level. If you start without a test, I begin at the level you chose and adjust it with your answers.
+Sesiones de abdominales que se arman a tu medida y suben de a poco, dos días sí y uno no.	Abs sessions built for you that build up little by little, two days on and one off.
+Con la prueba (crunches en 1 minuto y plancha) calculo tu nivel real. Si empiezas sin prueba, parto del nivel elegido y lo ajusto con tus respuestas.	With the test (crunches in 1 minute and a plank) I work out your real level. If you start without a test, I begin at the level you chose and adjust it with your answers.
+Listo: tu primera sesión está preparada	Done: your first session is ready
+Sin prueba: empiezo por el nivel elegido y lo ajusto con tus respuestas.	No test: I start at the level you chose and adjust it with your answers.
+inicio	start
+Nivel	Level
+Entrenador inteligente	AI coach
+Medir mi nivel y empezar	Measure my level and start
+O sin prueba	Or without a test
+Elegir nivel y empezar sin prueba	Pick a level and start without a test
+Elige tu nivel: parto de ahí y lo ajusto con tus respuestas.	Pick your level: I start there and adjust it with your answers.
+La prueba de capacidad dura 3 minutos: sentadillas, flexiones y abdominales. Con tus resultados calculo tu nivel real.	The fitness test takes 3 minutes: squats, push-ups and sit-ups. With your results I work out your real level.
+La prueba son crunches en 1 minuto y, si quieres, cuánto aguantas la plancha. Con eso calculo tu nivel real.	The test is crunches in 1 minute and, if you like, how long you hold a plank. With that I work out your real level.
+La prueba de fuerza son 4 ejercicios: con tus resultados calculo tu nivel real y las repeticiones.	The strength test is 4 exercises: with your results I work out your real level and reps.
+Elige tu nivel: parto de una estimación por tu peso corporal y la ajusto con tus respuestas.	Pick your level: I start from an estimate based on your body weight and adjust it with your answers.
+Guardar	Save
+Rutinas	Routines
+Programado	Scheduled
+Pasado	Past
+Marcar el día	Mark the day
+Automático (según el sistema)	Automatic (follows the system)
+Te lo recuerdo en dos semanas	I'll remind you in two weeks
+Manos abiertas	Hands wide
+Manos juntas	Hands close
+Manos escalonadas	Hands staggered
+De lado a lado	Side to side
+Abrir y cerrar	Open and close
+Cambiar de perfil	Switch profile
+Perfil: {0}. Cambiar de perfil	Profile: {0}. Switch profile
+Cambia algunos ejercicios de los planes, las repeticiones de abdominales, el peso sugerido de las mancuernas y el cálculo de calorías con pulsómetro. Puedes cambiarla luego en tu perfil.	It changes some plan exercises, the abs reps, the suggested dumbbell weight and the heart-rate calorie estimate. You can change it later in your profile.
+Mancuernas	Dumbbells
+Timer	Timer
+Solo el reloj, sin ejercicios: arma bloques fuertes, suaves y descansos para correr, andar en bici o lo que quieras. Te avisa en cada cambio.	Just the clock, no exercises: build hard, easy and rest blocks for running, cycling or anything you like. It alerts you at every change.
++ Nuevo timer	+ New timer
+Mis timers	My timers
+Plantillas	Templates
+Toca una plantilla para cambiar los tiempos y guardarla con otro nombre.	Tap a template to change the times and save it under another name.
+Descartar	Discard
+Editar timer	Edit timer
+Nuevo timer	New timer
+Bloques	Blocks
++ Agregar bloque	+ Add block
+Fuerte, suave y descanso cambian el color de la pantalla y el pitido del aviso.	Hard, easy and rest change the screen color and the alert beep.
+Rondas	Rounds
+Por tiempo	By time
+Sin final	No end
+minutos en total	minutes in total
+Repite los bloques hasta que toques terminar.	Repeats the blocks until you tap finish.
+Preparación (s)	Get ready (s)
+Calentamiento (min)	Warm-up (min)
+Enfriamiento (min)	Cool-down (min)
+Todavía no agregaste bloques.	You have not added any blocks yet.
+Fuerte	Hard
+Suave	Easy
+Descanso	Rest
+No se guarda	Not saved
+Timer guardado	Timer saved
+tiempo total	total time
+bloques	blocks
+Por bloque	By block
+Descartar timer	Discard timer
+Borrar timer	Delete timer
+Hasta 20 bloques	Up to 20 blocks
+Agrega al menos un bloque con tiempo	Add at least one block with time
+Termina primero el entrenamiento en curso	Finish the current workout first
+Pausa y opciones	Pause and options
+Bloque anterior	Previous block
+Bloque siguiente	Next block
+Bloque {0}	Block {0}
+1 minuto	1 minute
+{0} minutos	{0} minutes
+{0} segundos	{0} seconds
+{0} y {1}	{0} and {1}
+Prepárate	Get ready
+Enfriamiento	Cool-down
+Rondas de {0} · hasta que lo detengas	{0} rounds · until you stop it
+{0} min · {1} rondas	{0} min · {1} rounds
+(la última más corta)	(the last one shorter)
+En curso · {0} hechos	In progress · {0} done
+Se pierde lo que llevabas de {0}.	Your progress on {0} will be lost.
+Nombre del bloque	Block name
+Nombre del timer	Timer name
+Prepárate.	Get ready.
+Primero: {0}.	First: {0}.
+Ronda {0}.	Round {0}.
+Último bloque.	Last block.
+Falta un minuto.	One minute left.
+10 segundos.	10 seconds.
+Ronda {0} de {1}	Round {0} of {1}
+Ronda {0}	Round {0}
+Preparación	Get ready
+Antes de empezar	Before you start
+Para terminar	To finish
+Total	Total
+Faltan	Left
+Luego	Then
+Último bloque	Last block
+{0} hechos	{0} done
+¡Terminaste! Buen trabajo.	You finished! Good job.
+1 vez	1 time
+{0} veces	{0} times
+Correr 1 hora	1-hour run
+Bici 45 minutos	45-minute ride
+Bloques de 2 minutos	2-minute blocks
+Tabata	Tabata
+Lento	Slow
+Rápido	Fast
+Caminar	Walk
+Trabajo	Work
+Pausa para cambiar de lado	Pause to switch sides
+En ejercicios por lado, el reloj se detiene a la mitad para darte vuelta	In one-side-at-a-time exercises, the clock stops halfway so you can switch
+En los ejercicios por lado que quedan	In the remaining one-side exercises
+cambia de lado	switch sides
+Pausas	Pauses
+Valen para todos los entrenamientos. También se cambian en las opciones de cada coach y en el menú de pausa.	They apply to every workout. You can also change them in each coach's options and in the pause menu.
+Correr	Running
+Senderismo	Hiking
+Escaleras	Stairs
+Bicicleta	Cycling
+Bici fija o spinning	Stationary bike or spinning
+Elíptica	Elliptical
+Remo	Rowing
+Natación	Swimming
+Kayak o tabla de remo	Kayak or paddleboard
+Patinaje	Skating
+Esquí de fondo	Cross-country skiing
+Saltar la cuerda	Jump rope
+Boxeo o saco	Boxing or heavy bag
+HIIT o circuito	HIIT or circuit
+Fuerza o pesas	Strength or weights
+Baile	Dancing
+Yoga o estiramientos	Yoga or stretching
+Respiración o meditación	Breathing or meditation
+Otra actividad	Other activity
+Solo el reloj (sin calorías)	Clock only (no calories)
+Actividad	Activity
+Avisar con la pantalla bloqueada	Alert with the screen locked
+En prueba. Mantiene el audio activo para que los avisos suenen con el teléfono bloqueado; pausa la música de otras apps	Experimental. Keeps audio active so alerts sound with the phone locked; pauses music from other apps
+Programar en el calendario	Schedule on the calendar
+Opcional. Los días que marques aparece en el calendario; para eso guárdalo.	Optional. It shows on the calendar on the days you pick; save it for that.
+Editar o cambiar los días	Edit or change the days
+kcal aprox.	approx. kcal

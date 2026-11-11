@@ -78,7 +78,7 @@ async function shareLogo(accent) {
 function sessionFacts(x) {
   const mins = Math.round((x.secs || 0) / 60), items = typeof stItems === 'function' ? stItems(x) : [];
   const reps = items.reduce((a, it) => a + (it.reps || 0), 0);
-  const kcal = x.hr && x.hr.kcal ? x.hr.kcal : Math.round(items.reduce((a, it) => a + kcalOf(it.id, it.secs), 0));
+  const kcal = x.hr && x.hr.kcal ? x.hr.kcal : (Math.round(items.reduce((a, it) => a + kcalOf(it.id, it.secs), 0)) || x.kcal || 0);
   const days = new Set(PS.get('history', []).map(x2 => dayStart(x2.at))); let streak = 0;
   for (let d = dayStart(Date.now()); days.has(d); d -= DAY) streak++;
   const w = weekProgress(), g = goalOf();

@@ -1,0 +1,190 @@
+330	Use Chrome or Edge.
+331	No Bluetooth
+332	Record the session with the Polar app (or another one), export the TCX or CSV file from Polar Flow and in History open the workout → “Add heart rate from file”.
+333	Got it
+334	Reconnect
+335	Connect
+336	Disconnect
+337	Heart rate and personal data
+338	To calculate your heart rate zones and an estimate of calories.
+339	If you don't set a max heart rate, it's estimated from your age (208 − 0.7 × age). If you know it from a test, that's better.
+340	Strap or watch
+341	Status
+342	=
+343	=
+344	=
+345	=
+346	empty
+347	Different times
+348	The file's times don't match this workout. Use the whole file anyway?
+349	Use the file
+350	no data
+351	I couldn't find heart rate data in that file (use a Polar Flow TCX or CSV)
+352	No heart rate data.
+353	Replace heart rate from file
+354	Add heart rate from file (TCX / CSV)
+355	Remove heart rate data
+356	Repeat this workout
+357	First step
+358	You completed your first workout.
+359	5 workouts
+360	You completed 5 workouts.
+361	10 workouts
+362	You completed 10 workouts.
+363	25 workouts
+364	You completed 25 workouts.
+365	50 workouts
+366	You completed 50 workouts.
+367	100 workouts
+368	You completed 100 workouts. Legend!
+369	Full week
+370	3 workouts in the same week.
+371	Unstoppable
+372	5 workouts in the same week.
+373	2 weeks in a row
+374	You trained every week for 2 weeks.
+375	1 month of consistency
+376	You trained every week for 4 weeks.
+377	2 months of consistency
+378	You trained every week for 8 weeks.
+379	3 months of consistency
+380	You trained every week for 12 weeks.
+381	100 squats
+382	You did 100 squats in total.
+383	500 squats
+384	You did 500 squats in total.
+385	1000 squats
+386	You did 1000 squats in total.
+387	100 push-ups
+388	You did 100 push-ups in total.
+389	500 push-ups
+390	You did 500 push-ups in total.
+391	1000 push-ups
+392	You did 1000 push-ups in total.
+393	100 sit-ups
+394	You did 100 sit-ups in total.
+395	500 sit-ups
+396	You did 500 sit-ups in total.
+397	1000 sit-ups
+398	You did 1000 sit-ups in total.
+399	50 burpees
+400	You did 50 burpees in total.
+401	250 burpees
+402	You did 250 burpees in total.
+403	10 minutes of plank
+404	You did 10 minutes of planks in total.
+405	1 hour of training
+406	You trained 60 minutes in total.
+407	5 hours of training
+408	You trained 5 hours in total.
+409	1000 minutes
+410	You trained 1000 minutes in total.
+411	Half an hour all out
+412	A complete session of 30 minutes or more.
+413	HIIT marathon
+414	A complete session of 45 minutes or more.
+415	No pauses
+416	You did 10 minutes or more without pausing once.
+417	Early bird
+418	You trained before 7 in the morning.
+419	Night owl
+420	You trained after 10 at night.
+421	Active weekend
+422	You trained Saturday and Sunday of the same weekend.
+423	Measured up
+424	You took the fitness test.
+425	You improved
+426	You beat a result from your previous test.
+427	Intensity 5
+428	Your coach reached intensity 5.
+429	Intensity 8
+430	Your coach reached intensity 8.
+431	Brave
+432	You completed 3 sessions that felt hard.
+433	Plan week
+434	You completed a week of a plan.
+435	Plan finished
+436	You finished a full plan.
+437	With heart
+438	You saved your first session with heart rate.
+439	All out
+440	You reached heart rate zone 5 (90% of your max).
+441	Red zone
+442	10 minutes in zones 4–5 in the same session.
+443	First challenge
+444	You did your first session of a rep challenge.
+445	Stage cleared
+446	You passed the test of a challenge stage.
+447	Goal reached
+448	You reached the goal of a challenge range, for example 100 sit-ups in a row.
+449	100 pull-ups
+450	You did 100 pull-ups in total.
+451	500 pull-ups
+452	You did 500 pull-ups in total.
+453	Next (
+454	Awesome!
+455	Achievement unlocked!
+456	Achievement unlocked:
+457	See all achievements
+458	Earned on
+459	Not earned yet
+460	Close
+461	After every workout
+462	Once a week
+463	Don't remind me
+464	INHIIT backup
+465	Backup copied to the clipboard
+466	Text backup
+467	Select all and copy it.
+468	, the last one on
+469	Backup ready
+470	plan in progress
+471	smart coach
+472	(already here)
+473	last:
+474	at
+475	One of these profiles already exists
+476	of these profiles already exist
+477	Replace with the backup
+478	What's on this phone is replaced by what's in the backup
+479	Add as new profiles
+480	Both are kept
+481	Restore
+482	Restore backup
+483	Backup saved on
+484	. It contains:
+485	Cancel
+486	Backup restored
+487	You haven't saved any backup yet
+488	Save all profiles (history, heart rate, plans, challenges, coach and achievements) to a file in
+489	iCloud Drive
+490	Google Drive
+491	. On a new phone, you restore it from there.
+492	☁ Save backup to the cloud
+493	The Share sheet opens: choose
+494	Save to Files → iCloud Drive
+495	(iPhone) or
+496	Drive
+497	(Android). Always save it in the same folder and, if asked, choose
+498	Restore from the cloud
+499	Reminder
+500	Other options
+501	This profile only
+502	Copy as text
+503	Read the pasted text
+504	That text isn't a valid backup
+505	That file isn't an INHIIT backup
+506	You don't have any backup yet
+507	☁ Save your progress to the cloud
+508	Dora · Latin American Spanish
+509	Alex · Latin American Spanish
+510	Phone voice
+511	=
+512	The system hasn't reported its voices yet. Tap “Try” or open this panel again.
+513	Dora and Alex are recorded voices with a Latin American accent (Spanish only). “Phone voice” uses the iPhone's or the browser's voice.
+514	Voice
+515	These are the voices the iPhone lets web apps use; “enhanced” and “premium” ones first. If you downloaded one and it's not listed, fully close the app (swipe it up) and open it again. Siri voices aren't available to web apps.
+516	▶ Try
+517	Offline
+518	Audio clips download as they're used. To have them all without internet, save them now (about 13 MB).
+519	Save the voice on this device

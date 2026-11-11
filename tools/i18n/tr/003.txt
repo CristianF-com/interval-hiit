@@ -1,0 +1,200 @@
+520	Done
+521	Hi! Let's train!
+522	Hi, I'm your coach. Let's train!
+523	Hi, I'm your coach. Let's train!
+524	Hi! Let's train! Three, two, one, go!
+525	Couldn't find the audio clips
+526	Wednesday
+527	Saturday
+528	Start a plan, a challenge or the smart coach to see your upcoming workouts here.
+529	Plan training days
+530	Nothing scheduled for the next few days.
+531	Calendar
+532	Plan
+533	Coach
+534	Challenges
+535	Incomplete
+536	Next 14 days
+537	day
+538	Today
+539	Rest day.
+540	Do it now
+541	that day
+542	Exercises
+543	Skip this workout
+544	“Don't train” moves this one and the following ones to the next available day. “Skip” marks it done without doing it.
+545	Cancel the plan
+546	Moved to the next available day
+547	Skip this workout?
+548	It's marked as skipped and the plan continues with the next one.
+549	Skip
+550	Workout skipped
+551	Cancel the plan?
+552	The plan's progress is deleted. Your workout history stays.
+553	Cancel plan
+554	Plan cancelled
+555	Do it now
+556	Move to the next day
+557	Skip this session
+558	The exercises for this session are chosen when you finish the previous one, based on how it went.
+559	Turn off the smart coach
+560	Session moved to
+561	Skip this session?
+562	The next one is prepared, with the same intensity.
+563	Session skipped
+564	Turn off the smart coach?
+565	The test and intensity are deleted. Your history stays and you can turn it back on whenever you want.
+566	Turn off
+567	Coach turned off
+568	Phone on your chest (sensor)
+569	Tapping the screen
+570	Lie down with your knees bent and hold the phone flat against your chest, screen facing up (sideways or lengthwise). The app measures how much the screen tilts: it counts one each time you sit up and lie back down.
+571	Tap the screen on each rep.
+572	Phone in your hand or pocket (sensor)
+573	Phone in your pants pocket, by the angle of your thigh (sensor)
+574	Hold the phone against your chest or keep it in a pocket. It detects the drop and the stop at the bottom: it counts when you reach the bottom.
+575	Phone in your front pants pocket, upright. It counts when you come back up, as your thigh goes from horizontal to vertical.
+576	push-up
+577	Tapping the screen with your nose or chin
+578	Leave the phone on the floor under your face and touch it with your nose or chin on each way down.
+579	Pull-ups
+580	Phone in your pocket (sensor)
+581	Tapping the screen on the way down
+582	Keep the phone in a tight pocket or an armband. It detects the drop and the stop at the bottom: it counts when you finish each pull-up.
+583	Leave the phone nearby and tap it as you come down from each pull-up.
+584	To the app's pace (counts by itself)
+585	Keep the phone in sight: it beeps once per rep and counts by itself. Go up with the beep and lower with control. If you can't keep up, tap “Set done” and fix it with “−1”.
+586	Tap the screen after each rep (with your elbow or knuckles, without letting go of the dumbbell).
+587	Triceps extension
+588	extension
+589	on your forearm
+590	Lateral raise
+591	raise
+592	on your upper arm
+593	Raise up to shoulder height.
+594	Shoulder press
+595	Hammer curl
+596	Today: test
+597	Today:
+598	No equipment
+599	active challenge
+600	active challenges
+601	You can have several active at once.
+602	Dumbbell weight
+603	fast
+604	Pace
+605	Seconds per rep: up and down.
+606	Sensor sensitivity
+607	If it counts too many, lower it; if it misses reps, raise it. You can always tap the screen or use “−1”.
+608	Save changes
+609	Start the challenge
+610	Range
+611	Starting stage
+612	How to count
+613	Take the initial test
+614	Type the dumbbell weight
+615	Test:
+616	As many as you can
+617	in total · rests of
+618	kg ·
+619	· your record:
+620	· test passed
+621	· test not passed
+622	weight, range or mode
+623	range or mode
+624	Before it starts counting
+625	The challenge's progress is deleted. The sessions you did stay in your history.
+626	Challenge abandoned
+627	Sit up until the bar fills
+628	Counts when you return to the starting position
+629	Go down until the bar fills
+630	Counts when you finish each pull-up
+631	Counts when you reach the bottom
+632	Sound off: turn it on with the speaker button at the top
+633	Voice off: beeps only (change it with the speaker button at the top)
+634	No access to the sensors: count by tapping the screen
+635	Initial test: as many as you can
+636	=
+637	Goal! Keep going to your max!
+638	Last one!
+639	3 sets left
+640	Second to last set
+641	Last set
+642	Set
+643	=
+644	Initial test
+645	seconds · then as many as you can
+646	Keep going to your max
+647	goal reached · each tap adds an extra
+648	extra · keep going to your max
+649	Last one
+650	rep · last set
+651	rep
+652	to go · last set
+653	Get into position.
+654	Catch your breath. I'll warn you 10 s before the end.
+655	Goal reached: tap the screen for each extra or “Finish”.
+656	One per beep. When you can't do more, tap “Finish” (and “−1” if the last one didn't count).
+657	· you can also tap the screen
+658	Skip rest
+659	Set done
+660	Keep going
+661	Pause and options
+662	Session without reps: not saved
+663	The test
+664	Day
+665	You completed the last range!
+666	(test)
+667	initial test
+668	=
+669	no reps yet
+670	What's left of the get-ready time adjusts
+671	1 = counts only big movements · 5 = counts shorter movements. If it counts too many, lower it; if it doesn't count, raise it.
+672	Seconds per rep.
+673	Tap mode: tap anywhere on the screen on each rep.
+674	Save what I did and exit
+675	Stays in history; this program day remains pending
+676	End the test here
+677	I'll pick range and stage from what you did
+678	▶ Keep going
+679	Exit
+680	Exit without saving
+681	Sensitivity
+682	Challenge resumed where you left off
+683	Goblet squat
+684	Hold a dumbbell upright against your chest and squat down with your chest up.
+685	Dumbbell Romanian deadlift
+686	Knees slightly bent, push your hips back and lower the dumbbells close to your legs with a straight back.
+687	Dumbbell lunge
+688	One dumbbell in each hand, arms hanging. Step back and lower your knee almost to the floor. Alternate.
+689	Dumbbell row
+690	Bent over with a straight back, pull the dumbbells toward your waist, driving your elbows back.
+691	Floor chest press
+692	Lying on your back with knees bent, press the dumbbells toward the ceiling and lower until your elbows touch the floor.
+693	Standing, dumbbells at shoulder height: press up until your arms are straight and lower with control.
+694	Biceps curl
+695	Elbows close to your body, curl the dumbbells up and lower slowly.
+696	Dumbbells with palms facing each other (neutral grip): curl up without moving your elbows from your sides and lower slowly.
+697	Lateral raises
+698	Raise your arms out to the sides up to shoulder height, elbows slightly bent, and lower slowly.
+699	Overhead triceps extension
+700	One dumbbell with both hands over your head: lower it behind by bending your elbows and straighten again.
+701	Squat to press
+702	Dumbbells at your shoulders: squat down and, as you come up, press the dumbbells overhead.
+703	Dumbbell calf raise
+704	One dumbbell in each hand: rise onto your toes and lower slowly.
+705	Push
+706	Pull
+707	Shoulders
+708	· one dumbbell
+709	Strength test
+710	Four exercises. With each one do as many reps as you can
+711	with good form
+712	(stop when the last one is really hard) and write down how many. Rest 2 minutes between them.
+713	Choose a weight you think lets you do 8–15. If you go over 20, use a heavier one next time: the estimate is more accurate between 5 and 15.
+714	Calculate my level
+715	Write down the reps of at least one exercise
+716	The groups you didn't test keep the previous estimate.
+717	See my next session
+718	Session A
+719	Session B

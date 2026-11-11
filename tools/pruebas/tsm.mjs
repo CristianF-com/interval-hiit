@@ -1,0 +1,25 @@
+import { chromium } from 'playwright';
+const SP=process.env.SP;
+const b = await chromium.launch({executablePath: process.env.PW_CHROME || undefined});
+const p = await (await b.newContext({locale:'es-ES',viewport:{width:390,height:844},deviceScaleFactor:2})).newPage();
+const errs=[]; p.on('pageerror',e=>errs.push(e.message));
+await p.goto('http://localhost:8776/'); await p.waitForTimeout(100);
+await p.screenshot({path:SP+`/splash.png`});
+console.log('splash at 100ms', await p.evaluate(()=>[!!document.getElementById('splash'), document.getElementById('sp-ver')?.textContent, document.getElementById('sp-st')?.textContent]));
+await p.waitForTimeout(1200);
+console.log('splash at 1.3s', await p.evaluate(()=>!!document.getElementById('splash')));
+await p.fill('#ob-name','Cris'); await p.click('#ob-go'); await p.waitForTimeout(600);
+await p.evaluate(()=>{ S.theme='naranja'; save(); applyTheme(); });
+await p.evaluate(()=>document.querySelector('#smart').scrollIntoView()); await p.waitForTimeout(200);
+await p.screenshot({path:SP+`/sm_closed.png`});
+await p.evaluate(()=>setSubtab('coach','smart')); await p.click('[data-fold="sm-opts"]'); await p.waitForTimeout(200);
+await p.screenshot({path:SP+`/sm_open.png`});
+await p.evaluate(()=>setSubtab('coach','db')); await p.click('[data-fold="db-opts"]'); await p.evaluate(()=>document.querySelector('#dumb').scrollIntoView()); await p.waitForTimeout(200);
+await p.screenshot({path:SP+`/db_open.png`});
+await p.click('[data-dbo="dbCool"]'); console.log('dbCool', await p.evaluate(()=>S.dbCool));
+// inteligente creado
+await p.evaluate(()=>{ document.querySelector('#sm-start').click(); document.querySelector('#sms-skip').click(); }); await p.waitForTimeout(300);
+await p.evaluate(()=>setSubtab('coach','smart')); await p.click('[data-fold="sm-opts"]'); await p.click('[data-so="noJump"]'); await p.waitForTimeout(200);
+console.log('smart noJump', await p.evaluate(()=>[getSmart().opts.noJump, getSmart().next.noJump]));
+await p.evaluate(()=>document.querySelector('#smart').scrollIntoView()); await p.screenshot({path:SP+`/sm_active.png`});
+console.log(errs); await b.close();

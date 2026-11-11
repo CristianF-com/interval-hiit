@@ -1,0 +1,282 @@
+# frases con partes variables: español<TAB>inglés  ({0}, {1}… son las partes que cambian)
+Sesión {0}	Session {0}
+Entrenador inteligente · Sesión {0}	Smart coach · Session {0}
+Próxima sesión: {0}.	Next session: {0}.
+Próxima sesión: {0}	Next session: {0}
+Prueba del {0}: {1} sentadillas	Test on {0}: {1} squats
+{0} sentadillas	{0} squats
+{0} flexiones (rodillas)	{0} push-ups (knees)
+{0} flexiones	{0} push-ups
+{0} abdominales	{0} sit-ups
+{0} dominadas	{0} pull-ups
+Intensidad {0} de 10	Intensity {0} of 10
+Intensidad actual {0} de 10	Current intensity {0} of 10
+{0} sesiones hechas.	{0} sessions done.
+Intensidad {0}	Intensity {0}
+Última: {0}	Last: {0}
+Más fácil: {0}	Easier: {0}
+Más difícil: {0}	Harder: {0}
+dificultad media {0} de 3 (ajustada)	average difficulty {0} of 3 (adjusted)
+dificultad media {0} de 3	average difficulty {0} of 3
+Rondas {0}–{1}	Rounds {0}–{1}
+Ronda {0} de {1}.	Round {0} of {1}.
+Ronda {0} de {1}	Round {0} of {1}
+Ronda {0}	Round {0}
+repetir × {0}	repeat × {0}
+Descanso {0} s	Rest {0} s
+Descanso de {0} segundos.	Rest for {0} seconds.
+Entrenador inteligente · intensidad {0}	Smart coach · intensity {0}
+{0}s trabajo / {1}s descanso	{0}s work / {1}s rest
+Circuito × {0}	Circuit × {0}
+{0}s / {1}s	{0}s / {1}s
+{0}s entre rondas	{0}s between rounds
+Semana {0} de {1}	Week {0} of {1}
+Nivel {0}	Level {0}
+{0} de {1} entrenamientos	{0} of {1} workouts
+{0} días/semana	{0} days/week
+{0}–{1} días/semana	{0}–{1} days/week
+Semana {0} completada	Week {0} complete
+Hecho · {0}	Done · {0}
+~{0} min	~{0} min
+{0} rondas	{0} rounds
+{0} series	{0} sets
+{0} serie	{0} set
+Opcional · fuera de tus {0} días (puedes hacerlo igual)	Optional · outside your {0} days (you can still do it)
+Siguiente: Entrenamiento {0}	Next: Workout {0}
+Entrenamiento {0}	Workout {0}
+Semana {0} · actual	Week {0} · current
+Semana {0}	Week {0}
+{0} → {1}	{0} → {1}
+{0} entrenamientos	{0} workouts
+{0} entrenamiento	{0} workout
+{0} semanas	{0} weeks
+{0} días por semana.	{0} days per week.
+Ya sigues «{0}». Si cambias, se perderá su progreso.	You're already following “{0}”. If you switch, its progress will be lost.
+semana {0} de {1}	week {0} of {1}
+Subimos a nivel {0}	Moving up to level {0}
+Bajamos a nivel {0}	Moving down to level {0}
+Semana {0}: mismo nivel	Week {0}: same level
+Día {0}	Day {0}
+día {0}	day {0}
+{0} ejercicios.	{0} exercises.
+{0} ejercicios	{0} exercises
+{0} min	{0} min
+paso {0} de {1}	step {0} of {1}
+{0} hechos	{0} done
+{0} repeticiones.	{0} reps.
+{0} repeticiones	{0} reps
+{0} segundos, por lado.	{0} seconds, each side.
+{0} segundos, por lado	{0} seconds, each side
+{0} segundos.	{0} seconds.
+{0} segundos	{0} seconds
+Prueba: {0}. Haz todas las que puedas en un minuto y cuéntalas.	Test: {0}. Do as many as you can in one minute and count them.
+Ahora: {0}	Now: {0}
+Siguiente: {0}	Next: {0}
+Primero: {0}	First: {0}
+Prepárate. Primero: {0}	Get ready. First: {0}
+¿Cuántas hiciste? Anótalo. Siguiente: {0}	How many did you do? Write it down. Next: {0}
+Sonido: {0}	Sound: {0}
+Cambiado a {0}	Changed to {0}
+{0} kg · serie {1} de {2}	{0} kg · set {1} of {2}
+tu ritmo: ~{0}	your pace: ~{0}
+Toca ✓ al terminar · tu ritmo: ~{0}	Tap ✓ when done · your pace: ~{0}
+{0}% completado	{0}% complete
+Nuevo entrenamiento · {0}	New workout · {0}
+Próxima sesión {0}, {1}: {2}	Next session {0}, {1}: {2}
+Intensidad {0}/10.	Intensity {0}/10.
+Falta el número de {0}	Missing the number of {0}
+Nivel {0}. Tu próxima sesión está lista: {1}, ~{2} min.	Level {0}. Your next session is ready: {1}, ~{2} min.
+Puedes hacerla hoy o mañana.	You can do it today or tomorrow.
+{0} máx. gráfico	{0} chart max
+FC máx. usada {0}	Max HR used {0}
+Pulso {0}	Heart rate {0}
+Pulsómetro conectado: {0}	Heart rate monitor connected: {0}
+{0} ppm	{0} bpm
+Conectado: {0}	Connected: {0}
+Conectado{0}	Connected{0}
+Pulso añadido: media {0}, máx. {1}	Heart rate added: avg {0}, max {1}
+{0} min de plancha	{0} min of plank
+Aprox.: {0}	Approx.: {0}
+{0} min activos	{0} active min
+Siguiente ({0})	Next ({0})
+Logro conseguido: {0}	Achievement unlocked: {0}
+Logros · {0} de {1}	Achievements · {0} of {1}
+Conseguido el {0}	Earned on {0}
+Progreso: {0} de {1}	Progress: {0} of {1}
+{0} logros	{0} achievements
+{0} reto	{0} challenge
+{0} retos	{0} challenges
+último: {0}	last: {0}
+{0} a las {1}	{0} at {1}
+{0} de estos perfiles ya existen	{0} of these profiles already exist
+{0} en este teléfono.	{0} on this phone.
+{0} perfiles restaurados	{0} profiles restored
+Última copia: {0}	Last backup: {0}
+Archivo: {0}	File: {0}
+Elige el archivo {0} en iCloud Drive o Drive. Antes de restaurar te muestro qué contiene.	Choose the file {0} in iCloud Drive or Drive. Before restoring I'll show you what it contains.
+Perfil: {0}	Profile: {0}
+Perfil creado: {0}	Profile created: {0}
+Se borrará el perfil «{0}» con todo su progreso, historial y logros. No se puede deshacer.	The profile “{0}” will be deleted with all its progress, history and achievements. This can't be undone.
+Ya existe el perfil «{0}». ¿Reemplazar sus datos con la copia?	The profile “{0}” already exists. Replace its data with the backup?
+{0} (copia)	{0} (copy)
+Planes: {0}	Plans: {0}
+Sonido actual en el entrenamiento: {0} (se cambia con el altavoz del reproductor).	Current workout sound: {0} (change it with the player's speaker button).
+Guardando… {0} audios	Saving… {0} clips
+Guardados {0}; {1} no se pudieron bajar (¿sin conexión?).	Saved {0}; {1} couldn't be downloaded (offline?).
+Listo: {0} audios guardados para usar sin conexión.	Done: {0} clips saved for offline use.
+Los entrenamientos pendientes se reparten en estos días.	Pending workouts are spread across these days.
+El plan necesita al menos {0} días por semana	The plan needs at least {0} days per week
+Este plan tiene como máximo {0} días por semana	This plan has at most {0} days per week
+Reto {0}	Challenge {0}
+Plan · Semana {0}, día {1}	Plan · Week {0}, day {1}
+Entrenador · Sesión {0}	Coach · Session {0}
+{0} seguidas	{0} in a row
+etapa {0}	stage {0}
+se ajusta según la sesión anterior	adjusts based on the previous session
+Programado para {0}	Scheduled for {0}
+Programada para {0}	Scheduled for {0}
+programada para {0}	scheduled for {0}
+No entrenar {0}	Don't train {0}
+Sesión pasada al {0}	Session moved to {0}
+Móvil {0} (sensor)	Phone {0} (sensor)
+Sujeta el móvil {0} con un brazalete o una banda. Cuenta cada vez que vuelves a la posición inicial.	Strap the phone {0} with an armband or a band. It counts each time you return to the starting position.
+De 0 a {0} y más	From 0 to {0} and beyond
+{0} kg	{0} kg
+Hoy: {0}	Today: {0}
+etapa {0}/3	stage {0}/3
+día {0}/{1}	day {0}/{1}
+Tienes {0} {1}.	You have {0} {1}.
+hasta {0}	up to {0}
+Usa un peso con el que puedas hacer al menos {0} seguidas con buena técnica. Mantén el mismo peso durante el reto.	Use a weight you can do at least {0} in a row with good form. Keep the same weight during the challenge.
+Programa de 3 etapas con pruebas a las {0} repeticiones. Elige desde dónde empiezas.	3-stage program with tests at {0} reps. Choose where to start.
+Si no sabes dónde empezar, haz la prueba inicial: tantas {0} como puedas y elijo el rango y la etapa.	If you don't know where to start, take the initial test: as many {0} as you can and I'll pick the range and stage.
+Prueba: {0} seguidas	Test: {0} in a row
+{0} en total	{0} in total
+descansos de {0} s	rests of {0} s
+tu récord: {0}	your record: {0}
+Próximo entrenamiento: {0}. Descansar entre sesiones es parte del programa.	Next workout: {0}. Resting between sessions is part of the program.
+Próximo entrenamiento: {0} (prueba).	Next workout: {0} (test).
+Próximo entrenamiento: {0}.	Next workout: {0}.
+Último: {0}	Last: {0}
+Rango {0}	Range {0}
+etapa {0} de 3	stage {0} of 3
+día {0} de {1}	day {0} of {1}
+Etapa {0}	Stage {0}
+Cambiar {0}	Change {0}
+¿Abandonar el reto de {0}?	Quit the {0} challenge?
+Serie 1 de {0}: {1} repeticiones	Set 1 of {0}: {1} reps
+Serie {0} de {1}: {2} repeticiones	Set {0} of {1}: {2} reps
+Serie {0} de {1}	Set {0} of {1}
+{0}: {1} repeticiones.	{0}: {1} reps.
+{0}: {1} repeticiones	{0}: {1} reps
+Siguiente: {0} repeticiones.	Next: {0} reps.
+segundos · luego {0} seguidas	seconds · then {0} in a row
+segundos · luego {0} repeticiones	seconds · then {0} reps
+segundos · luego {0}	seconds · then {0}
+Una por pitido, cada {0} s. Si no llegas, «Serie hecha».	One per beep, every {0} s. If you can't keep up, “Set done”.
+Hiciste {0}. Empiezas en el rango {1}, etapa {2}, mañana.	You did {0}. You start in range {1}, stage {2}, tomorrow.
+Guardado como incompleto. {0} queda pendiente para repetirlo.	Saved as incomplete. {0} stays pending to repeat.
+El día {0}	Day {0}
+Pasas a la etapa {0}.	You move up to stage {0}.
+¡Meta de {0} conseguida! Empieza el rango {1}.	Goal of {0} reached! Range {1} begins.
+Hiciste {0} de {1}. Repite las últimas sesiones y vuelve a intentarlo.	You did {0} of {1}. Repeat the last sessions and try again.
+¡Terminaste! {0} {1}. Buen trabajo.	You did it! {0} {1}. Great job.
+llevas {0} repeticiones	{0} reps so far
+Sensibilidad {0}	Sensitivity {0}
+(antes: {0})	(before: {0})
+{0} reps con {1} kg	{0} reps with {1} kg
+~{0} kg máx.	~{0} kg max
+Mancuernas · {0}	Dumbbells · {0}
+Próxima: {0}.	Next: {0}.
+Próxima: {0}	Next: {0}
+Prueba de fuerza del {0}	Strength test on {0}
+{0} series por ejercicio.	{0} sets per exercise.
+{0} × {1} rep	{0} × {1} reps
+{0} h {1} min	{0} h {1} min
+{0} rep	{0} reps
+Ver los {0} ejercicios	Show all {0} exercises
+Ver los {0}	Show all {0}
+Calorías estimadas con {0}; si hay pulso registrado se usa ese cálculo. La mejor marca es la serie con más repeticiones (y su tiempo, cuando quedó medido).	Calories estimated with {0}; if heart rate was recorded, that's used instead. Best is the set with the most reps (and its time, when measured).
+tu peso ({0} kg)	your weight ({0} kg)
+rango {0}	range {0}
+{0} sesiones	{0} sessions
+{0} series medidas	{0} sets measured
+{0} s/rep	{0} s/rep
+en {0}	in {0}
++ {0}	+ {0}
+Nivel {0}	Level {0}
+{0} · Nivel {1}	{0} · Level {1}
+Semana {0} · {1}	Week {0} · {1}
+Prueba de capacidad · {0}	Fitness test · {0}
+{0} sesión de {1}	{0} session by {1}
+{0} sesiones de {1}	{0} sessions by {1}
+Tu {0}	Your {0}
+Siguiente: Estiramiento	Next: Stretch
+Programa: {0}	Program: {0}
+Sesión {0} · {1}	Session {0} · {1}
+{0}: {1}	{0}: {1}
+de {0}	of {0}
+serie {0} de {1}	set {0} of {1}
+{0} serie	{0} set
+Semana {0}, día {1}	Week {0}, day {1}
+{0} a {1} días por semana.	{0} to {1} days per week.
+Ajustados {0} ejercicios para cuidar: {1}	Adjusted {0} exercises to protect: {1}
+{0}, {1}	{0}, {1}
+{0} carga: {1}.	{0} loads: {1}.
+Cambié 1 ejercicio para cuidar: {0}	Swapped 1 exercise to protect: {0}
+Cambié {0} ejercicios para cuidar: {1}	Swapped {0} exercises to protect: {1}
+{0} negativas	{0} negatives
+{0} asistidas	{0} assisted
+{0} negativas seguidas	{0} negatives in a row
+{0} asistidas seguidas	{0} assisted in a row
+¡Ya haces {0} dominadas seguidas! Empieza el rango {1}.	You can now do {0} pull-ups in a row! Range {1} begins.
+Hiciste {0}. Empiezas en «{1}», etapa {2} ({3}), mañana.	You did {0}. You start in "{1}", stage {2} ({3}), tomorrow.
+Todavía no sale ninguna: no pasa nada. Empiezas en «{0}», etapa {1} ({2}), mañana.	You can't do one yet, and that's fine. You start in "{0}", stage {1} ({2}), tomorrow.
+Para quien todavía no puede hacer más de una dominada seguida. Etapa 1: negativas (solo la bajada, lenta). Etapa 2: asistidas con banda elástica o un pie en una silla. Etapa 3: dominadas sueltas con descansos largos. Al hacer {0} seguidas pasas al rango {1}.	For those who can't yet do more than one pull-up in a row. Stage 1: negatives (just the slow lowering). Stage 2: assisted with a resistance band or one foot on a chair. Stage 3: single pull-ups with long rests. When you can do {0} in a row you move up to range {1}.
+Guardado en la nube: {0}	Saved to the cloud: {0}
+Guardado automático: {0}	Auto-saved: {0}
+Última copia en archivo: {0}	Last backup file: {0}
+No se pudo guardar ({0})	Couldn't save ({0})
+No se pudo completar ({0})	Couldn't finish ({0})
+Promedio {0} · {1} sesiones	Average {0} · {1} sessions
+Al principio {0} por repetición	At the start {0} per rep
+{0} % más rápido	{0}% faster
+{0} % más lento	{0}% slower
+Guardada el {0}	Saved on {0}
+Respaldo: {0}	Backup: {0}
+Código: {0} · esta semana	Code: {0} · this week
+Dejas de aparecer en el ranking de «{0}».	You'll no longer appear in the “{0}” ranking.
+Duración aprox.: {0} min (sin calentamiento ni estiramientos)	Approx. length: {0} min (without warm-up or stretches)
+Grupo creado. Código: {0}	Group created. Code: {0}
+Meta: {0} min por semana	Goal: {0} min per week
+Meta: {0} sesiones por semana	Goal: {0} sessions per week
+Meta: {0} sesión por semana	Goal: {0} session per week
+Rutina «{0}» para INHIIT	“{0}” routine for INHIIT
+Semana: {0} de {1} min	Week: {0} of {1} min
+Semana: {0} de {1} sesiones	Week: {0} of {1} sessions
+Sumate a mi grupo «{0}» en INHIIT para ver quién entrena más esta semana. Código: {1}	Join my group “{0}” on INHIIT to see who trains most this week. Code: {1}
+Te falta {0} sesión · quedan {1} días	{0} session to go · {1} days left
+Te faltan {0} min · quedan {1} días	{0} min to go · {1} days left
+Te faltan {0} sesiones · quedan {1} días	{0} sessions to go · {1} days left
+Te uniste a «{0}»	You joined “{0}”
+{0} de {1} min esta semana	{0} of {1} min this week
+{0} de {1} sesiones esta semana	{0} of {1} sessions this week
+{0} día entre una y otra	{0} day between them
+{0} días entre una y otra	{0} days between them
+{0} ejercicios · {1} rondas · {2} min	{0} exercises · {1} rounds · {2} min
+{0} sesión	{0} session
+{0} sesiones	{0} sessions
+¡Meta cumplida! Llevas {0} esta semana.	Goal reached! {0} this week.
+{0}: hasta el {1} las sesiones son más suaves (intensidad {2}) para que el cuerpo se recupere y después rindas más.	{0}: until {1} sessions are lighter (intensity {2}) so your body recovers and you perform better afterwards.
+Mi rutina · {0}s de descanso entre ejercicios · {1}s entre rondas	My routine · {0}s rest between exercises · {1}s between rounds
+{0}s de descanso · {1}s entre rondas	{0}s rest · {1}s between rounds
+Repeticiones: {0}	Reps: {0}
+Tiempo: {0}	Time: {0}
+{0} min de sentadillas	{0} min of squats
+{0} min de flexiones	{0} min of push-ups
+{0} min de abdominales	{0} min of crunches
+{0} min de burpees	{0} min of burpees
+Abdominales · {0}	Abs · {0}
+Día {0} · {1}	Day {0} · {1}
+Abdominales · Sesión {0}	Abs · Session {0}
+Sesión {0} · {1}	Session {0} · {1}

@@ -1,0 +1,150 @@
+0	Couldn't save (storage full or blocked)
+1	Full body
+2	Core
+3	Arms
+4	Upper body
+5	Glutes
+6	Legs
+7	Beginner
+8	Intermediate
+9	Advanced
+10	Starter
+11	Basic
+12	Woman
+13	Man
+14	Mixed
+15	· left
+16	· right
+17	Profile
+18	The workouts you already had saved will move to this profile.
+19	Name
+20	Plan version
+21	Plans have a women's and a men's version with small differences in exercises. You can change it later.
+22	Create profile
+23	☁ I have a backup: restore
+24	From iCloud Drive, Google Drive or Files
+25	Type a name
+26	INHIIT (dark)
+27	Classic orange
+28	Back
+29	Last backup:
+30	Profiles
+31	Each profile keeps its own plan, progress and history.
+32	+ New profile
+33	Edit current
+34	Appearance
+35	Voice and heart rate
+36	Coach voice
+37	Heart rate monitor and zones
+38	Cloud backup
+39	☁ Save or restore (iCloud Drive / Google Drive)
+40	Profile:
+41	Edit profile
+42	New profile
+43	Save
+44	Create and switch
+45	Delete this profile and its data
+46	Personal data
+47	Used to calculate calories, your heart rate zones and suggested dumbbell weights.
+48	Profile updated
+49	Profile created:
+50	Delete profile
+51	Profile deleted
+52	Existing profile
+53	Replace
+54	(copy)
+55	Backup imported
+56	That file isn't a valid backup
+57	App installed
+58	Install
+59	Install INHIIT on this device
+60	On iPhone/iPad: open it in Safari, tap Share and then “Add to Home Screen”.
+61	To install it, the app has to be opened from a web address (https or localhost), not as a file. See the README.
+62	If your browser allows it, use the ⋮ menu → “Install app” or “Add to Home screen”.
+63	Offline mode NOT available: the app is open over http. Phones only allow it over https (see the README: Netlify Drop or GitHub Pages).
+64	Offline mode on: the app opens on your phone even without internet.
+65	Preparing offline mode… open the app once more with internet.
+66	Workout resumed where you left off
+67	Fitness test
+68	Dumbbells
+69	· dumbbells
+70	Squats
+71	Push-ups
+72	Sit-ups
+73	Legs and core
+74	Upper body and core
+75	Easy
+76	Good
+77	Hard
+78	Warm-up
+79	5 gentle moves before
+80	Stretching at the end
+81	5 stretches of 30 s
+82	No jumping
+83	Low impact, great for apartments with neighbors
+84	Different exercises each round
+85	When off, the circuit repeats
+86	With dumbbells
+87	Half of the exercises with a dumbbell (light weight, timed)
+88	tomorrow
+89	Smart coach
+90	3 minutes: squats, push-ups and sit-ups, 1 minute each. With your results I build progressive sessions, one every two days, and after each one you tell me if it was easy, good or hard so I can adjust the next.
+91	Options
+92	I calculate the duration, zones, level and timings from your results. You can change these options later in Settings, and the warm-up and stretching before each session too.
+93	Take the test
+94	Start without the test
+95	Done: your first session is ready
+96	Training day today
+97	Rest day today
+98	Next session:
+99	Last:
+100	Start
+101	Train anyway
+102	(knees)
+103	worth repeating
+104	No fitness test: I start from your level and follow your feedback.
+105	Repeat test
+106	Settings
+107	If you also use the dumbbell coach, keep these sessions without dumbbells: you already work on strength there.
+108	Maximum length of each session
+109	Manual adjustment
+110	− Easier
+111	+ Harder
+112	Reset the coach
+113	Saved
+114	Reset coach
+115	Your fitness test and intensity will be deleted. Your history stays.
+116	Reset
+117	Three 1-minute exercises with 45 s of rest. Do as many good-form reps as you can and count them: in each rest I'll ask for the number.
+118	Regular
+119	On knees
+120	If you can't do 5 regular push-ups, choose on knees.
+121	Start the test
+122	Get ready
+123	The workout begins
+124	Test
+125	Write down your reps
+126	Round
+127	Exercise
+128	· Set
+129	Rest
+130	Round rest
+131	Let's stretch
+132	Stretching
+133	· jump
+134	· each side
+135	each side
+136	Easier:
+137	No easier version
+138	Harder:
+139	No harder version
+140	Easier
+141	Harder
+142	(adjusted)
+143	Smart coach · intensity
+144	· no jumping
+145	No more exercises with these filters
+146	=
+147	5 gentle 30 s moves before
+148	5 stretches of 30 s at the end
+149	Auto-advance to the next

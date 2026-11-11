@@ -1,0 +1,26 @@
+import { chromium } from 'playwright';
+const SP=(process.env.OUT || '/tmp/inhiit') + '/shots/';
+const b = await chromium.launch({executablePath: process.env.PW_CHROME || undefined});
+const p = await (await b.newContext({locale:'es-ES',viewport:{width:390,height:844}})).newPage(); const errs=[]; p.on('pageerror',e=>errs.push(e.message)); p.on('console',m=>{if(m.type()==='error')errs.push(m.text())});
+await p.addInitScript(()=>setInterval(()=>{const x=document.querySelector('#aw-ok');if(x)x.click();},200));
+await p.goto('http://localhost:8776/'); await p.waitForTimeout(400); await p.fill('#ob-name','Cris'); await p.click('#ob-go'); await p.waitForTimeout(200);
+await p.evaluate(()=>{ S.weight=80; show('coach'); });
+await p.evaluate(()=>document.querySelector('#dumb').scrollIntoView()); await p.waitForTimeout(300);
+await p.screenshot({path:SP+'db0.png'});
+await p.evaluate(()=>setSubtab('coach','db')); await p.click('#db-setup'); await p.waitForTimeout(300);
+await p.fill('#dbs-w','4, 6, 8, 10, 12.5'); await p.screenshot({path:SP+'db1.png'});
+await p.click('#dbs-skip'); await p.waitForTimeout(300);
+await p.evaluate(()=>document.querySelector('#dumb').scrollIntoView()); await p.screenshot({path:SP+'db2.png'});
+console.log(await p.evaluate(()=>JSON.stringify(getDumb().e1)));
+await p.click('#db-go'); await p.waitForTimeout(300); await p.screenshot({path:SP+'db3.png'});
+await p.click('#dbw-rows [data-a="1"]'); await p.waitForTimeout(100);
+await p.click('#dbw-go'); await p.waitForTimeout(600); await p.screenshot({path:SP+'db4.png'});
+console.log(await p.evaluate(()=>JSON.stringify(P.w.items.map(i=>[i.id,i.kg,i.reps,i.sets]))));
+for(let i=0;i<60;i++){ await p.evaluate(()=>{ P.activeMs+=20000; if(P.running) step(P.i+1,true,'auto'); }); await p.waitForTimeout(40);} 
+await p.waitForTimeout(500); await p.screenshot({path:SP+'db5.png'});
+await p.click('#fb-opts [data-fb="easy"]'); await p.waitForTimeout(200); await p.click('#fb-opts [data-fb="hard"]'); await p.waitForTimeout(200);
+await p.screenshot({path:SP+'db6.png'});
+console.log(await p.evaluate(()=>{const st=getDumb(); return JSON.stringify({type:st.type,next:new Date(st.nextAt).toDateString(),e1:st.e1, log:PS.get('history')[0].log.slice(0,3)})}));
+await p.evaluate(()=>{ const d=document.querySelector('#d-ok'); if(d) d.click(); show('cal'); }); await p.waitForTimeout(400);
+await p.screenshot({path:SP+'db7.png'});
+console.log(errs); await b.close();

@@ -5,16 +5,33 @@
    Avisa con pitidos y voz en cada cambio, lleva la cuenta de cada bloque y se guarda en el historial.
    PS 'timers'   = [{ id, n, prep, warm, cool, blocks: [{ n, k: 'w' | 'e' | 'r', s }], rep: 'n' | 't' | 'f', R, T }]
                    (prep en segundos; warm, cool y bloques en segundos; T en minutos e incluye calentamiento y enfriamiento)
+   act = actividad (TM_ACT) para estimar calorías; wd = días de la semana programados en el calendario (lunes = 0)
    PS 'tsession' = timer en curso (para seguir si se cierra la app)
    ========================================================= */
+// Actividades: gasto aproximado en MET [descanso, suave, fuerte] (Compendio de actividades físicas).
+// kcal = MET × peso (kg) × horas, según el tipo de cada bloque.
+const TM_ACT = {
+  run: ['Correr', 3.5, 8.3, 11.5], walk: ['Caminar', 2, 3.5, 5], hike: ['Senderismo', 2.5, 5.3, 7.3], stairs: ['Escaleras', 2.5, 4, 8.8],
+  bike: ['Bicicleta', 3.5, 6.8, 10], spin: ['Bici fija o spinning', 3, 6.8, 11], ellip: ['Elíptica', 2.5, 5, 8], row: ['Remo', 2.5, 4.8, 8.5],
+  swim: ['Natación', 2.5, 5.8, 9.8], kayak: ['Kayak o tabla de remo', 2.5, 5, 8], skate: ['Patinaje', 2.5, 7, 9.8], ski: ['Esquí de fondo', 2.5, 7, 9],
+  rope: ['Saltar la cuerda', 2, 8.8, 12.3], box: ['Boxeo o saco', 2, 5.5, 9], hiit: ['HIIT o circuito', 2, 5, 8], strength: ['Fuerza o pesas', 1.8, 3.5, 6],
+  dance: ['Baile', 2, 5, 7.3], yoga: ['Yoga o estiramientos', 1.5, 2.5, 4], breath: ['Respiración o meditación', 1, 1.3, 1.5],
+  other: ['Otra actividad', 2, 4, 7], none: ['Solo el reloj (sin calorías)', 0, 0, 0]
+};
+const tmActN = c => t((TM_ACT[c.act] || TM_ACT.other)[0]);
+// calorías aproximadas de un registro [[nombre, tipo, segundos], ...]
+function tmKcal(act, log) {
+  const A = TM_ACT[act] || TM_ACT.other, kg = typeof stKg === 'function' ? stKg() : 70;
+  return Math.round((log || []).reduce((a, [, k, x]) => a + A[k === 'w' ? 3 : k === 'e' ? 2 : 1] * kg * x / 3600, 0));
+}
 const TM_KIND = { w: 'Fuerte', e: 'Suave', r: 'Descanso' };
 const TM_CLS = { w: 'work', e: 'easy', r: 'rest', p: 'prep' };
-const TM_DEF = { n: '', prep: 10, warm: 0, cool: 0, blocks: [{ n: 'Trabajo', k: 'w', s: 120 }, { n: 'Descanso', k: 'r', s: 30 }], rep: 'f', R: 5, T: 30 };
+const TM_DEF = { n: '', prep: 10, warm: 0, cool: 0, blocks: [{ n: 'Trabajo', k: 'w', s: 120 }, { n: 'Descanso', k: 'r', s: 30 }], rep: 'f', R: 5, T: 30, act: 'other', wd: [] };
 const TM_PRESETS = [
-  { key: 'run', n: 'Correr 1 hora', prep: 10, warm: 0, cool: 0, blocks: [{ n: 'Lento', k: 'e', s: 600 }, { n: 'Rápido', k: 'w', s: 180 }, { n: 'Caminar', k: 'r', s: 60 }], rep: 't', R: 4, T: 60 },
-  { key: 'bike', n: 'Bici 45 minutos', prep: 10, warm: 300, cool: 300, blocks: [{ n: 'Fuerte', k: 'w', s: 120 }, { n: 'Suave', k: 'e', s: 180 }], rep: 't', R: 7, T: 45 },
-  { key: 'blocks', n: 'Bloques de 2 minutos', prep: 10, warm: 0, cool: 0, blocks: [{ n: 'Trabajo', k: 'w', s: 120 }, { n: 'Descanso', k: 'r', s: 30 }], rep: 'f', R: 5, T: 30 },
-  { key: 'tabata', n: 'Tabata', prep: 10, warm: 0, cool: 0, blocks: [{ n: 'Trabajo', k: 'w', s: 20 }, { n: 'Descanso', k: 'r', s: 10 }], rep: 'n', R: 8, T: 4 }
+  { key: 'run', act: 'run', n: 'Correr 1 hora', prep: 10, warm: 0, cool: 0, blocks: [{ n: 'Lento', k: 'e', s: 600 }, { n: 'Rápido', k: 'w', s: 180 }, { n: 'Caminar', k: 'r', s: 60 }], rep: 't', R: 4, T: 60 },
+  { key: 'bike', act: 'bike', n: 'Bici 45 minutos', prep: 10, warm: 300, cool: 300, blocks: [{ n: 'Fuerte', k: 'w', s: 120 }, { n: 'Suave', k: 'e', s: 180 }], rep: 't', R: 7, T: 45 },
+  { key: 'blocks', act: 'hiit', n: 'Bloques de 2 minutos', prep: 10, warm: 0, cool: 0, blocks: [{ n: 'Trabajo', k: 'w', s: 120 }, { n: 'Descanso', k: 'r', s: 30 }], rep: 'f', R: 5, T: 30 },
+  { key: 'tabata', act: 'hiit', n: 'Tabata', prep: 10, warm: 0, cool: 0, blocks: [{ n: 'Trabajo', k: 'w', s: 20 }, { n: 'Descanso', k: 'r', s: 10 }], rep: 'n', R: 8, T: 4 }
 ];
 const tmClamp = (v, lo, hi, d) => { v = Math.round(+v); return isFinite(v) ? Math.max(lo, Math.min(hi, v)) : d; };
 function tmNorm(c) {
@@ -23,6 +40,7 @@ function tmNorm(c) {
     .map(b => ({ n: String(b.n || '').slice(0, 24), k: TM_KIND[b.k] ? b.k : 'w', s: tmClamp(b.s, 0, 5 * 3600, 60) }));
   c.prep = tmClamp(c.prep, 0, 120, 10); c.warm = tmClamp(c.warm, 0, 3600, 0); c.cool = tmClamp(c.cool, 0, 3600, 0);
   c.rep = ['n', 't', 'f'].includes(c.rep) ? c.rep : 'f'; c.R = tmClamp(c.R, 1, 200, 5); c.T = tmClamp(c.T, 1, 600, 30);
+  c.act = TM_ACT[c.act] ? c.act : 'other'; c.wd = [...new Set((Array.isArray(c.wd) ? c.wd : []).map(Number).filter(d => d >= 0 && d <= 6))].sort();
   return c;
 }
 // plantillas con los textos en el idioma de la app
@@ -81,11 +99,13 @@ function renderTimers() {
     ${ses && ses.c ? `<div class="block tm-resume"><div class="hist"><div class="t"><b data-noi18n>${esc(ses.c.n || t('Timer'))}</b><small>${t('En curso · {0} hechos', tmFmt(ses.act || 0))}</small></div>
       <button class="btn small" id="tm-res-go">Continuar</button><button class="icon-btn" id="tm-res-x" aria-label="Descartar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div></div>` : ''}
     <button class="btn" id="tm-new">+ Nuevo timer</button>
-    ${L.length ? `<h2>Mis timers</h2><div class="block">${L.map((c, i) => `<div class="hist"><div class="t" data-tme="${i}"><b data-noi18n>${esc(c.n)}</b><small>${tmBar(c)}${esc(tmSummary(c))}</small></div>
+    ${L.length ? `<h2>Mis timers</h2><div class="block">${L.map((c, i) => `<div class="hist"><div class="t" data-tme="${i}"><b data-noi18n>${esc(c.n)}</b><small>${tmBar(c)}${esc(tmActN(c))} · ${esc(tmSummary(c))}${c.wd.length ? ' · ' + c.wd.map(d => WD[d]).join(' ') : ''}</small></div>
       <button class="icon-btn" data-tmp="${i}" aria-label="Empezar">${TM_PLAY}</button><button class="icon-btn" data-tme="${i}" aria-label="Editar">${TM_EDIT}</button></div>`).join('')}</div>` : ''}
     <h2>Plantillas</h2><div class="block">${TM_PRESETS.map((p, i) => { const c = tmPreset(p); return `<div class="hist"><div class="t" data-tpe="${i}"><b>${esc(c.n)}</b><small>${tmBar(c)}${esc(c.blocks.map(b => `${b.n} ${tmFmt(b.s)}`).join(' · '))} · ${esc(tmSummary(c))}</small></div>
       <button class="icon-btn" data-tpp="${i}" aria-label="Empezar">${TM_PLAY}</button><button class="icon-btn" data-tpe="${i}" aria-label="Editar">${TM_EDIT}</button></div>`; }).join('')}</div>
-    <p class="note">Toca una plantilla para cambiar los tiempos y guardarla con otro nombre.</p>`;
+    <p class="note">Toca una plantilla para cambiar los tiempos y guardarla con otro nombre.</p>
+    <h2>Opciones</h2><div class="toggles"><button class="tg" id="tm-bg" role="switch" aria-checked="${S.tmBg !== false}"><span>Avisar con la pantalla bloqueada<small>En prueba. Mantiene el audio activo para que los avisos suenen con el teléfono bloqueado; pausa la música de otras apps</small></span><i class="sw"></i></button></div>`;
+  $('#tm-bg').onclick = () => { S.tmBg = S.tmBg === false; save(); $('#tm-bg').setAttribute('aria-checked', S.tmBg !== false); };
   $('#tm-new').onclick = () => tmOpen(null, { ...TM_DEF, blocks: TM_DEF.blocks.map(b => ({ ...b, n: t(b.n) })) });
   el.querySelectorAll('[data-tmp]').forEach(b => b.onclick = () => tmStart(L[+b.dataset.tmp]));
   el.querySelectorAll('[data-tme]').forEach(b => b.onclick = () => tmOpen(+b.dataset.tme));
@@ -102,7 +122,8 @@ function tmOpen(idx, preset) {
   const saved = idx != null;
   const int = (v, lo, hi) => { v = parseInt(v, 10); return isFinite(v) ? Math.max(lo, Math.min(hi, v)) : 0; };
   const read = () => {
-    c.n = $('#tm-n').value.trim().slice(0, 40);
+    c.n = $('#tm-n').value.trim().slice(0, 40); c.act = $('#tm-act').value;
+    c.wd = [...document.querySelectorAll('#tm-wd [aria-pressed=true]')].map(b => +b.dataset.wd);
     document.querySelectorAll('#tm-bl .tm-blk').forEach((row, i) => {
       const b = c.blocks[i]; if (!b) return;
       b.n = row.querySelector('[data-n]').value.trim().slice(0, 24);
@@ -142,6 +163,7 @@ function tmOpen(idx, preset) {
   };
   sheet(`<h3>${saved ? 'Editar timer' : 'Nuevo timer'}</h3>
     <div class="field"><input id="tm-n" maxlength="40" placeholder="${esc(t('Nombre del timer'))}" value="${esc(c.n)}"></div>
+    <label class="tm-act"><span>Actividad</span><select id="tm-act">${Object.entries(TM_ACT).map(([k, a]) => `<option value="${k}" ${k === c.act ? 'selected' : ''}>${esc(t(a[0]))}</option>`).join('')}</select></label>
     <h2>Bloques</h2><div class="tm-list" id="tm-bl"></div>
     <button class="btn ghost small" id="tm-add">+ Agregar bloque</button>
     <p class="note">Fuerte, suave y descanso cambian el color de la pantalla y el pitido del aviso.</p>
@@ -153,6 +175,9 @@ function tmOpen(idx, preset) {
       <label>Calentamiento (min)<input type="number" inputmode="numeric" id="tm-warm" value="${Math.round(c.warm / 60)}"></label>
       <label id="tm-coolf">Enfriamiento (min)<input type="number" inputmode="numeric" id="tm-cool" value="${Math.round(c.cool / 60)}"></label></div>
     <p class="note tm-sum" id="tm-sum"></p>
+    <h2>Programar en el calendario</h2>
+    <div class="wdpick" id="tm-wd">${WD.map((w, i) => `<button data-wd="${i}" aria-pressed="${c.wd.includes(i)}">${w}</button>`).join('')}</div>
+    <p class="note">Opcional. Los días que marques aparece en el calendario; para eso guárdalo.</p>
     <div class="row" style="margin-top:12px"><button class="btn ghost small" id="tm-save">Guardar</button><button class="btn small" id="tm-go">Empezar</button></div>
     ${saved ? `<div class="row" style="margin-top:10px"><button class="btn danger small" id="tm-del">Borrar</button></div>` : ''}`, () => {
     list(); repUI();
@@ -165,6 +190,7 @@ function tmOpen(idx, preset) {
       list();
     };
     $('#tm-bl').oninput = () => { read(); sum(); };
+    $('#tm-wd').onclick = e => { const b = e.target.closest('[data-wd]'); if (b) b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') !== 'true'); };
     ['#tm-prep', '#tm-warm', '#tm-cool'].forEach(id => $(id).oninput = () => { read(); sum(); });
     $('#tm-rep').onclick = e => { const b = e.target.closest('[data-rep]'); if (!b) return; read(); c.rep = b.dataset.rep; repUI(); };
     $('#tm-add').onclick = () => {
@@ -173,7 +199,7 @@ function tmOpen(idx, preset) {
       c.blocks.push(last && last.k !== 'r' ? { n: t('Descanso'), k: 'r', s: 60 } : { n: t('Trabajo'), k: 'w', s: 120 }); list();
       const ins = document.querySelectorAll('#tm-bl [data-n]'); if (ins.length) ins[ins.length - 1].select();
     };
-    $('#tm-save').onclick = () => { if (save()) { closeSheet(); renderTimers(); toast('Timer guardado'); } };
+    $('#tm-save').onclick = () => { if (save()) { closeSheet(); renderTimers(); try { if (currentView === 'cal') renderCal(); } catch (e) {} toast('Timer guardado'); } };
     $('#tm-go').onclick = () => {
       read(); if (!tmLoop(c)) { toast('Agrega al menos un bloque con tiempo'); return; }
       if (saved && c.n) save();
@@ -205,6 +231,7 @@ function tmStart(c0, resume) {
   while (TP.i < TP.seg.length - 1 && TP.pos >= TP.seg[TP.i].t0 + TP.seg[TP.i].s) TP.i++;
   $('#tplayer').classList.remove('hidden'); $('#tp-menu').classList.add('hidden'); document.body.style.overflow = 'hidden';
   voiceIcon(); wake(true); tmPreload();
+  try { bgAudio(S.tmBg !== false, { play: () => tmPause(false), pause: () => tmPause(true), next: tmSkip, prev: tmPrev }); } catch (e) {}
   clearInterval(TP.timer); TP.timer = setInterval(tmTick, 200);
   tmPaint();
   if (resume) toast('Toca ▶ para continuar'); else tmEnter();
@@ -219,6 +246,7 @@ function tmResume() {
 // al entrar en un bloque: pitido según el tipo y voz con el nombre y la duración
 function tmEnter(quiet) {
   const s = tpCur(); TP.lastSec = null; tmPaint(); tmSave();
+  try { if (s) bgMeta(s.n + ' · ' + tmFmt(s.s), TP.c.n || t('Timer'), s.s); } catch (e) {}
   if (quiet || !s) return;
   const v = S.sound === 'voz' ? .7 : 1;
   if (s.k === 'w') { beep(1046, 180, .3 * v); setTimeout(() => beep(1318, 260, .3 * v), 200); }
@@ -233,6 +261,7 @@ function tmLogSeg(s, secs) { if (s && s.ph !== 'p' && secs >= 1) TP.log.push([s.
 function tmTick() {
   const now = Date.now(), dt = Math.max(0, (now - TP.last) / 1000); TP.last = now;
   if (!TP.running || TP.paused) return;
+  if (BG_KEEP && AC && AC.state !== 'running') { try { AC.resume().catch(() => {}); } catch (e) {} }
   TP.act += dt; TP.pos += dt; tmExtend();
   let moved = 0;
   while (TP.i < TP.seg.length && TP.pos >= TP.seg[TP.i].t0 + TP.seg[TP.i].s) { tmLogSeg(TP.seg[TP.i], TP.seg[TP.i].s); TP.i++; moved++; }
@@ -279,6 +308,7 @@ function tmPaint() {
 }
 function tmPause(p) {
   TP.paused = p != null ? p : !TP.paused; TP.last = Date.now();
+  try { bgState(TP.paused); } catch (e) {}
   if (!TP.paused) { try { audioCtx(); } catch (e) {} TP.lastSec = null; }
   tmPaint(); tmSave();
 }
@@ -314,6 +344,7 @@ function tmMenu() {
 }
 function tmFinish(full, drop) {
   clearInterval(TP.timer); TP.running = false; wake(false);
+  try { bgAudio(false); } catch (e) {}
   try { audioSession(false); } catch (e) {}
   if (!full) { try { speechSynthesis.cancel(); } catch (e) {} try { vStop(); } catch (e) {} }
   const s = tpCur(); if (!full && s) tmLogSeg(s, TP.pos - s.t0);
@@ -324,6 +355,7 @@ function tmFinish(full, drop) {
   if (drop || secs < 20) return;
   const entry = { at: Date.now(), start: TP.startedAt, secs, full, w: { kind: 'timer', title: TP.c.n || t('Timer'), tm: TP.c }, tlog: TP.log, pauses: 0,
     reps: { sq: 0, pu: 0, ab: 0, bu: 0, pl: 0, dm: 0, t: { sq: 0, pu: 0, ab: 0, bu: 0, dm: 0 } }, rv: 2 };
+  entry.kcal = tmKcal(TP.c.act, TP.log);
   const h = PS.get('history', []); h.unshift(entry); saveHistory(h);
   if (full) { beep(784, 150, .25); setTimeout(() => beep(1046, 350, .3), 170); say(t('¡Terminaste! Buen trabajo.')); }
   try { renderHist(); } catch (e) {}
@@ -335,7 +367,8 @@ function tmTotals(log) { const m = new Map(); (log || []).forEach(([n, k, s]) =>
 const tmTotalsHTML = log => { const T = tmTotals(log); return T.length ? `<div class="block">${T.map(a => `<div class="hist tm-tot"><div class="t"><b data-noi18n><i class="tp-dot k-${a.k}"></i>${esc(a.n)}</b><small>${a.x === 1 ? t('1 vez') : t('{0} veces', a.x)}</small></div><b class="tm-tv">${tmFmt(a.s)}</b></div>`).join('')}</div>` : ''; };
 function tmDone(x) {
   sheet(`<h3>${x.full ? '¡Hecho!' : 'Timer guardado'}</h3><p class="sub" data-noi18n>${esc(x.w.title)}</p>
-    <div class="stats"><div class="stat"><b>${tmFmt(x.secs)}</b><span>tiempo total</span></div><div class="stat"><b>${(x.tlog || []).length}</b><span>bloques</span></div></div>
+    <div class="stats"><div class="stat"><b>${tmFmt(x.secs)}</b><span>tiempo total</span></div><div class="stat"><b>${(x.tlog || []).length}</b><span>bloques</span></div>${x.kcal ? `<div class="stat"><b>${x.kcal}</b><span>kcal aprox.</span></div>` : ''}</div>
+    <p class="note" data-noi18n>${esc(tmActN(x.w.tm || {}))}</p>
     <h2>Por bloque</h2>${tmTotalsHTML(x.tlog)}
     <div class="gap"></div><button class="btn" id="tmd-ok">Listo</button>`, () => { $('#tmd-ok').onclick = () => closeSheet(); });
 }
@@ -356,3 +389,44 @@ $('#tp-prev').onclick = () => tmPrev();
 $('#tp-close').onclick = () => tmMenu();
 $('#tp-voice').onclick = () => cycleSound();
 document.addEventListener('visibilitychange', () => { if (!TP.running) return; if (document.visibilityState === 'hidden') tmSave(); else { TP.lastSec = null; tmTick(); } });
+
+/* ---------- Calendario: timers programados por día de la semana ---------- */
+const tmSched = () => PS.get('timers', []).map(tmNorm).filter(c => c.id && c.wd.length);
+const _agTm = buildAgenda;
+buildAgenda = function () {
+  const ag = _agTm(), today = dayStart(Date.now());
+  const doneToday = new Set(PS.get('history', []).filter(x => x.w && x.w.kind === 'timer' && x.w.tm && dayStart(x.at) === today).map(x => x.w.tm.id));
+  tmSched().forEach(c => {
+    for (let i = 0; i <= 60; i++) {
+      const t0 = addDays(today, i); if (!c.wd.includes(wdOf(t0)) || (i === 0 && doneToday.has(c.id))) continue;
+      const k = dkey(t0); (ag[k] = ag[k] || []).push({ type: 'timer', id: c.id });
+    }
+  });
+  return ag;
+};
+const tmById = id => PS.get('timers', []).map(tmNorm).find(c => c.id === id);
+const _itTm = itemTitle, _isTm = itemSub;
+itemTitle = x => x.type === 'timer' ? `${t('Timer')} · ${(tmById(x.id) || {}).n || ''}` : _itTm(x);
+itemSub = x => { if (x.type !== 'timer') return _isTm(x); const c = tmById(x.id); return c ? `${esc(tmActN(c))} · ${esc(tmSummary(c))}` : ''; };
+const _oaTm = openAgendaItem;
+openAgendaItem = function (o) {
+  if (o.type !== 'timer') return _oaTm(o);
+  const c = tmById(o.id); if (!c) return;
+  const tt = o.t != null ? o.t : Date.now(), isToday = dkey(tt) === dkey(Date.now()), when = isToday ? t('hoy') : new Date(tt).toLocaleDateString(LOC, { weekday: 'long', day: 'numeric', month: 'long' });
+  sheet(`<h3 data-noi18n>${esc(c.n)}</h3><p class="sub">${t('Programado para {0}', esc(when))} · ${esc(tmActN(c))} · ${esc(tmSummary(c))}</p>
+    <div class="block">${c.blocks.filter(b => b.s).map((b, i) => `<div class="hist tm-tot"><div class="t"><b data-noi18n><i class="tp-dot k-${b.k}"></i>${esc(tmName(b, i))}</b><small>${t(TM_KIND[b.k])}</small></div><b class="tm-tv">${tmFmt(b.s)}</b></div>`).join('')}</div>
+    <button class="btn" id="tma-go">${isToday ? 'Empezar' : 'Hacerlo ahora'}</button><div class="gap"></div>
+    <button class="btn ghost small" id="tma-ed">Editar o cambiar los días</button>`, () => {
+    $('#tma-go').onclick = () => { closeSheet(); tmStart(c); };
+    $('#tma-ed').onclick = () => { const i = PS.get('timers', []).findIndex(x => x.id === c.id); if (i >= 0) tmOpen(i); };
+  });
+};
+/* ---------- Al abrir la app: si hoy hay algo programado, se abre en el calendario ---------- */
+(function tmOpenOnToday() {
+  try {
+    if (!PROFILE || currentView !== 'coach' || P.running || location.search || location.hash) return;
+    if (PS.get('session', null) || PS.get('rsession', null) || PS.get('tsession', null)) return;   // hay algo para retomar: se queda en Coach
+    const its = buildAgenda()[dkey(Date.now())] || [];
+    if (its.some(x => x.type !== 'done')) { calSel = dkey(Date.now()); show('cal'); }
+  } catch (e) {}
+})();
