@@ -91,6 +91,9 @@ const Anim = (() => {
   const F_SL = m(F0, { t: 186, tL: -72, sL: -6, tR: 48, sR: 48, uL: 30, fL: 140, uR: -30, fR: -140 });
   const F_SKATE = m(F0, { t: 168, tL: 10, sL: -10, tR: -30, sR: -60, uL: 60, fL: 40, uR: -20, fR: -40 });
   const F_CURTSY = m(F0, { tL: -28, sL: 14, tR: -24, sR: -46, pR: -40, uL: 30, fL: 140, uR: -30, fR: -140 });
+  const BF_UP = { v: 'f', t: 180, hd: 0, kT: 0.95, uL: -22, fL: 18, uR: 22, fR: -18, tL: -112, sL: 59, tR: 112, sR: -59, pL: 90, pR: -90 };
+  const BF_DN = m(BF_UP, { kT: 0.88, uL: -22, fL: 24, uR: 22, fR: -24, tL: -84, sL: 86, kLL: 0.92, tR: 84, sR: -86, kLR: 0.92 });
+  const BF_DN2 = m(BF_DN, { kT: 0.8, hd: 0 });   // pausa abajo, un poco más inclinado
   const F_SEAT_BF = { v: 'f', t: 180, hd: 0, uL: -10, fL: 20, uR: 10, fR: -20, tL: -72, sL: 100, tR: 72, sR: -100, pL: 180, pR: 180 };
 
   /* ---------- plantillas: lista de posturas + duración del ciclo ---------- */
@@ -290,7 +293,9 @@ const Anim = (() => {
     // estiramientos
     child: () => { const C0 = { v: 's', t: 76, hd: 19, uL: 81, fL: 82, uR: 83, fR: 84, tL: 60, sL: -90, tR: 62, sR: -90, pL: -90, pR: -90 };
       return k([C0, m(C0, { t: 80, uL: 79, fL: 82, uR: 81, fR: 84 })], 4000, { anchor: 'kneeR' }); },
-    butterfly: () => k([F_SEAT_BF, m(F_SEAT_BF, { tL: -64, tR: 64, sL: 94, sR: -94 })], 2400, { anchor: 'hip' }),
+    // mariposa de frente: sentado, plantas juntas y manos en los pies; las rodillas suben y bajan hacia el suelo
+    // como alas, con una leve inclinación del torso al bajar
+    butterfly: () => k([BF_UP, BF_DN, BF_UP, BF_DN, BF_DN2, BF_DN], 4800, { anchor: 'hip' }),
     calf_stretch: () => k([m(S0, { tL: 24, sL: 24, pL: 150, tR: -5, sR: -35, pR: 90 }), m(S0, { t: 150, tL: 29, sL: 29, pL: 150, tR: 10, sR: -40, pR: 90, uL: 40, fL: 60, uR: 44, fR: 64 })], 2400, { anchor: 'ankleR' }),
     hip_flexor: () => { const HF = { v: 's', t: 180, hd: 0, uL: -20, fL: 70, uR: -25, fR: 75, tL: 0, sL: -90, pL: -90, tR: 86, sR: 0, pR: 90 };
       return k([HF, m(HF, { t: 188, hd: -8, tL: -28, sR: 29, uL: 172, fL: 178 })], 3600, { anchor: 'kneeL' }); },
