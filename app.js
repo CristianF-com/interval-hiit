@@ -264,6 +264,20 @@ try { SYS_LIGHT.addEventListener('change', () => { if (!THEMES[S.theme] || S.the
     });
   };
   vv.addEventListener('resize', fit);
+  /* iPhone: al pasar a horizontal y volver, la barra de pestañas (fija abajo) a veces queda a mitad de pantalla y se
+     mueve con el scroll: Safari conserva el zoom o el alto del modo horizontal. Tras girar se quita el zoom
+     (un instante con maximum-scale=1) y se fuerza a recolocar la barra. */
+  const vpMeta = document.querySelector('meta[name=viewport]'), vpBase = vpMeta ? vpMeta.content : '';
+  const relayout = () => {
+    if (vpMeta && vv.scale && Math.abs(vv.scale - 1) > 0.01) { vpMeta.content = vpBase + ', maximum-scale=1'; setTimeout(() => { vpMeta.content = vpBase; }, 400); }
+    const nav = document.querySelector('nav.tabs');
+    if (nav) { nav.style.display = 'none'; void nav.offsetHeight; nav.style.display = ''; }
+    const y = scrollY; scrollTo(scrollX, y + 1); scrollTo(scrollX, y);
+    fit();
+  };
+  const onRotate = () => [80, 350, 800].forEach(ms => setTimeout(relayout, ms));
+  addEventListener('orientationchange', onRotate);
+  try { screen.orientation.addEventListener('change', onRotate); } catch (e) {}
   // el teclado tarda en subir (o ya estaba arriba al pasar de un campo a otro): se centra varias veces
   document.addEventListener('focusin', e => { if (/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) [60, 320, 650].forEach(ms => setTimeout(fit, ms)); });
   document.addEventListener('focusout', () => setTimeout(fit, 350));
