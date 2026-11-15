@@ -417,23 +417,39 @@ async function frUser() { if (typeof cloudUser !== 'function') return null; try 
 function frExtra() {
   const H = PS.get('history', []), wk = weekKey(Date.now());
   let rp = 0; H.forEach(x => { if (weekKey(x.at) !== wk) return; const r = repsNow(x); rp += (r.sq || 0) + (r.pu || 0) + (r.ab || 0) + (r.bu || 0) + (r.dm || 0); });
+  // retos: en curso (etapa y día) y récord de cada uno. Firestore no acepta listas dentro de listas: van como objetos
+  // (antes iban como [k, etapa, …] y la fila del grupo dejaba de actualizarse en cuanto había un reto)
   const all = PS.get('retos', {}) || {}, rt = [];
-  Object.keys(all).forEach(k => { const st = all[k]; if (!st || !RETOS[k] || st.stage == null) return; let D = 0; try { D = retoDays(k, st.k, st.stage).length; } catch (e) {} rt.push([k, st.stage, (st.day || 0) + 1, D, st.best || 0, st.goalsDone || 0]); });
-  return { st: weekStreak(H), aw: Object.keys(PS.get('awards', {}) || {}).length, rp, rt: rt.slice(0, 4) };
+  Object.keys(all).forEach(k => {
+    const st = all[k]; if (!st || !RETOS[k]) return;
+    const best = st.best || 0, on = st.stage != null; if (!on && !best) return;
+    let D = 0; try { if (on) D = retoDays(k, st.k, st.stage).length; } catch (e) {}
+    const n = on && typeof retoN === 'function' ? retoN(k, st.k, st.stage) : RETOS[k].n;
+    rt.push({ k, n, st: on ? st.stage : 0, pre: on && st.k < 0 ? 1 : 0, d: on ? (st.day || 0) + 1 : 0, D, b: best, g: st.goalsDone || 0, at: (st.log && st.log.length ? st.log[st.log.length - 1].at : 0) });
+  });
+  rt.sort((a, b) => b.at - a.at);
+  return { st: weekStreak(H), aw: Object.keys(PS.get('awards', {}) || {}).length, rp, rt: rt.slice(0, 6).map(({ at, ...r }) => r) };
 }
 function frInfo(x) {
   const e = x.x || {}, a = [];
   if (e.st) a.push(`🔥 ${t(e.st === 1 ? '{0} semana seguida' : '{0} semanas seguidas', e.st)}`);
   if (e.aw) a.push(`🏅 ${t(e.aw === 1 ? '{0} logro' : '{0} logros', e.aw)}`);
   if (e.rp && x.wk === weekKey(Date.now())) a.push(`💪 ${t('{0} reps esta semana', e.rp)}`);
-  const rt = (e.rt || []).filter(r => RETOS[r[0]]).map(([k, st, d, D, b, g]) => `<span class="fr-rt">🎯 <b>${esc(t(RETOS[k].n))}</b> · ${t('etapa {0}/3', st)}${D ? ' · ' + t('día {0}/{1}', d, D) : ''}${b ? ' · ' + t('récord {0}', b) : ''}${g ? ' · 🥇' + (g > 1 ? '×' + g : '') : ''}</span>`);
+  const rt = (e.rt || []).map(r => Array.isArray(r) ? { k: r[0], st: r[1], d: r[2], D: r[3], b: r[4], g: r[5] } : r).filter(r => r && RETOS[r.k]).map(r => {
+    const bits = [];
+    if (r.st) bits.push(r.pre ? t('primera etapa') : t('etapa {0}/3', r.st));
+    if (r.st && r.D) bits.push(t('día {0}/{1}', r.d, r.D));
+    if (r.b) bits.push(`<b class="fr-max">${t('máximo {0}', r.b)}</b>`);
+    if (r.g) bits.push('🥇' + (r.g > 1 ? '×' + r.g : ''));
+    return `<span class="fr-rt">🎯 <b data-noi18n>${esc(t(r.n || RETOS[r.k].n))}</b>${bits.length ? ' · ' + bits.join(' · ') : ''}</span>`;
+  });
   return a.length || rt.length ? `<small class="fr-fx">${a.join(' · ')}</small>${rt.join('')}` : '';
 }
 async function frPublish(only) {
   const G = PS.get('groups', []); if (!G.length || !navigator.onLine) return;
   const u = await frUser(); if (!u || !FBA.memberPut) return;
   const w = weekProgress(), d = { n: PROFILE.name, wk: weekKey(Date.now()), s: w.n, m: w.m, at: Date.now(), x: frExtra() };
-  for (const g of G) { if (only && g.c !== only) continue; try { await FBA.memberPut(g.c, memberId(u), d); } catch (e) {} }
+  for (const g of G) { if (only && g.c !== only) continue; try { await FBA.memberPut(g.c, memberId(u), d); } catch (e) { console.warn('grupo: no se pudo publicar', e && (e.code || e.message)); } }
 }
 async function renderFriends() {
   const el = $('#friends'); if (!el || !PROFILE) return;

@@ -1,6 +1,6 @@
 // capturas para la auditoría de UX/UI (no modifica el repo)
 import { chromium } from 'playwright';
-const S = process.argv[2];
+const S = process.argv[2] || process.env.OUT || '/tmp/inhiit';
 const b = await chromium.launch({ executablePath: process.env.PW_CHROME || undefined });
 const errs = [];
 async function phone(theme, opts = {}) {

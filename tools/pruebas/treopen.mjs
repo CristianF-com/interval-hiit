@@ -1,5 +1,5 @@
 import { chromium } from 'playwright';
-const S = process.argv[2];
+const S = process.argv[2] || process.env.OUT || '/tmp/inhiit';
 const b = await chromium.launch({ executablePath: process.env.PW_CHROME || undefined });
 const c = await b.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, serviceWorkers: 'block', locale: 'es-AR' });
 await c.addInitScript(() => { window.NO_CLOUD = 1; });

@@ -1897,7 +1897,9 @@ I18N = {
 "{0} más": "{0} more",
 "{0} menos": "{0} less",
 "El peso más alto que usaste en cada sesión con este ejercicio (las últimas 20).": "The heaviest weight you used in each session with this exercise (last 20).",
-"Segundos por repetición en cada sesión, según cuándo tocas ✓ o lo que cuenta el reto (las últimas 20). Más bajo es más rápido. Las series que pasan solas no cuentan.": "Seconds per rep in each session, based on when you tap ✓ or what the challenge counts (last 20). Lower is faster. Sets that advance on their own don't count."
+"Segundos por repetición en cada sesión, según cuándo tocas ✓ o lo que cuenta el reto (las últimas 20). Más bajo es más rápido. Las series que pasan solas no cuentan.": "Seconds per rep in each session, based on when you tap ✓ or what the challenge counts (last 20). Lower is faster. Sets that advance on their own don't count.",
+"primera etapa": "first stage",
+"máximo {0}": "max {0}"
 };
 I18N_PAT = [
 [

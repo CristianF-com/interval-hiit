@@ -1,6 +1,6 @@
 import { chromium } from 'playwright';
 import fs from 'fs';
-const S = process.argv[2];
+const S = process.argv[2] || process.env.OUT || '/tmp/inhiit';
 const GR = {}; // grupos simulados compartidos entre teléfonos
 const be = (op, a) => {
   if (op === 'groupGet') return GR[a.c] ? GR[a.c].d : null;

@@ -313,3 +313,6 @@ TIMER: ACTIVIDAD, CALENDARIO Y PANTALLA BLOQUEADA
   dominadas) y peso con mancuerna (kg más alto por sesión, aunque las series hayan pasado solas). Los retos con
   mancuerna «al ritmo de la app» no dan ritmo (lo marca la app); desde v151 el historial guarda w.mode del reto.
   Prueba: tools/pruebas/tprog.mjs
+- Amigos: la fila del grupo (groups/{código}/members) no puede tener listas dentro de listas (Firestore la
+  rechaza entera). Hasta v151 los retos iban como [[k, etapa, …]] y, en cuanto alguien tenía un reto, su fila
+  dejaba de actualizarse. Ahora x.rt = [{ k, n, st, pre, d, D, b (máximo), g }]. Prueba: tools/pruebas/tfr.mjs
