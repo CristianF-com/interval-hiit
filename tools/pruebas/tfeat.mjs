@@ -67,7 +67,7 @@ await A.evaluate(() => renderFriends()); await A.waitForTimeout(800);
 const rows = await A.$$eval('.rk', r => r.map(x => x.textContent.replace(/\s+/g, ' ').trim()));
 ok(rows.length === 2 && /Ana/.test(rows[0]), 'ranking con los dos, Ana primera: ' + JSON.stringify(rows));
 await A.screenshot({ path: S + '/friends.png' });
-ok(/etapa 2\/3/.test(rows[0]) && /récord 42/.test(rows[0]) && /2 logros/.test(rows[0]), 'Ana muestra reto, récord y logros');
+ok(/etapa 2\/3/.test(rows[0]) && /máximo 42/.test(rows[0]) && /2 logros/.test(rows[0]), 'Ana muestra reto, récord y logros');
 const gaps = await A.evaluate(() => { const g = $('#fr-g').getBoundingClientRect(), c = $('#fr-rank .chart').getBoundingClientRect(), a = $('#fr-invite').getBoundingClientRect(), n = $('#fr-new').getBoundingClientRect(); return [Math.round(c.top - g.bottom), Math.round(a.top - c.bottom), Math.round(n.top - a.bottom)]; });
 ok(gaps.every(x => x >= 10), 'espacios entre grupos, tarjeta y botones: ' + gaps);
 console.log('errores', A.errs, B.errs); await b.close();

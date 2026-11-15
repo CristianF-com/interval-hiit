@@ -1,5 +1,5 @@
 import { chromium } from 'playwright';
-const SP=process.env.SP+'/shots/';
+const SP=(process.env.SP || process.env.OUT || '/tmp/inhiit')+'/shots/';
 const b = await chromium.launch({executablePath: process.env.PW_CHROME || undefined});
 const ctx = await b.newContext({locale:'es-ES',viewport:{width:390,height:844}});
 const p = await ctx.newPage();
