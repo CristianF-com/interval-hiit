@@ -160,20 +160,46 @@ function kindChartHTML(H) {
     <div class="dn-leg">${list.map(([k, n, c]) => `<div><i style="background:${c}"></i><span>${n}</span><b>${Math.round(sum[k] / tot * 100)}%</b></div>`).join('')}</div>
   </div>`;
 }
-/* ---------- Progreso de tiempos: segundos por repetición de cada ejercicio, sesión a sesión, o duración de las sesiones ---------- */
+/* ---------- Progreso de tiempos: segundos por repetición de cada ejercicio, sesión a sesión, o duración de las sesiones ----------
+   Ritmo (s por repetición): series por repeticiones del reproductor en las que se tocó ✓ (las que pasaron solas no
+   cuentan) y series de los retos contados por toque o sensor. Las etapas previas de un reto (dominadas negativas,
+   asistidas) van aparte con su nombre; «dominadas sueltas» ya son dominadas.
+   Peso (kg): ejercicios con mancuerna, el peso más alto de cada sesión (coach de mancuernas y retos con mancuerna). */
 let progSel = null;
+const RETO_BY_EX = () => { const m = {}; Object.values(RETOS).forEach(R => { if (R && R.ex && !m[R.ex]) m[R.ex] = R; }); return m; };
+function progName(k) {
+  const [id, pre] = k.replace(/^kg:/, '').split('#');
+  if (pre) { const R = RETO_BY_EX()[id], st = R && R.pre && R.pre.st[+pre - 1]; if (st) return st.n; }
+  if (CATALOG[id]) return ex(id).n;
+  const R = RETO_BY_EX()[id]; return R ? R.n : '';
+}
 function progData() {
-  const H = PS.get('history', []).slice(0, 300).reverse(), ex = {}, sess = [];
+  const H = PS.get('history', []).slice(0, 300).reverse(), ex = {}, kg = {}, sess = [];
   H.forEach(x => {
     if (x.secs && x.full !== false) sess.push({ at: x.at, v: x.secs / 60 });
-    const per = {}, add = (id, reps, secs) => { if (!reps || !secs) return; const v = secs / reps; if (v < 0.6 || v > 12) return; const k = paceKey(id); (per[k] = per[k] || []).push(v); };
-    if (x.log) x.log.forEach(r => { if (r[1] && !r[2] && !r[5]) add(r[0], r[1], r[3] / 1000); });
-    else if (x.w && x.w.kind === 'reto' && x.w.times && !x.w.pre && RETOS[x.w.reto]) (x.w.sets || []).forEach((n, i) => { const tt = x.w.times[i]; if (tt) add(RETOS[x.w.reto].ex, n, tt); });
+    const per = {}, kgs = {};
+    const add = (k, reps, secs, max = 12) => { if (!reps || !secs) return; const v = secs / reps; if (v < 0.6 || v > max) return; (per[k] = per[k] || []).push(v); };
+    const addKg = (id, w) => { if (!(w > 0)) return; const k = 'kg:' + paceKey(id); kgs[k] = Math.max(kgs[k] || 0, w); };
+    if (x.log) x.log.forEach(r => {
+      if (r[4] > 0) addKg(r[0], r[4]);
+      if (r[1] && !r[2] && !r[5]) add(paceKey(r[0]), r[1], r[3] / 1000);
+    });
+    else if (x.w && x.w.kind === 'reto' && RETOS[x.w.reto]) {
+      const R = RETOS[x.w.reto];
+      if (R.db && x.w.kg) addKg(R.ex, x.w.kg);
+      // con mancuerna «al ritmo de la app» el tiempo lo marca la app, no la persona
+      const appPaced = R.db && (x.w.mode || 'ritmo') === 'ritmo';
+      if (x.w.times && !appPaced) {
+        const k = x.w.pre && x.w.pre < 3 ? R.ex + '#' + x.w.pre : R.ex;
+        (x.w.sets || []).forEach((n, i) => { const tt = x.w.times[i]; if (tt) add(k, n, tt, x.w.pre === 1 ? 20 : 12); });
+      }
+    }
     Object.entries(per).forEach(([k, a]) => (ex[k] = ex[k] || []).push({ at: x.at, v: median(a) }));
+    Object.entries(kgs).forEach(([k, v]) => (kg[k] = kg[k] || []).push({ at: x.at, v }));
   });
-  return { ex, sess };
+  return { ex, kg, sess };
 }
-const nf1 = v => v.toFixed(1).replace('.', LANG === 'es' ? ',' : '.');
+const nf1 = v => (Math.round(v * 10) / 10).toFixed(Math.abs(v - Math.round(v)) < 0.05 ? 0 : 1).replace('.', LANG === 'es' ? ',' : '.');
 function lineSVG(pts, fmt) {
   const W = 320, H = 150, L = 40, R = 12, T = 14, B = 24;
   let lo = Math.min(...pts.map(p => p.v)), hi = Math.max(...pts.map(p => p.v));
@@ -190,23 +216,26 @@ function lineSVG(pts, fmt) {
     <text x="${L}" y="${H - 6}" style="fill:var(--muted);font-size:0.6176rem">${dl(pts[0].at)}</text><text x="${W - R}" y="${H - 6}" text-anchor="end" style="fill:var(--muted);font-size:0.6176rem">${dl(pts[pts.length - 1].at)}</text></svg>`;
 }
 function progChartHTML() {
-  const { ex: E, sess } = progData();
-  const opts = Object.entries(E).filter(([k, a]) => a.length >= 2 && CATALOG[k]).sort((a, b) => b[1].length - a[1].length);
-  const keys = opts.map(o => o[0]).concat(sess.length >= 2 ? ['__s'] : []);
+  const { ex: E, kg: K, sess } = progData();
+  const named = o => o.filter(([k, a]) => a.length >= 2 && progName(k)).sort((a, b) => b[1].length - a[1].length);
+  const optsP = named(Object.entries(E)), optsK = named(Object.entries(K));
+  const keys = optsP.map(o => o[0]).concat(optsK.map(o => o[0]), sess.length >= 2 ? ['__s'] : []);
   if (!keys.length) return '';
   if (!keys.includes(progSel)) progSel = keys[0];
-  const isS = progSel === '__s', pts = (isS ? sess : E[progSel]).slice(-20);
+  const isS = progSel === '__s', isK = progSel.startsWith('kg:'), pts = (isS ? sess : isK ? K[progSel] : E[progSel]).slice(-20);
   const first = median(pts.slice(0, 3).map(p => p.v)), last = pts[pts.length - 1].v, now = median(pts.slice(-3).map(p => p.v));
   const d = first ? Math.round((first - now) / first * 100) : 0;
-  const fmt = isS ? (v => Math.round(v) + ' min') : (v => nf1(v) + ' s');
-  const sub = isS
-    ? t('Promedio {0} · {1} sesiones', fmt(pts.reduce((a, p) => a + p.v, 0) / pts.length), pts.length)
-    : (pts.length < 3 ? t('Al principio {0} por repetición', fmt(first)) : `${t('Al principio {0} por repetición', fmt(first))} · <span class="${d > 2 ? 'pg-up' : d < -2 ? 'pg-down' : ''}">${d > 2 ? t('{0} % más rápido', d) : d < -2 ? t('{0} % más lento', -d) : t('igual que al principio')}</span>`);
+  const fmt = isS ? (v => Math.round(v) + ' min') : isK ? (v => nf1(v) + ' kg') : (v => nf1(v) + ' s');
+  let sub;
+  if (isS) sub = t('Promedio {0} · {1} sesiones', fmt(pts.reduce((a, p) => a + p.v, 0) / pts.length), pts.length);
+  else if (isK) { const dk = Math.round((last - pts[0].v) * 10) / 10; sub = `${t('Al principio {0}', fmt(pts[0].v))} · <span class="${dk > 0 ? 'pg-up' : dk < 0 ? 'pg-down' : ''}">${dk > 0 ? t('{0} más', fmt(dk)) : dk < 0 ? t('{0} menos', fmt(-dk)) : t('igual que al principio')}</span>`; }
+  else sub = pts.length < 3 ? t('Al principio {0} por repetición', fmt(first)) : `${t('Al principio {0} por repetición', fmt(first))} · <span class="${d > 2 ? 'pg-up' : d < -2 ? 'pg-down' : ''}">${d > 2 ? t('{0} % más rápido', d) : d < -2 ? t('{0} % más lento', -d) : t('igual que al principio')}</span>`;
+  const opt = (k, a, extra) => `<option value="${k}" ${k === progSel ? 'selected' : ''}>${esc(progName(k))}${extra} · ${a.length} ${t('sesiones')}</option>`;
   return `<h3 class="st-h">Progreso de tiempos</h3><div class="chart pgc">
-    <select id="pg-sel" aria-label="${esc(t('Progreso de tiempos'))}">${opts.map(([k, a]) => `<option value="${k}" ${k === progSel ? 'selected' : ''}>${esc(ex(k).n)} · ${a.length} ${t('sesiones')}</option>`).join('')}${sess.length >= 2 ? `<option value="__s" ${isS ? 'selected' : ''}>${t('Duración de cada sesión')}</option>` : ''}</select>
-    <div class="pg-v" data-noi18n>${isS ? fmt(last) : nf1(last) + ' ' + t('s por repetición')}</div><div class="pg-s">${sub}</div>
+    <select id="pg-sel" aria-label="${esc(t('Progreso de tiempos'))}">${optsP.length ? `<optgroup label="${esc(t('Ritmo por repetición'))}">${optsP.map(([k, a]) => opt(k, a, '')).join('')}</optgroup>` : ''}${optsK.length ? `<optgroup label="${esc(t('Peso con mancuerna'))}">${optsK.map(([k, a]) => opt(k, a, ' (kg)')).join('')}</optgroup>` : ''}${sess.length >= 2 ? `<option value="__s" ${isS ? 'selected' : ''}>${t('Duración de cada sesión')}</option>` : ''}</select>
+    <div class="pg-v" data-noi18n>${isS || isK ? fmt(last) : nf1(last) + ' ' + t('s por repetición')}</div><div class="pg-s">${sub}</div>
     ${lineSVG(pts, fmt)}
-    <p class="note" style="margin:6px 0 0">${isS ? 'Minutos que duró cada sesión completa (las últimas 20).' : 'Segundos por repetición en cada sesión, según cuándo tocas ✓ (las últimas 20). Más bajo es más rápido.'}</p>
+    <p class="note" style="margin:6px 0 0">${isS ? 'Minutos que duró cada sesión completa (las últimas 20).' : isK ? 'El peso más alto que usaste en cada sesión con este ejercicio (las últimas 20).' : 'Segundos por repetición en cada sesión, según cuándo tocas ✓ o lo que cuenta el reto (las últimas 20). Más bajo es más rápido. Las series que pasan solas no cuentan.'}</p>
   </div>`;
 }
 function renderStats() {

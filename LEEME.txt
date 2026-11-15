@@ -308,3 +308,8 @@ TIMER: ACTIVIDAD, CALENDARIO Y PANTALLA BLOQUEADA
 - Animaciones por lado: si existe MAP['<ejercicio>@R'] y MAP['<ejercicio>@L'], el reproductor muestra solo ese
   lado y cambia a la mitad (mountPlayerAnim). Primer caso: cruce de pierna flexionada (cross_top_r / cross_top_l),
   vista desde arriba, boca arriba (opción face: se ve la cara). Prueba: tools/pruebas/tanimside.mjs
+- Progreso de tiempos (stats.js, progData): ritmo por repetición (series con ✓ y retos contados por toque o
+  sensor; las etapas previas de un reto van aparte: «Dominadas negativas», «asistidas»; «sueltas» cuenta como
+  dominadas) y peso con mancuerna (kg más alto por sesión, aunque las series hayan pasado solas). Los retos con
+  mancuerna «al ritmo de la app» no dan ritmo (lo marca la app); desde v151 el historial guarda w.mode del reto.
+  Prueba: tools/pruebas/tprog.mjs

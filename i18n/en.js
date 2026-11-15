@@ -1890,7 +1890,14 @@ I18N = {
 "En prueba. Mantiene el audio activo para que los avisos suenen con el teléfono bloqueado; pausa la música de otras apps": "Experimental. Keeps audio active so alerts sound with the phone locked; pauses music from other apps",
 "Programar en el calendario": "Schedule on the calendar",
 "Opcional. Los días que marques aparece en el calendario; para eso guárdalo.": "Optional. It shows on the calendar on the days you pick; save it for that.",
-"Editar o cambiar los días": "Edit or change the days"
+"Editar o cambiar los días": "Edit or change the days",
+"Ritmo por repetición": "Pace per rep",
+"Peso con mancuerna": "Dumbbell weight",
+"Al principio {0}": "At first {0}",
+"{0} más": "{0} more",
+"{0} menos": "{0} less",
+"El peso más alto que usaste en cada sesión con este ejercicio (las últimas 20).": "The heaviest weight you used in each session with this exercise (last 20).",
+"Segundos por repetición en cada sesión, según cuándo tocas ✓ o lo que cuenta el reto (las últimas 20). Más bajo es más rápido. Las series que pasan solas no cuentan.": "Seconds per rep in each session, based on when you tap ✓ or what the challenge counts (last 20). Lower is faster. Sets that advance on their own don't count."
 };
 I18N_PAT = [
 [
