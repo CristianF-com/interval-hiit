@@ -129,7 +129,8 @@ const Anim = (() => {
     lunge_pendulum: () => k([LUNGE_F, S0, LUNGE], 3200),
     side_lunge: () => k([FW, F_SL], 2400, { anchor: 'ankleL' }),
     side_lunge_alt: () => k([FW, F_SL, FW, mirF(F_SL)], 4000),
-    side_lunge_touch: () => k([FW, m(F_SL, { t: 200, uR: -20, fR: -10 }), FW, mirF(m(F_SL, { t: 200, uR: -20, fR: -10 }))], 4000),
+    // zancada lateral: se inclina hacia la pierna flexionada y la mano contraria toca el suelo junto a ese pie
+    side_lunge_touch: () => { const D = m(F_SL, { t: 233, kT: 0.8, hd: 16, tL: -80, sL: -2, uR: -14, fR: -10, uL: -165, fL: -172 }); return k([FW, m(F_SL, { t: 196 }), D, D, FW, mirF(m(F_SL, { t: 196 })), mirF(D), mirF(D)], 4400); },
     curtsy: () => k([F0, F_CURTSY], 2400, { anchor: 'ankleL' }),
     deadlift: () => k([S0, HINGE], 2800, { anchor: 'ankleL' }),
     balance: () => k([m(KNEE_R, { uL: 60, fL: 80, uR: -60, fR: -80 }), m(KNEE_R, { t: 177, uL: 66, fL: 86, uR: -56, fR: -74 })], 2400, { anchor: 'ankleL' }),
@@ -316,7 +317,7 @@ const Anim = (() => {
 
   /* ---------- ejercicio → plantilla ---------- */
   const MAP = {
-    squats: 'squat', narrow_squats: 'squat_narrow', pulsing_squats: 'squat_pulse', overhead_squats: 'squat_up', frog_squats: 'squat_deep',
+    squats: 'squat', narrow_squats: { combo: ['narrow_squats__a', 'narrow_squats__b'], labels: ['De lado', 'De frente'] }, narrow_squats__a: 'squat', narrow_squats__b: 'squat_narrow', pulsing_squats: 'squat_pulse', overhead_squats: 'squat_up', frog_squats: 'squat_deep',
     jump_squats: 'squat_jump', forward_jump_squats: 'squat_jump_fwd', '180_jump_squats': 'jump_turn', '180_jumps': 'jump_turn_small',
     butt_kicker_jump_squats: 'squat_jump_kick', squat_to_high_knee: 'squat_knee', squat_to_high_knee_jumps: 'squat_knee_jump',
     squat_side_kick: 'squat_kick', squat_arm_swing: 'squat_swing', squat_knee_elbow_twist: 'squat_twist',
@@ -426,7 +427,7 @@ const Anim = (() => {
   T.climber_wide = () => k([PL_H, CW, CW_UP, CW, PL_H, m(swapS(CW), { anc: 'toeR' }), m(swapS(CW_UP), { anc: 'toeR' }), m(swapS(CW), { anc: 'toeR' })], 4400, { anchor: 'toeL', hands: true });
 
   // sentadilla cerrada de frente (pies juntos)
-  T.squat_narrow = () => k([m(F0, { hw: 3, tL: 0, sL: 0, tR: 0, sR: 0, uL: -6, fL: -4, uR: 6, fR: 4 }), m(F0, { hw: 3, tL: -14, sL: 10, tR: 14, sR: -10, kLL: 0.38, kLR: 0.38, kSL: 2.3, kSR: 2.3, uL: 30, fL: 40, uR: -30, fR: -40, kAL: 0.5, kAR: 0.5 })], 2200);
+  T.squat_narrow = () => k([m(F0, { hw: 3, tL: 0, sL: 0, tR: 0, sR: 0, uL: -6, fL: -4, uR: 6, fR: 4 }), m(F0, { hw: 3, tL: -14, sL: 10, tR: 14, sR: -10, kT: 0.9, kLL: 0.3, kLR: 0.3, kSL: 1, kSR: 1, uL: 30, fL: 40, uR: -30, fR: -40, kAL: 0.5, kAR: 0.5 })], 2200);
   // patinador visto de lado: cae sobre una pierna flexionada, la otra cruza por detrás, brazos alternos
   const SK_L = m(S0, { t: 150, hd: -6, tL: 42, sL: -18, pL: 90, tR: -38, sR: -82, pR: 20, uL: 62, fL: 84, uR: -42, fR: -20 });
   T.skater_side = () => k([SK_L, air(m(S0, { t: 166, tL: 14, sL: -12, tR: 12, sR: -14, uL: 10, fL: 30, uR: 8, fR: 28 }), 14), m(swapS(SK_L), { anc: 'ankleR' }), air(m(S0, { t: 166, tL: 14, sL: -12, tR: 12, sR: -14, uL: 10, fL: 30, uR: 8, fR: 28 }), 14)], 1600);

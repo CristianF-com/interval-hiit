@@ -21,7 +21,7 @@ const dateStr = t => new Date(t).toLocaleDateString(LOC, { weekday: 'short', day
    Anota lo que pasa con el audio, la pantalla encendida, los giros y los guardados (lo que no se puede ver
    desde afuera en el iPhone). Se ve y se comparte en Perfil → Ajustes → Diagnóstico. Últimas 600 líneas. */
 // versión de la app: tiene que coincidir con VERSION de sw.js (la prueba tver.mjs lo controla)
-const APP_V = 158;
+const APP_V = 159;
 const DIAG_KEY = 'inhiit.diag', DIAG_MAX = 600;
 let DIAG_BUF = null, DIAG_T = null;
 function diag(ev, data) {
@@ -1937,6 +1937,18 @@ function restMore() {
   if (P.paused) P.remain += 10000; else { P.endAt += 10000; P.remain = P.endAt - performance.now(); }
   P.lastSec = null; beep(523, 90, .15); paint(); saveSession();
 }
+// nombre del ejercicio: si ocupa más de una línea se achica (hasta que entre en dos, sin cortar palabras si se puede)
+function fitName(el) {
+  if (!el) return; el.style.fontSize = '';
+  if (!el.offsetParent || !el.textContent) return;
+  const lines = () => { const cs = getComputedStyle(el); return Math.round(el.clientHeight / (parseFloat(cs.lineHeight) || parseFloat(cs.fontSize) * .95)); };
+  const broken = () => { return [...el.textContent.split(/\s+/)].some(w => { const s = document.createElement('span'); s.style.cssText = 'position:absolute;visibility:hidden;white-space:nowrap;font:inherit;text-transform:inherit;letter-spacing:inherit'; s.textContent = w; el.appendChild(s); const wide = s.offsetWidth > el.clientWidth + 1; s.remove(); return wide; }); };
+  if (lines() < 2) return;
+  let fs = parseFloat(getComputedStyle(el).fontSize) * .72; const min = 18;
+  el.style.fontSize = fs + 'px';
+  while (fs > min && (lines() > 2 || broken())) { fs = Math.max(min, fs * .9); el.style.fontSize = fs + 'px'; }
+}
+addEventListener('resize', () => { if (P.running) fitName($('#p-name')); });
 function moreTime() { if (!P.autoAt) return; P.autoAt += 10000; P.autoLast = null; beep(523, 90, .15); toast('+10 segundos'); setSide(''); }
 // el panel bajo el número se reescribe solo si cambia (si no, los botones no se pueden tocar)
 function setSide(h) { const el = $('#p-side'); if (el && el.dataset.h !== h) { el.dataset.h = h; el.innerHTML = h; } }
@@ -2053,7 +2065,7 @@ function render() {
   let phase, name, cue = '', meta;
   if (s.k === 'work') { const e = ex(s.ex); phase = s.kg ? `${fmtKg(s.kg)} kg · serie ${s.set + 1} de ${s.S}` : s.sec === 'Ronda' ? '¡Dale!' : s.sec; name = e.n; cue = e.d; }
   else { phase = (s.k === 'prep' ? 'Prepárate' : s.label) + (s.next ? ' · siguiente' : ''); name = s.next ? ex(s.next).n : ''; cue = s.next ? ex(s.next).d : ''; }
-  $('#p-phase').textContent = phase; $('#p-name').textContent = name; $('#p-cue').textContent = cue;
+  $('#p-phase').textContent = phase; $('#p-name').textContent = name; $('#p-cue').textContent = cue; fitName($('#p-name'));
   const eid = s.k === 'work' ? s.ex : s.next, easy = !s.ask && easierOf(eid);
   $('#p-easy').classList.toggle('hidden', !easy);
   const tgtStep = s.k === 'work' ? s : P.tl.slice(P.i + 1).find(x => x.k === 'work');
