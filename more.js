@@ -32,6 +32,7 @@ function goalCardHTML() {
 }
 function renderGoal() {
   ['#goal-card', '#goal-card2'].forEach(id => { const el = $(id); if (el && PROFILE) { el.innerHTML = goalCardHTML(); el.querySelector('[data-goal]').onclick = () => openGoal(); } });
+  try { renderRecapCard(); const b = $('#recap-btn'); if (b) b.onclick = () => openRecap(); } catch (e) {}
 }
 function openGoal() {
   const g = goalOf(); let k = g.k, v = g.v;
@@ -59,6 +60,114 @@ function goalJustHit() {
 }
 function goalDoneHTML() {
   return `<div class="banner goal-hit"><span class="gr">${ringSVG(1, 46, 6)}<b>✓</b></span><div class="t"><b>¡Meta semanal cumplida!</b><small>${esc(goalLabel())}</small></div></div>`;
+}
+
+/* ---------- Resumen semanal ----------
+   Los lunes (y durante esa semana, hasta cerrarlo) aparece en Coach una tarjeta con la semana anterior: sesiones,
+   minutos, días, calorías, meta, máximos nuevos en retos, más peso con mancuerna y el puesto en cada grupo (según la
+   última vez que se vio el ranking esa semana, PS 'frWeek'). También se abre desde Historial → Resumen y se puede
+   recorrer semana por semana. Se comparte como imagen. PS 'recapSeen' = inicio de la semana ya vista. */
+const wkPrev = ws => weekKey(ws - 3 * DAY), wkNext = ws => weekKey(ws + 10 * DAY);
+function kcalEntry(x) {
+  if (x.hr && x.hr.kcal) return x.hr.kcal;
+  const items = typeof stItems === 'function' ? stItems(x) : [];
+  return Math.round(items.reduce((a, it) => a + kcalOf(it.id, it.secs), 0)) || x.kcal || 0;
+}
+function weekRecap(ws) {
+  const we = wkNext(ws), H = PS.get('history', []), W = H.filter(x => x.at >= ws && x.at < we && x.w && x.w.kind !== 'test');
+  if (!W.length) return null;
+  const mins = Math.round(W.reduce((a, x) => a + (x.secs || 0), 0) / 60), days = new Set(W.map(x => dayStart(x.at))).size;
+  const kcal = Math.round(W.reduce((a, x) => a + kcalEntry(x), 0));
+  const kinds = {}; W.forEach(x => { const k = typeof kindOf === 'function' ? kindOf(x.w) : 'libre'; kinds[k] = (kinds[k] || 0) + 1; });
+  // máximos nuevos en retos: la mejor serie de la semana contra la mejor de antes
+  const rec = [];
+  Object.entries(PS.get('retos', {}) || {}).forEach(([k, st]) => {
+    if (!RETOS[k] || !st || !Array.isArray(st.log)) return; let bIn = 0, bB = 0;
+    st.log.forEach(l => { const m = Math.max(0, ...((l && l.sets) || []).map(Number).filter(isFinite)); if (l.at < ws) bB = Math.max(bB, m); else if (l.at < we) bIn = Math.max(bIn, m); });
+    if (bIn > bB) rec.push({ n: t(RETOS[k].n), v: bIn, up: bB ? bIn - bB : 0 });
+  });
+  // más peso con mancuerna
+  const kg = []; try { const D = progData(); Object.entries(D.kg).forEach(([k, a]) => { let bIn = 0, bB = 0; a.forEach(p => { if (p.at < ws) bB = Math.max(bB, p.v); else if (p.at < we) bIn = Math.max(bIn, p.v); }); if (bB && bIn > bB) kg.push({ n: progName(k), v: bIn, up: Math.round((bIn - bB) * 10) / 10 }); }); } catch (e) {}
+  const g = goalOf(), have = g.k === 'm' ? mins : W.length;
+  // puesto en cada grupo
+  const grp = []; const F = PS.get('frWeek', {}) || {};
+  Object.values(F).forEach(o => { const sn = [o && o.cur, o && o.prev].find(x => x && x.wk === ws); if (!sn || !sn.rows || sn.rows.length < 2) return;
+    const R = sn.rows.slice().sort((a, b) => b.m - a.m || b.s - a.s), pos = R.findIndex(r => r.me) + 1; if (pos) grp.push({ n: sn.n, pos, of: R.length }); });
+  const prevW = H.filter(x => x.at >= wkPrev(ws) && x.at < ws && x.w && x.w.kind !== 'test'), prevM = Math.round(prevW.reduce((a, x) => a + (x.secs || 0), 0) / 60);
+  return { ws, we, n: W.length, mins, days, kcal, kinds, rec, kg, goal: g, have, met: have >= g.v, grp, prevM, hasPrev: prevW.length > 0 };
+}
+const recapRange = ws => { const a = new Date(ws), b = new Date(wkNext(ws) - DAY), o = { day: 'numeric', month: 'long' }; return a.getMonth() === b.getMonth() ? t('Del {0} al {1}', a.getDate(), b.toLocaleDateString(LOC, o)) : t('Del {0} al {1}', a.toLocaleDateString(LOC, o), b.toLocaleDateString(LOC, o)); };
+const ord = n => LANG === 'es' ? n + 'º' : n + (n % 10 === 1 && n % 100 !== 11 ? 'st' : n % 10 === 2 && n % 100 !== 12 ? 'nd' : n % 10 === 3 && n % 100 !== 13 ? 'rd' : 'th');
+function recapLines(r) {
+  const L = [];
+  r.rec.forEach(x => L.push(['🎯', t('Máximo nuevo en {0}: {1}', x.n, x.v) + (x.up ? ' ' + t('(+{0})', x.up) : '')]));
+  r.kg.forEach(x => L.push(['🏋️', t('{0}: {1} kg ({2} kg más)', x.n, nf1(x.v), nf1(x.up))]));
+  r.grp.forEach(x => L.push([x.pos === 1 ? '🥇' : x.pos === 2 ? '🥈' : x.pos === 3 ? '🥉' : '👥', t('{0} de {1} en {2}', ord(x.pos), x.of, x.n)]));
+  return L;
+}
+function renderRecapCard() {
+  const el = $('#recap-card'); if (!el || !PROFILE) return;
+  const ws = wkPrev(weekKey(Date.now())), r = PS.get('recapSeen', 0) === ws ? null : weekRecap(ws);
+  if (!r) { el.innerHTML = ''; return; }
+  el.innerHTML = `<div class="recap-card"><button class="rc-open" id="rc-open"><span class="rc-ic" aria-hidden="true">📊</span><span class="t"><b>Tu semana pasada</b>
+    <small>${t(r.n === 1 ? '{0} sesión' : '{0} sesiones', r.n)} · ${t('{0} min', r.mins)}${recapLines(r).length ? ' · ' + t(recapLines(r).length === 1 ? '{0} destacado' : '{0} destacados', recapLines(r).length) : ''}</small></span>
+    <svg class="chev" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button>
+    <button class="icon-btn rc-x" id="rc-x" aria-label="Cerrar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>`;
+  $('#rc-open').onclick = () => openRecap(ws);
+  $('#rc-x').onclick = () => { PS.set('recapSeen', ws); renderRecapCard(); };
+}
+function openRecap(ws) {
+  const now = weekKey(Date.now());
+  if (ws == null) { ws = wkPrev(now); }
+  const r = weekRecap(ws), lines = r ? recapLines(r) : [];
+  const nav = `<div class="rc-nav"><button class="icon-btn" id="rc-prev" aria-label="Semana anterior"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 6l-6 6 6 6"/></svg></button>
+    <span data-noi18n>${esc(recapRange(ws))}</span><button class="icon-btn" id="rc-next" aria-label="Semana siguiente" ${wkNext(ws) > now ? 'disabled' : ''}><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M9 6l6 6-6 6"/></svg></button></div>`;
+  const diff = r && r.hasPrev ? r.mins - r.prevM : 0;
+  sheet(`<h3>${ws === now ? 'Esta semana' : ws === wkPrev(now) ? 'Tu semana pasada' : 'Resumen de la semana'}</h3>${nav}
+    ${r ? `<div class="stats rc-stats"><div class="stat"><b>${r.n}</b><span>${t(r.n === 1 ? 'sesión' : 'sesiones')}</span></div><div class="stat"><b>${r.mins}</b><span>min</span></div>
+      <div class="stat"><b>${r.days}</b><span>${t(r.days === 1 ? 'día entrenado' : 'días entrenados')}</span></div>${r.kcal ? `<div class="stat"><b>${r.kcal}</b><span>kcal aprox.</span></div>` : ''}</div>
+    <p class="note rc-goal">${r.met ? '✓ ' + t('Meta cumplida') : t('Meta: {0} de {1}', r.have, r.goal.v + (r.goal.k === 'm' ? ' min' : ''))}${r.hasPrev && diff ? ' · ' + (diff > 0 ? t('{0} min más que la semana anterior', diff) : t('{0} min menos que la semana anterior', -diff)) : ''}</p>
+    ${lines.length ? `<h2>Lo mejor de la semana</h2><div class="block">${lines.map(([i, l]) => `<div class="hist rc-l"><span class="rc-li" aria-hidden="true">${i}</span><div class="t"><b data-noi18n>${esc(l)}</b></div></div>`).join('')}</div>` : ''}
+    ${r.grp.length ? '<p class="note">El puesto en el grupo es el de la última vez que viste el ranking esa semana.</p>' : ''}
+    <div class="gap"></div><button class="btn" id="rc-share">Compartir</button><div class="gap"></div><button class="btn ghost small" id="rc-ok">Listo</button>`
+    : `<p class="note">${t('No hay sesiones en esta semana.')}</p><div class="gap"></div><button class="btn ghost small" id="rc-ok">Listo</button>`}`, () => {
+    $('#rc-prev').onclick = () => openRecap(wkPrev(ws));
+    $('#rc-next').onclick = () => { if (wkNext(ws) <= now) openRecap(wkNext(ws)); };
+    $('#rc-ok').onclick = () => { if (ws === wkPrev(now)) { PS.set('recapSeen', ws); renderRecapCard(); } closeSheet(); };
+    const sh = $('#rc-share'); if (sh) sh.onclick = () => shareRecap(r);
+  });
+}
+async function recapImage(r) {
+  const css = getComputedStyle(document.documentElement), col = v => css.getPropertyValue(v).trim() || '#fff';
+  const bg = col('--bg'), sf = col('--surface'), tx = col('--text'), mu = col('--muted'), ac = col('--work');
+  const W = 1080, H = 1350, c = document.createElement('canvas'); c.width = W; c.height = H; const g = c.getContext('2d');
+  const F = s => `${s}px -apple-system, "SF Pro Display", "Segoe UI", Roboto, sans-serif`;
+  const rr = (x, y, w, h, rad) => { g.beginPath(); g.roundRect ? g.roundRect(x, y, w, h, rad) : g.rect(x, y, w, h); g.fill(); };
+  g.fillStyle = bg; g.fillRect(0, 0, W, H);
+  const gr = g.createRadialGradient(W * .85, 120, 40, W * .85, 120, 700); gr.addColorStop(0, ac + '55'); gr.addColorStop(1, ac + '00'); g.fillStyle = gr; g.fillRect(0, 0, W, H);
+  const logo = await shareLogo(ac); if (logo) { const lw = 220, lh = lw * 623 / 644; g.drawImage(logo, (W - lw) / 2, 50, lw, lh); }
+  g.textAlign = 'center'; g.fillStyle = ac; g.font = '700 ' + F(40); g.fillText(t('MI SEMANA').toUpperCase(), W / 2, 340);
+  g.fillStyle = tx; g.font = '800 ' + F(54); g.fillText(recapRange(r.ws), W / 2, 410);
+  const tiles = [[r.n, t(r.n === 1 ? 'sesión' : 'sesiones')], [r.mins, t('minutos')], [r.days, t(r.days === 1 ? 'día entrenado' : 'días entrenados')], [r.kcal || '—', t('kcal aprox.')]];
+  const tw = 450, th = 190, gx = 40, x0 = (W - tw * 2 - gx) / 2;
+  tiles.forEach(([v, l], i) => { const tx0 = x0 + (i % 2) * (tw + gx), ty = 460 + Math.floor(i / 2) * (th + gx);
+    g.fillStyle = sf; rr(tx0, ty, tw, th, 36); g.fillStyle = tx; g.font = '800 ' + F(88); g.fillText(String(v), tx0 + tw / 2, ty + 110); g.fillStyle = mu; g.font = F(32); g.fillText(l, tx0 + tw / 2, ty + 160); });
+  const lines = recapLines(r).slice(0, 4); let y = 960;
+  g.textAlign = 'left';
+  if (r.met) lines.unshift(['✓', t('Meta cumplida')]);
+  lines.slice(0, 5).forEach(([i, l]) => { g.fillStyle = sf; rr(x0, y - 52, tw * 2 + gx, 72, 24); g.fillStyle = tx; g.font = '600 ' + F(34);
+    const txt = (i + '  ' + l); g.fillText(txt.length > 46 ? txt.slice(0, 45) + '…' : txt, x0 + 28, y - 4); y += 86; });
+  g.textAlign = 'center'; g.fillStyle = mu; g.font = '600 ' + F(28); g.fillText('INHIIT', W / 2, H - 30);
+  return new Promise(res => c.toBlob(res, 'image/png'));
+}
+async function shareRecap(r) {
+  if (!r) return; toast('Preparando la imagen…');
+  let blob; try { blob = await recapImage(r); } catch (e) { toast('No se pudo preparar la imagen'); return; }
+  const file = new File([blob], 'inhiit-semana.png', { type: 'image/png' });
+  try { if (navigator.canShare && navigator.canShare({ files: [file] })) { await navigator.share({ files: [file], title: 'INHIIT' }); return; } } catch (e) { if (e && e.name === 'AbortError') return; }
+  const u = URL.createObjectURL(blob);
+  sheet(`<h3>Tu semana</h3><img src="${u}" alt="" style="width:100%;border-radius:16px;display:block">
+    <p class="note">Mantén apretada la imagen para guardarla o compartirla.</p><a class="btn" href="${u}" download="inhiit-semana.png">Descargar imagen</a>`);
 }
 
 /* ---------- Compartir la sesión como imagen ---------- */
@@ -464,7 +573,12 @@ function frExtra() {
     rt.push({ k, n, st: on ? st.stage : 0, pre: on && st.k < 0 ? 1 : 0, d: on ? (st.day || 0) + 1 : 0, D, b: best, g: st.goalsDone || 0, at: (st.log && st.log.length ? st.log[st.log.length - 1].at : 0) });
   });
   rt.sort((a, b) => b.at - a.at);
-  return { st: weekStreak(H), aw: Object.keys(PS.get('awards', {}) || {}).length, rp, rt: rt.slice(0, 6).map(({ at, ...r }) => r) };
+  return { v: APP_V, st: weekStreak(H), aw: Object.keys(PS.get('awards', {}) || {}).length, rp, rt: rt.slice(0, 6).map(({ at, ...r }) => r) };
+}
+// quien usa una versión más vieja que la más nueva del grupo lleva una marca (los de antes de v156 no mandan versión)
+function frOld(x, maxV, me) {
+  const v = (x.x && x.x.v) || 0; if (v >= maxV) return '';
+  return `<span class="fr-old">⟳ ${me ? t('Hay una versión nueva: cierra la app y vuelve a abrirla') : t('Tiene que actualizar la app')}</span>`;
 }
 function frInfo(x) {
   const e = x.x || {}, a = [];
@@ -507,12 +621,15 @@ async function renderFriends() {
     const L = await FBA.membersList(frSel), wk = weekKey(Date.now()), me = memberId(u);
     frCache[frSel] = L;
     const rows = L.map(x => ({ ...x, s: x.wk === wk ? x.s : 0, m: x.wk === wk ? x.m : 0 })).sort((a, b) => (frMode === 'm' ? b.m - a.m || b.s - a.s : b.s - a.s || b.m - a.m));
-    const g = G.find(x => x.c === frSel);
+    const g = G.find(x => x.c === frSel), maxV = Math.max(APP_V, ...rows.map(x => (x.x && x.x.v) || 0));
+    // foto del ranking para el resumen semanal (se guarda la de esta semana y la de la anterior)
+    try { const F = PS.get('frWeek', {}) || {}, o = F[frSel] || {}, snap = { wk, at: Date.now(), n: g.n, rows: rows.map(x => ({ me: x.id === me, s: x.s, m: x.m })) };
+      F[frSel] = o.cur && o.cur.wk !== wk ? { prev: o.cur, cur: snap } : { prev: o.prev, cur: snap }; PS.set('frWeek', F); } catch (e) {}
     rk.innerHTML = `<div class="chart fr">
       <div class="ch-top"><div><b data-noi18n>${esc(g.n)}</b><small>${t('Código: {0} · esta semana', '<span class="code" data-noi18n>' + frSel + '</span>')}</small></div>
         <div class="seg" id="fr-mode"><button data-m="m" aria-pressed="${frMode === 'm'}">Minutos</button><button data-m="s" aria-pressed="${frMode === 's'}">Sesiones</button></div></div>
       <div class="rank">${rows.map((x, i) => `<div class="rk${x.id === me ? ' me' : ''}"><span class="pos">${i + 1}</span><span class="av" style="background:var(--av${i % 7});color:var(--avt${i % 7})" data-noi18n>${esc((x.n || '?')[0].toUpperCase())}</span>
-        <span class="fr-who"><span class="nm" data-noi18n>${esc(x.n || '—')}${x.id === me ? ` <small>(${t('tú')})</small>` : ''}</span>${frInfo(x)}</span><b>${frMode === 'm' ? x.m + ' min' : x.s}</b></div>`).join('')}</div></div>
+        <span class="fr-who"><span class="nm" data-noi18n>${esc(x.n || '—')}${x.id === me ? ` <small>(${t('tú')})</small>` : ''}</span>${frInfo(x)}${frOld(x, maxV, x.id === me)}</span><b>${frMode === 'm' ? x.m + ' min' : x.s}</b></div>`).join('')}</div></div>
       <div class="row fr-act"><button class="btn ghost small" id="fr-invite">Invitar</button><button class="btn ghost small" id="fr-leave">Salir del grupo</button></div>`;
     bindSeg('fr-mode', 'm', m => { frMode = m; renderFriends(); });
     $('#fr-invite').onclick = () => inviteGroup(g);

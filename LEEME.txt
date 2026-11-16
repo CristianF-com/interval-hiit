@@ -338,3 +338,13 @@ DATOS Y DIAGNÓSTICO (v153)
   activa bgAudio también en entrenamientos y retos (pista muda en bucle + sesión «playback» + pantalla de bloqueo
   con pausa/siguiente según bgHandlers) y wake(false) lo apaga. Evita que el audio quede mudo al desbloquear.
   Se cambia en Perfil → Ajustes → Pantalla bloqueada o en Coach → Timer → Opciones. Prueba: tools/pruebas/tbg.mjs
+
+VERSIÓN EN AMIGOS Y RESUMEN SEMANAL (v156)
+- APP_V (app.js) = número de VERSION en sw.js: al subir la versión cambiar LOS DOS (tools/pruebas/tver.mjs lo controla).
+  frExtra manda x.v; en el ranking, quien tiene una versión más vieja que la más nueva del grupo lleva la marca
+  «Tiene que actualizar la app» (los de antes de v156 no mandan versión, así que también la llevan).
+- Resumen semanal (more.js, weekRecap/openRecap): tarjeta en Coach con la semana anterior hasta cerrarla
+  (PS 'recapSeen'), y botón «Resumen por semana» en Historial → Resumen para recorrer semanas. Incluye sesiones,
+  minutos, días, kcal, meta, comparación con la semana previa, máximos nuevos en retos (mejor serie de la semana vs.
+  antes), más peso con mancuerna y puesto en cada grupo (foto del ranking guardada al verlo, PS 'frWeek').
+  Se comparte como imagen (recapImage). Prueba: tools/pruebas/trecap.mjs

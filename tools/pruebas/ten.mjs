@@ -88,6 +88,7 @@ await p.evaluate(()=>{ TP.last-=700000; tmTick(); }); await scan('84-timer-run2'
 await p.evaluate(()=>closeSheet()); await p.evaluate(()=>{ TP.c=tmPreset(TM_PRESETS[0]); }); await p.evaluate(()=>{ PS.set('tsession',{c:tmPreset(TM_PRESETS[0]),pos:100,act:100,log:[],startedAt:Date.now(),savedAt:Date.now(),paused:true}); renderTimers(); }); await scan('87-timer-resume');
 await p.evaluate(()=>PS.del('tsession')); await p.click('[data-tab=cal]'); await scan('87b-timer-cal'); await p.evaluate(()=>openAgendaItem({type:'timer',id:'zz'})); await scan('87c-timer-item'); await p.evaluate(()=>closeSheet()); await p.click('[data-tab=hist]'); await p.evaluate(()=>{ setSubtab('hist','list'); openHistDetail(0); }); await scan('88-timer-hist');
 await p.evaluate(()=>closeSheet());
+await p.evaluate(()=>{ const ws=wkPrev(weekKey(Date.now())); const H=PS.get('history',[]); H.unshift({at:ws+DAY,secs:1200,full:true,w:{kind:'smart',title:'x'},reps:{}}); PS.set('history',H); PS.set('frWeek',{A:{cur:{wk:ws,at:ws,n:'G',rows:[{me:true,s:1,m:20},{me:false,s:0,m:0}]}}}); PS.del('recapSeen'); show('coach'); renderGoal(); }); await scan('90-recap-card'); await p.evaluate(()=>openRecap()); await scan('91-recap'); await p.evaluate(()=>closeSheet());
 await p.evaluate(()=>{ document.querySelector('#goal-card').innerHTML = goalDoneHTML(); }); await scan('52-goal-hit');
 const said = await p.evaluate(()=>__said);
 console.log('voz:'); for (const x of said) console.log('  ', x, ' => ', await p.evaluate(t=>tr(t), x));
