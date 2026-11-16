@@ -1908,7 +1908,11 @@ I18N = {
 "Registro de diagnóstico": "Diagnostic log",
 "No se pudo guardar: el teléfono no tiene lugar libre": "Couldn't save: the phone is out of space",
 "Se guardan en este teléfono y, en tamaño reducido, en tu copia y en la nube. Toca dos para compararlas.": "They're saved on this phone and, at a reduced size, in your backup and the cloud. Tap two to compare them.",
-"Se borra de este teléfono, de la copia y de la nube, y no se puede recuperar.": "It's deleted from this phone, the backup and the cloud, and can't be recovered."
+"Se borra de este teléfono, de la copia y de la nube, y no se puede recuperar.": "It's deleted from this phone, the backup and the cloud, and can't be recovered.",
+"Pantalla bloqueada": "Locked screen",
+"Sonido con la pantalla bloqueada": "Sound with the screen locked",
+"Vale para el timer, los entrenamientos y los retos. Pausa la música de otras apps": "Applies to the timer, workouts and challenges. Pauses music from other apps",
+"En el timer, los entrenamientos y los retos la voz y los avisos siguen con el teléfono bloqueado, y al desbloquear el audio no se pierde. Pausa la música de otras apps mientras entrenas": "In the timer, workouts and challenges the voice and alerts keep going with the phone locked, and audio isn't lost when you unlock. Pauses music from other apps while you train"
 };
 I18N_PAT = [
 [

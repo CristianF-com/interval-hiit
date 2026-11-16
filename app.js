@@ -470,6 +470,8 @@ function openProfiles() {
     <h2>Idioma</h2>
     <div class="seg" id="pf-lang">${Object.entries(LANGS).map(([k, n]) => `<button data-l="${k}" aria-pressed="${LANG === k}" data-noi18n>${n}</button>`).join('')}</div>
     <p class="note">Cambia el idioma de toda la app. Las voces grabadas (Dora, Alex, Paula, Julio, Ona y Kimetz) son solo en español; en inglés se usa la voz del teléfono.</p>
+    <h2>Pantalla bloqueada</h2>
+    <div class="toggles"><button class="tg" id="pf-bg" role="switch" aria-checked="${bgOn()}"><span>Sonido con la pantalla bloqueada<small>En el timer, los entrenamientos y los retos la voz y los avisos siguen con el teléfono bloqueado, y al desbloquear el audio no se pierde. Pausa la música de otras apps mientras entrenas</small></span><i class="sw"></i></button></div>
     <h2>Pausas</h2>
     <div class="toggles"><div class="tg-row"><span>Pausa para acomodarte<small>Antes de empezar y entre calentamiento o estiramientos</small></span>${accSegHTML('pf-acc')}</div>
     ${gapRowHTML('pf-gap')}</div>
@@ -498,6 +500,7 @@ function openProfiles() {
     bindSeg('pf-theme', 't', t => { S.theme = t; save(); applyTheme(); });
     bindSeg('pf-lang', 'l', l => { if (l !== LANG) setLang(l); });
     bindAcc('pf-acc'); bindGap('pf-gap');
+    $('#pf-bg').onclick = () => { S.bgAudio = !bgOn(); delete S.tmBg; save(); $('#pf-bg').setAttribute('aria-checked', bgOn()); };
     $('#pf-diag').onclick = () => diagShare();
     $('#pf-diag-x').onclick = () => { DIAG_BUF = []; diagFlush(); toast('Registro borrado'); };
     const pa = $('#pf-avoid'); if (pa) pa.onclick = () => { S.avoid = []; save(); closeSheet(); toast('Ya no se cuida ninguna zona'); };
@@ -1765,8 +1768,19 @@ function noSleepVideo(on) {
     const p = nsv.play(); if (p && p.then) p.then(() => diag('pantalla:video', 'ok'), e => diag('pantalla:video', 'falló ' + (e && e.name)));
   } else if (nsv) nsv.pause();
 }
+/* Audio activo con la pantalla bloqueada (S.bgAudio, activado por defecto): lo mismo que usa el timer, ahora en
+   entrenamientos y retos. Mantiene la app y su audio vivos con el teléfono bloqueado, así al desbloquear no queda
+   muda; la pantalla de bloqueo muestra el ejercicio con pausa y siguiente. Pausa la música de otras apps. */
+const bgOn = () => S.bgAudio !== false && S.tmBg !== false;
+function bgHandlers() {
+  if (typeof TP !== 'undefined' && TP.running) return { play: () => tmPause(false), pause: () => tmPause(true), next: tmSkip, prev: tmPrev };
+  if (typeof RP !== 'undefined' && $('#rplayer') && !$('#rplayer').classList.contains('hidden')) return { play: () => { if (RP.paused) { closeSheet(); rResume(); } }, pause: () => { if (!RP.paused) rPause(); }, next: null, prev: null };
+  if (P.running) return { play: () => { if (P.paused) togglePause(); }, pause: () => { if (!P.paused) togglePause(); }, next: () => skipNow(), prev: () => { if (P.i > 0) step(P.i - 1); } };
+  return null;
+}
 async function wake(on) {
   WAKE_WANT = !!on;
+  try { if (on && bgOn()) { const h = bgHandlers(); if (h && !BG_KEEP) bgAudio(true, h); } else if (!on && BG_KEEP) bgAudio(false); } catch (e) {}
   try {
     if (on && 'wakeLock' in navigator) {
       if (!lock || lock.released) {
@@ -1889,6 +1903,7 @@ function setSide(h) { const el = $('#p-side'); if (el && el.dataset.h !== h) { e
 function step(i, silent, reason) {
   logClose();
   P.i = i;
+  try { const s0 = P.tl[i]; if (s0) bgMeta(s0.k === 'work' ? ex(s0.ex).n : s0.k === 'prep' ? t('Prepárate') : t('Descanso'), title(P.w), s0.dur); } catch (e) {}
   if (P.tl[i] && P.tl[i].k === 'work' && !P.tl[i].soft) P.logOpen = { i, at: P.activeMs };
   if (i >= P.tl.length) { finish(true, reason); return; }
   const s = cur();

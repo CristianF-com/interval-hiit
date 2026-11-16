@@ -104,8 +104,8 @@ function renderTimers() {
     <h2>Plantillas</h2><div class="block">${TM_PRESETS.map((p, i) => { const c = tmPreset(p); return `<div class="hist"><div class="t" data-tpe="${i}"><b>${esc(c.n)}</b><small>${tmBar(c)}${esc(c.blocks.map(b => `${b.n} ${tmFmt(b.s)}`).join(' · '))} · ${esc(tmSummary(c))}</small></div>
       <button class="icon-btn" data-tpp="${i}" aria-label="Empezar">${TM_PLAY}</button><button class="icon-btn" data-tpe="${i}" aria-label="Editar">${TM_EDIT}</button></div>`; }).join('')}</div>
     <p class="note">Toca una plantilla para cambiar los tiempos y guardarla con otro nombre.</p>
-    <h2>Opciones</h2><div class="toggles"><button class="tg" id="tm-bg" role="switch" aria-checked="${S.tmBg !== false}"><span>Avisar con la pantalla bloqueada<small>En prueba. Mantiene el audio activo para que los avisos suenen con el teléfono bloqueado; pausa la música de otras apps</small></span><i class="sw"></i></button></div>`;
-  $('#tm-bg').onclick = () => { S.tmBg = S.tmBg === false; save(); $('#tm-bg').setAttribute('aria-checked', S.tmBg !== false); };
+    <h2>Opciones</h2><div class="toggles"><button class="tg" id="tm-bg" role="switch" aria-checked="${bgOn()}"><span>Sonido con la pantalla bloqueada<small>Vale para el timer, los entrenamientos y los retos. Pausa la música de otras apps</small></span><i class="sw"></i></button></div>`;
+  $('#tm-bg').onclick = () => { S.bgAudio = !bgOn(); delete S.tmBg; save(); $('#tm-bg').setAttribute('aria-checked', bgOn()); };
   $('#tm-new').onclick = () => tmOpen(null, { ...TM_DEF, blocks: TM_DEF.blocks.map(b => ({ ...b, n: t(b.n) })) });
   el.querySelectorAll('[data-tmp]').forEach(b => b.onclick = () => tmStart(L[+b.dataset.tmp]));
   el.querySelectorAll('[data-tme]').forEach(b => b.onclick = () => tmOpen(+b.dataset.tme));
@@ -224,7 +224,7 @@ function tmExtend() {   // sin final: siempre hay al menos dos rondas por delant
 function tmStart(c0, resume) {
   if (P.running) { toast('Termina primero el entrenamiento en curso'); return; }
   const c = tmNorm(c0); if (!tmLoop(c)) { toast('Agrega al menos un bloque con tiempo'); return; }
-  diag('timer:empezar', (c0 && c0.n || '') + (resume ? ' (retomado)' : '') + (S.tmBg !== false ? ' · fondo' : ''));
+  diag('timer:empezar', (c0 && c0.n || '') + (resume ? ' (retomado)' : '') + (bgOn() ? ' · fondo' : ''));
   try { audioSession(true); audioCtx(); } catch (e) {}
   beep(660, 60, .12);   // desbloquea el audio en iPhone
   Object.assign(TP, { c, seg: tmPlan(c, (resume ? resume.pos : 0) + 2 * tmLoop(c) + 5), i: 0, pos: resume ? resume.pos : 0, act: resume ? resume.act : 0, log: resume ? resume.log || [] : [],
@@ -232,7 +232,7 @@ function tmStart(c0, resume) {
   while (TP.i < TP.seg.length - 1 && TP.pos >= TP.seg[TP.i].t0 + TP.seg[TP.i].s) TP.i++;
   $('#tplayer').classList.remove('hidden'); $('#tp-menu').classList.add('hidden'); document.body.style.overflow = 'hidden';
   voiceIcon(); wake(true); tmPreload();
-  try { bgAudio(S.tmBg !== false, { play: () => tmPause(false), pause: () => tmPause(true), next: tmSkip, prev: tmPrev }); } catch (e) {}
+  try { bgAudio(bgOn(), { play: () => tmPause(false), pause: () => tmPause(true), next: tmSkip, prev: tmPrev }); } catch (e) {}
   clearInterval(TP.timer); TP.timer = setInterval(tmTick, 200);
   tmPaint();
   if (resume) toast('Toca ▶ para continuar'); else tmEnter();

@@ -334,3 +334,7 @@ DATOS Y DIAGNÓSTICO (v153)
   versión, audio (estado, recuperación, voz del sistema), pantalla encendida, app oculta/visible, giros (alto,
   zoom y posición de la barra), audio de fondo del timer, guardados fallidos y errores. Perfil → Ajustes →
   Diagnóstico → «Compartir el registro». Prueba: tools/pruebas/tdatos.mjs
+- Sonido con la pantalla bloqueada (S.bgAudio, activado por defecto; antes S.tmBg solo para el timer): wake(true)
+  activa bgAudio también en entrenamientos y retos (pista muda en bucle + sesión «playback» + pantalla de bloqueo
+  con pausa/siguiente según bgHandlers) y wake(false) lo apaga. Evita que el audio quede mudo al desbloquear.
+  Se cambia en Perfil → Ajustes → Pantalla bloqueada o en Coach → Timer → Opciones. Prueba: tools/pruebas/tbg.mjs
