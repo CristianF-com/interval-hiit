@@ -55,15 +55,21 @@ addEventListener('unhandledrejection', e => diag('promesa', String(e.reason && (
 const NS = 'intervalo.';
 const BIG_RE = /^intervalo\.p\.[^.]+\.(history|photos)$/;
 const KV = {
-  on: !!(window.BIG_OK && window.KVDB), mem: window.BIGMEM || {}, warned: false,
+  on: !!(window.BIG_OK && window.KVDB), mem: window.BIGMEM || {}, warned: false, pend: 0, waits: [],
   put(key, str) {
     try {
       const tx = KVDB.transaction('kv', 'readwrite'); tx.objectStore('kv').put(str, key);
-      tx.onerror = tx.onabort = () => { diag('guardar:error', key + ' ' + (tx.error && tx.error.name)); KV.fail(); };
+      KV.pend++;
+      const end = () => { KV.pend--; if (!KV.pend) { const w = KV.waits; KV.waits = []; w.forEach(f => f()); } };
+      tx.addEventListener('complete', end);
+      tx.addEventListener('error', () => { diag('guardar:error', key + ' ' + (tx.error && tx.error.name)); KV.fail(); });
+      tx.addEventListener('abort', () => { diag('guardar:cortado', key); end(); });
       return tx;
     } catch (e) { diag('guardar:error', key + ' ' + e.name); KV.fail(); return null; }
   },
   del(key) { try { KVDB.transaction('kv', 'readwrite').objectStore('kv').delete(key); } catch (e) {} },
+  // espera a que terminen las escrituras en curso (pruebas y antes de cerrar)
+  flush() { return KV.pend ? new Promise(r => KV.waits.push(r)) : Promise.resolve(); },
   fail() { if (!KV.warned) { KV.warned = true; try { toast('No se pudo guardar: el teléfono no tiene lugar libre'); } catch (e) {} } }
 };
 const LS = {
@@ -74,7 +80,16 @@ const LS = {
   },
   set(k, v) {
     const key = NS + k;
-    if (KV.on && BIG_RE.test(key)) { const s = JSON.stringify(v); KV.mem[key] = s; return !!KV.put(key, s); }
+    if (KV.on && BIG_RE.test(key)) {
+      const s = JSON.stringify(v); KV.mem[key] = s;
+      // seguro: las últimas sesiones también en localStorage hasta que la base confirme (si la app se cierra justo
+      // al terminar un entrenamiento, la escritura grande podría cortarse)
+      const jr = /\.history$/.test(key) && Array.isArray(v) ? key + '.nuevas' : null, seq = (KV.seq = (KV.seq || 0) + 1);
+      if (jr) { try { localStorage.setItem(jr, JSON.stringify(v.slice(0, 8))); } catch (e) {} }
+      const tx = KV.put(key, s);
+      if (tx && jr) tx.addEventListener('complete', () => { if (KV.seq === seq) { try { localStorage.removeItem(jr); } catch (e) {} } });
+      return !!tx;
+    }
     try { localStorage.setItem(key, JSON.stringify(v)); return true; }
     catch (e) { diag('guardar:lleno', k + ' ' + e.name); toast('No se pudo guardar: el teléfono no tiene lugar libre'); return false; }
   },
@@ -93,6 +108,17 @@ const LS = {
 (function kvMigrate() {
   if (!KV.on) { diag('base', 'sin base local: se usa localStorage'); return; }
   let keys = []; try { keys = Object.keys(localStorage).filter(k => BIG_RE.test(k)); } catch (e) {}
+  // sesiones que quedaron en el seguro porque la app se cerró antes de que la base confirmara
+  let jrs = []; try { jrs = Object.keys(localStorage).filter(k => /^intervalo\.p\.[^.]+\.history\.nuevas$/.test(k)); } catch (e) {}
+  jrs.forEach(jk => {
+    const key = jk.replace(/\.nuevas$/, '');
+    try {
+      const add = JSON.parse(localStorage.getItem(jk) || '[]'), cur = KV.mem[key] ? JSON.parse(KV.mem[key]) : [], have = new Set(cur.map(x => x.at));
+      const miss = add.filter(x => x && !have.has(x.at));
+      if (miss.length) { const out = JSON.stringify(miss.concat(cur).sort((a, b) => (b.at || 0) - (a.at || 0))); KV.mem[key] = out; const tx = KV.put(key, out); if (tx) tx.addEventListener('complete', () => { try { localStorage.removeItem(jk); } catch (e) {} }); diag('base', 'recuperadas ' + miss.length + ' sesiones del seguro'); }
+      else localStorage.removeItem(jk);
+    } catch (e) {}
+  });
   keys.forEach(key => {
     let s = null; try { s = localStorage.getItem(key); } catch (e) {} if (s == null) return;
     let out = s;

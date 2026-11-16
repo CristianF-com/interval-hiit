@@ -325,6 +325,8 @@ DATOS Y DIAGNÓSTICO (v153)
   LS.get/set/del/keys las atienden igual que antes (en memoria + escritura inmediata en la base), así que copias,
   nube, perfiles y pruebas no cambian. Al arrancar, lo que había en localStorage se pasa a la base (kvMigrate,
   combinando sesiones si estaba en los dos lados). Si un guardado falla, avisa «el teléfono no tiene lugar libre».
+  Seguro del historial: las últimas 8 sesiones también van a localStorage (p.<id>.history.nuevas) hasta que la
+  base confirma; si la app se cerró antes, al arrancar se recuperan. KV.flush() espera las escrituras en curso.
 - Fotos de progreso: la completa queda en IndexedDB 'inhiit-photos'; una reducida (720 px, ~60 KB) va en
   PS 'photos' (está en PROFILE_KEYS), o sea en la copia y en la nube. phSync recrea en el teléfono las que
   vinieron en una copia y sube a la copia las que falten (al abrir, al cambiar de perfil y al abrir las fotos).
