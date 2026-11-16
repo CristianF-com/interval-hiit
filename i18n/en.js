@@ -1938,7 +1938,8 @@ I18N = {
 "Semana anterior": "Previous week",
 "Semana siguiente": "Next week",
 "MI SEMANA": "MY WEEK",
-"Tu semana": "Your week"
+"Tu semana": "Your week",
+"Sumar 10 segundos": "Add 10 seconds"
 };
 I18N_PAT = [
 [

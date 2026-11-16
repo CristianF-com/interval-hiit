@@ -1,0 +1,31 @@
+// «Saltar pausa» deja 3 s con la cuenta normal; «+10 s» alarga la pausa
+import { chromium } from 'playwright';
+const b = await chromium.launch({ executablePath: process.env.PW_CHROME || undefined });
+const c = await b.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, serviceWorkers: 'block', locale: 'es-AR' });
+await c.addInitScript(() => { window.NO_CLOUD = 1; });
+const p = await c.newPage(); const errs = []; p.on('pageerror', e => errs.push(e.message));
+const ok = (v, m) => console.log((v ? 'OK  ' : 'FALLA ') + m); const D = process.argv[2];
+await p.goto('http://localhost:8776/'); await p.waitForTimeout(800);
+await p.fill('#ob-name', 'Cris'); await p.click('#ob-go'); await p.waitForTimeout(400);
+const i = await p.evaluate(() => { for (let k = 0; k < 200; k++) { const w = generate(); const tl = buildTimeline(w); const i = tl.findIndex(s => s.k === 'rest' && s.dur >= 15); if (i >= 0) { startWorkout(w); step(i, true); return i; } } return -1; });
+ok(i >= 0, 'hay un descanso'); await p.waitForTimeout(300);
+ok(await p.isVisible('#p-rest10') && await p.isVisible('#p-skiprest'), 'botones +10 s y saltar pausa');
+await p.screenshot({ path: D + '/pausa-botones.png' });
+const r0 = await p.evaluate(() => [P.endAt - performance.now(), cur().dur]);
+await p.click('#p-rest10');
+const r1 = await p.evaluate(() => [P.endAt - performance.now(), cur().dur]);
+ok(r1[0] - r0[0] > 9000 && r1[1] === r0[1] + 10, '+10 s suma a la pausa (' + Math.round(r0[0] / 1000) + ' → ' + Math.round(r1[0] / 1000) + ')');
+await p.evaluate(() => { window.__said = []; const o = say; say = (x, ...a) => { window.__said.push(x); return o(x, ...a); }; });
+await p.click('#p-skiprest');
+const r2 = await p.evaluate(() => [P.i, P.endAt - performance.now()]);
+ok(r2[0] === i && r2[1] <= 3000 && r2[1] > 2500, 'saltar pausa deja 3 s sin pasar al siguiente');
+await p.waitForTimeout(3600);
+const r3 = await p.evaluate(() => [P.i, window.__said.join('|')]);
+ok(r3[0] > i, 'después de la cuenta arranca el siguiente');
+ok(/3|tres/i.test(r3[1]) && /1|uno/i.test(r3[1]), 'cuenta 3, 2, 1: ' + r3[1]);
+// con 3 s o menos, pasa directo
+await p.evaluate(j => step(j, true), i); await p.waitForTimeout(200);
+await p.evaluate(() => { P.endAt = performance.now() + 2000; });
+await p.click('#p-skiprest'); ok(await p.evaluate(j => P.i > j, i), 'con menos de 3 s pasa directo');
+ok(!errs.length, 'sin errores ' + errs.join(' | '));
+await b.close();

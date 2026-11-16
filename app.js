@@ -21,7 +21,7 @@ const dateStr = t => new Date(t).toLocaleDateString(LOC, { weekday: 'short', day
    Anota lo que pasa con el audio, la pantalla encendida, los giros y los guardados (lo que no se puede ver
    desde afuera en el iPhone). Se ve y se comparte en Perfil → Ajustes → Diagnóstico. Últimas 600 líneas. */
 // versión de la app: tiene que coincidir con VERSION de sw.js (la prueba tver.mjs lo controla)
-const APP_V = 157;
+const APP_V = 158;
 const DIAG_KEY = 'inhiit.diag', DIAG_MAX = 600;
 let DIAG_BUF = null, DIAG_T = null;
 function diag(ev, data) {
@@ -1870,7 +1870,8 @@ $('#p-easy').onclick = e => { e.stopPropagation(); makeEasier(); };
 $('#p-side').addEventListener('click', e => {
   if (e.target.closest('#p-more')) { e.stopPropagation(); moreTime(); }
   else if (e.target.closest('#p-go-next')) { e.stopPropagation(); autoNext(); }
-  else if (e.target.closest('#p-skiprest')) { e.stopPropagation(); const s = cur(); if (s && s.k !== 'work') step(P.i + 1, false, 'auto'); }
+  else if (e.target.closest('#p-skiprest')) { e.stopPropagation(); restTo3(); }
+  else if (e.target.closest('#p-rest10')) { e.stopPropagation(); restMore(); }
 });
 $('#p-swap').onclick = e => { e.stopPropagation(); const s = cur(); if (!s) return; const id = s.k === 'work' ? s.ex : s.next, to = swapOf(id); if (to) swapEx(id, to); };
 function logClose() {
@@ -1920,6 +1921,22 @@ function autoTick(s) {
   if (P.stepMs >= P.autoAt) autoNext();
 }
 function autoNext() { if (P.logOpen) P.logOpen.auto = true; step(P.i + 1, false, 'auto'); }
+// «Saltar pausa» / «Empezar ya»: no salta, deja 3 s y sigue la cuenta normal (3, 2, 1) para acomodarse;
+// si ya quedan 3 s o menos, pasa directo
+function restTo3() {
+  const s = cur(); if (!s || s.k === 'work' || s.reps) return;
+  const rem = P.paused ? P.remain : P.endAt - performance.now();
+  if (rem <= 3000) { step(P.i + 1, false, 'auto'); return; }
+  P.paused = false; P.remain = 3000; P.endAt = performance.now() + 3000; P.lastSec = null;
+  render(); saveSession();
+}
+// +10 s a la pausa actual (el paso se alarga para que el anillo y la barra sigan bien)
+function restMore() {
+  const s = cur(); if (!s || s.k === 'work' || s.reps) return;
+  s.dur += 10;
+  if (P.paused) P.remain += 10000; else { P.endAt += 10000; P.remain = P.endAt - performance.now(); }
+  P.lastSec = null; beep(523, 90, .15); paint(); saveSession();
+}
 function moreTime() { if (!P.autoAt) return; P.autoAt += 10000; P.autoLast = null; beep(523, 90, .15); toast('+10 segundos'); setSide(''); }
 // el panel bajo el número se reescribe solo si cambia (si no, los botones no se pueden tocar)
 function setSide(h) { const el = $('#p-side'); if (el && el.dataset.h !== h) { el.dataset.h = h; el.innerHTML = h; } }
@@ -2108,7 +2125,7 @@ function paint() {
   }
   else if (s.reps) { const exp = expectedSecs(s); setSide(`<span class="side">Toca ✓ al terminar${exp ? ` · tu ritmo: ~${fmt(exp)}` : ''}</span>`); }
   // en cualquier pausa (inicio, descansos, entre calentamiento y estiramientos) se puede pasar directo al siguiente
-  else if (s.k !== 'work') setSide(`<button class="btn ghost small skiprest" id="p-skiprest">${s.k === 'prep' ? 'Empezar ya' : 'Saltar pausa'} <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg></button>`);
+  else if (s.k !== 'work') setSide(`<div class="restb"><button class="btn ghost small skiprest" id="p-rest10" aria-label="Sumar 10 segundos">+10 s</button><button class="btn ghost small skiprest" id="p-skiprest">${s.k === 'prep' ? 'Empezar ya' : 'Saltar pausa'} <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M16 5h2v14h-2zM4 5v14l11-7z"/></svg></button></div>`);
   else setSide(e && e.s ? `<span class="side">${P.sw > 0 ? 'Cambia de lado' : P.half ? 'Lado izquierdo' : 'Lado derecho'}</span>` : '');
 }
 function togglePause() {
