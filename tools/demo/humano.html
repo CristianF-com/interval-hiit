@@ -1,0 +1,11 @@
+<!doctype html><meta charset="utf-8"><body style="margin:0;background:#fff">
+<script src="../../data.js"></script><script src="../../anim.js"></script><script src="human.js"></script>
+<div id="g" style="padding:10px;font:14px sans-serif"></div>
+<script>
+const id = new URLSearchParams(location.search).get('id') || 'squats', n = +(new URLSearchParams(location.search).get('n') || 8);
+const a = Anim._dev.get(id), g = document.getElementById('g');
+const rows = [['Actual', i => { const s = Anim.still(id, i / n); s.style.width = s.style.height = '100%'; return s; }],
+  ['Más humana', i => { const d = document.createElement('div'); d.style.cssText = 'width:100%;height:100%'; const vb = Anim.still(id, 0).getAttribute('viewBox'); d.innerHTML = Human.svg(Anim._dev.pose2(a, i / n), vb); d.firstChild.style.width = d.firstChild.style.height = '100%'; return d; }]];
+rows.forEach(([lab, mk]) => { const r = document.createElement('div'); r.style.cssText = 'display:flex;gap:4px;align-items:center;margin-bottom:4px'; r.innerHTML = `<b style="width:90px">${lab}</b>`;
+  for (let i = 0; i < n; i++) { const c = document.createElement('div'); c.className = 'cell'; c.style.cssText = 'width:var(--w,160px);height:var(--w,160px);border:1px solid #eee'; c.appendChild(mk(i)); r.appendChild(c); } g.appendChild(r); });
+</script>
