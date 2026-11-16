@@ -245,5 +245,4 @@ function renderStats() {
   const pg = $('#pg-sel'); if (pg) pg.onchange = () => { progSel = pg.value; renderStats(); };
   const b = $('#st-all'); if (b) b.onclick = () => { statsAll = !statsAll; renderStats(); };
 }
-const _renderHist = renderHist;
-renderHist = function () { _renderHist(); try { renderStats(); } catch (e) { console.error(e); } };
+after('renderHist', () => renderStats());

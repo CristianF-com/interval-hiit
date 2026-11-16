@@ -174,11 +174,9 @@ async function cloudRestore() {
 }
 // al restaurar desde la nube, se marca como sincronizado y se vuelve a subir ya combinado
 // (si se restauró el respaldo, esa subida no lo pisa: actualiza la última copia y el respaldo queda igual)
-const _importBackup = importBackup;
-importBackup = function (j, replace) {
-  _importBackup(j, replace);
+after('importBackup', ([j]) => {
   if (j && j.__cloud) { LS.set('cloud.rev', { uid: j.__cloud.uid, rev: j.__cloud.rev }); if (j.__cloud.bak) CLOUD.keepBak = true; CLOUD.offer = null; setTimeout(() => cloudPush('now'), 800); }
-};
+});
 
 /* --- ventana «Cuenta y guardado automático» --- */
 const CL_ERR = {
@@ -348,8 +346,7 @@ function openCloudLogin() {
 }
 
 /* --- cuándo se guarda --- */
-const _finishCl = finish;
-finish = function (...a) { _finishCl(...a); setTimeout(() => cloudPush(), 1500); };
+after('finish', () => setTimeout(() => cloudPush(), 1500));
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') cloudPush(); });
 window.addEventListener('online', () => setTimeout(cloudCheck, 1500));
 /* --- avisos para crear la cuenta (reemplazan el recordatorio de la copia en archivo) --- */
@@ -375,22 +372,17 @@ renderBkRemind = function () {
   el.innerHTML = acctBanner('acct-home', true); bindAcct($('#acct-home'));
 };
 // al terminar un entrenamiento (también mancuernas y entrenador inteligente)
-const _finishAcct = finish;
-finish = function (...a) {
-  _finishAcct(...a);
+after('finish', () => {
   const d = $('#d-bk'); if (!d) return;
   d.innerHTML = acctFirst() || acctAtRisk() ? acctBanner('acct-done', true) + '<div class="gap"></div>' : '';
   bindAcct($('#acct-done'));
-};
+});
 // al terminar un reto
-const _rFinishAcct = rFinish;
-rFinish = function (...a) {
-  _rFinishAcct(...a);
+after('rFinish', () => {
   const ok = $('#rf-ok'); if (!ok || !(acctFirst() || acctAtRisk())) return;
   ok.insertAdjacentHTML('beforebegin', acctBanner('acct-reto') + '<div class="gap"></div>');
   bindAcct($('#acct-reto'));
-};
+});
 // al cambiar de pestaña se decide si el aviso corresponde (solo en Historial)
-const _showAcct = show;
-show = function (...a) { const r = _showAcct(...a); try { renderBkRemind(); } catch (e) {} return r; };
+after('show', () => renderBkRemind());
 if (!window.NO_CLOUD) setTimeout(() => { if (navigator.onLine) cloudCheck(); else cloudStart(); }, 2500);

@@ -696,35 +696,28 @@ SUBTAB_SHOW['coach:mine'] = () => { renderRoutines(); renderFavs(); };
 SUBTAB_SHOW['hist:sum'] = renderGoal;
 SUBTAB_SHOW['hist:body'] = renderBody;
 SUBTAB_SHOW['hist:friends'] = renderFriends;
-const _renderResumeM = renderResume;
-renderResume = function () { _renderResumeM(); try { renderGoal(); } catch (e) {} };
+after('renderResume', () => renderGoal());
 // al terminar un entrenamiento: meta cumplida, compartir y ranking
-const _finishM = finish;
-finish = function (...a) {
-  _finishM(...a);
+after('finish', () => {
   const x = PS.get('history', [])[0], dg = $('#d-goal');
   if (dg) dg.innerHTML = x && goalJustHit() ? goalDoneHTML() : '';
   const sb = $('#d-share'); if (sb) { sb.classList.toggle('hidden', !x); sb.onclick = () => shareSession(PS.get('history', [])[0]); }
   setTimeout(() => frPublish(), 2500);
-};
+});
 // al terminar un reto
-const _rFinishM = rFinish;
-rFinish = function (...a) {
-  _rFinishM(...a);
+after('rFinish', () => {
   const ok = $('#rf-ok'); if (!ok) return;
   const hit = goalJustHit();
   ok.insertAdjacentHTML('afterend', `<div class="gap"></div><button class="btn ghost" id="rf-share">Compartir mi sesión</button>`);
   if (hit) ok.insertAdjacentHTML('beforebegin', goalDoneHTML() + '<div class="gap"></div>');
   $('#rf-share').onclick = () => shareSession(PS.get('history', [])[0]);
   setTimeout(() => frPublish(), 2500);
-};
-const _showM = show;
-show = function (v) { _showM(v); try { renderGoal(); } catch (e) {} };
+});
+after('show', () => renderGoal());
 // al abrir la app, Coach e Historial arrancan en su primera opción y se dibuja la parte visible
 // (la app ya mostró la pantalla antes de cargar este archivo, cuando todavía no sabía dibujar estas partes)
 ['coach', 'hist'].forEach(g => LS.set('tab.' + g, SUBTABS[g][0][0]));
 if (currentView === 'coach' || currentView === 'hist') try { bindSubtabs(currentView); } catch (e) { console.error(e); }
 setTimeout(() => { try { renderGoal(); checkSharedRoutine(); checkGroupLink(); } catch (e) { console.error(e); } }, 600);
 window.addEventListener('hashchange', () => { checkSharedRoutine(); checkGroupLink(); });
-const _switchProfileM = switchProfile;
-switchProfile = function (...a) { const r = _switchProfileM(...a); setTimeout(() => { try { checkSharedRoutine(); checkGroupLink(); } catch (e) {} }, 500); return r; };
+after('switchProfile', () => setTimeout(() => { try { checkSharedRoutine(); checkGroupLink(); } catch (e) {} }, 500));

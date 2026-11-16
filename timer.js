@@ -393,9 +393,9 @@ document.addEventListener('visibilitychange', () => { if (!TP.running) return; i
 
 /* ---------- Calendario: timers programados por día de la semana ---------- */
 const tmSched = () => PS.get('timers', []).map(tmNorm).filter(c => c.id && c.wd.length);
-const _agTm = buildAgenda;
-buildAgenda = function () {
-  const ag = _agTm(), today = dayStart(Date.now());
+agendaSource('timer', {
+  add(ag) {
+  const today = dayStart(Date.now());
   const doneToday = new Set(PS.get('history', []).filter(x => x.w && x.w.kind === 'timer' && x.w.tm && dayStart(x.at) === today).map(x => x.w.tm.id));
   tmSched().forEach(c => {
     for (let i = 0; i <= 60; i++) {
@@ -403,15 +403,10 @@ buildAgenda = function () {
       const k = dkey(t0); (ag[k] = ag[k] || []).push({ type: 'timer', id: c.id });
     }
   });
-  return ag;
-};
-const tmById = id => PS.get('timers', []).map(tmNorm).find(c => c.id === id);
-const _itTm = itemTitle, _isTm = itemSub;
-itemTitle = x => x.type === 'timer' ? `${t('Timer')} · ${(tmById(x.id) || {}).n || ''}` : _itTm(x);
-itemSub = x => { if (x.type !== 'timer') return _isTm(x); const c = tmById(x.id); return c ? `${esc(tmActN(c))} · ${esc(tmSummary(c))}` : ''; };
-const _oaTm = openAgendaItem;
-openAgendaItem = function (o) {
-  if (o.type !== 'timer') return _oaTm(o);
+  },
+  title: x => `${t('Timer')} · ${(tmById(x.id) || {}).n || ''}`,
+  sub: x => { const c = tmById(x.id); return c ? `${esc(tmActN(c))} · ${esc(tmSummary(c))}` : ''; },
+  open(o) {
   const c = tmById(o.id); if (!c) return;
   const tt = o.t != null ? o.t : Date.now(), isToday = dkey(tt) === dkey(Date.now()), when = isToday ? t('hoy') : new Date(tt).toLocaleDateString(LOC, { weekday: 'long', day: 'numeric', month: 'long' });
   sheet(`<h3 data-noi18n>${esc(c.n)}</h3><p class="sub">${t('Programado para {0}', esc(when))} · ${esc(tmActN(c))} · ${esc(tmSummary(c))}</p>
@@ -421,7 +416,9 @@ openAgendaItem = function (o) {
     $('#tma-go').onclick = () => { closeSheet(); tmStart(c); };
     $('#tma-ed').onclick = () => { const i = PS.get('timers', []).findIndex(x => x.id === c.id); if (i >= 0) tmOpen(i); };
   });
-};
+  }
+});
+const tmById = id => PS.get('timers', []).map(tmNorm).find(c => c.id === id);
 /* ---------- Al abrir la app: si hoy hay algo programado, se abre en el calendario ---------- */
 (function tmOpenOnToday() {
   try {

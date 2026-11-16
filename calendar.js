@@ -21,8 +21,18 @@ function planPending(p) {
   }
   return out;
 }
+/* Fuentes de la agenda: además de lo de este archivo (historial, plan, coach, retos), cada módulo registra cómo
+   agrega sus días y cómo se muestran (mancuernas, abdominales, timer):
+   agendaSource(tipo, { add(ag), title(x), sub(x), open(o) }). Se agregan en el orden en que se registran. */
+const AGENDA_SRC = {};
+function agendaSource(type, src) { AGENDA_SRC[type] = src; }
 // Agenda completa: { 'AAAA-MM-DD': [items] }
 function buildAgenda() {
+  const ag = agendaCore();
+  Object.entries(AGENDA_SRC).forEach(([k, src]) => { if (src.add) { try { src.add(ag); } catch (e) { console.error(e); diag('agenda:error', k + ' ' + (e && e.message)); } } });
+  return ag;
+}
+function agendaCore() {
   const ag = {}, push = (t, it) => { const k = dkey(t); (ag[k] = ag[k] || []).push(it); };
   const today = dayStart(Date.now());
   // hechos (historial)
@@ -117,12 +127,14 @@ function renderCal() {
   };
 }
 function itemTitle(x) {
+  if (AGENDA_SRC[x.type] && AGENDA_SRC[x.type].title) return AGENDA_SRC[x.type].title(x);
   if (x.type === 'reto') { const d = retoDays(x.key, getRetos()[x.key].k, getRetos()[x.key].stage)[x.i]; return `Reto ${RETOS[x.key].n.toLowerCase()} · ${d.test ? 'prueba' : 'día ' + (x.i + 1)}`; }
   if (x.type === 'plan') { const p = getPlan(); const { kept } = planWeekInfo(p, x.week); return `Plan · Semana ${x.week}, día ${kept.indexOf(x.day) + 1}`; }
   if (x.type === 'smart') return `Entrenador · Sesión ${x.n}`;
   return title(x.x.w);
 }
 function itemSub(x) {
+  if (AGENDA_SRC[x.type] && AGENDA_SRC[x.type].sub) return AGENDA_SRC[x.type].sub(x);
   if (x.type === 'reto') { const s = getRetos()[x.key], d = retoDays(x.key, s.k, s.stage)[x.i]; return d.test ? `${d.sets[0]} seguidas · etapa ${s.stage}` : `${d.sets.join(' · ')} · etapa ${s.stage}`; }
   if (x.type === 'plan') { const p = getPlan(), d = planWeek(p.file, p.level, x.week)[x.day], est = dayEstimate(d); return `${esc(FAM[p.fam].n)} · ~${Math.round(est.secs / 60)} min · ${est.n} series`; }
   if (x.type === 'smart') { const sm = getSmart(); return x.first ? `${esc(FOCUS[x.focus].n)} · ~${Math.round(total(buildTimeline(sm.next)) / 60)} min` : `${esc(FOCUS[x.focus].n)} · se ajusta según la sesión anterior`; }
@@ -148,6 +160,7 @@ function exListHTML(w) {
   return `<div class="block">${[...seen].map(([id, tg], i) => exRow(id, i, '', tg)).join('')}</div>`;
 }
 function openAgendaItem(o) {
+  if (AGENDA_SRC[o.type] && AGENDA_SRC[o.type].open) return AGENDA_SRC[o.type].open(o);
   if (o.type === 'reto') { openRetoDetail(o.key); return; }
   if (o.type === 'done') { openHistDetail(o.i); return; }
   const t = o.t != null ? o.t : Date.now(), isToday = dkey(t) === dkey(Date.now()), when = isToday ? 'hoy' : new Date(t).toLocaleDateString(LOC, { weekday: 'long', day: 'numeric', month: 'long' });

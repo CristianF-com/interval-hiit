@@ -170,20 +170,16 @@ renderDoneExtras = function (full, secs) {
 };
 
 /* ---------- Calendario: días de entrenamiento y descanso del plan ---------- */
-const _agAb = buildAgenda;
-buildAgenda = function () {
-  const ag = _agAb(), st = getAbs(); if (!st || st.levelDone) return ag;
+agendaSource('abs', {
+  add(ag) {
+  const st = getAbs(); if (!st || st.levelDone) return;
   const today = dayStart(Date.now()), L = AB_DAYS[st.level - 1];
   let t = Math.max(today, dayStart(st.nextAt || Date.now()));
   for (let i = st.day || 0; i < L.length && t <= addDays(today, HORIZON); i++) { const k = dkey(t); (ag[k] = ag[k] || []).push({ type: 'abs', i, first: i === (st.day || 0) }); t = addDays(t, L[i].r ? 2 : 1); }
-  return ag;
-};
-const _itAb = itemTitle, _isAb = itemSub;
-itemTitle = x => x.type === 'abs' ? `${t('Abdominales')} · ${t('día {0}', x.i + 1)}` : _itAb(x);
-itemSub = x => { if (x.type !== 'abs') return _isAb(x); const st = getAbs(); if (!st) return ''; const d = AB_DAYS[st.level - 1][x.i]; return `${t(AB_LV[st.level - 1])} · ${t('{0} ejercicios', d.x.length)} · ${t('{0} series', d.s)}`; };
-const _oaAb = openAgendaItem;
-openAgendaItem = function (o) {
-  if (o.type !== 'abs') return _oaAb(o);
+  },
+  title: x => `${t('Abdominales')} · ${t('día {0}', x.i + 1)}`,
+  sub: x => { const st = getAbs(); if (!st) return ''; const d = AB_DAYS[st.level - 1][x.i]; return `${t(AB_LV[st.level - 1])} · ${t('{0} ejercicios', d.x.length)} · ${t('{0} series', d.s)}`; },
+  open(o) {
   const st = getAbs(); if (!st) return;
   const t0 = o.t != null ? o.t : Date.now(), isToday = dkey(t0) === dkey(Date.now()), when = isToday ? 'hoy' : new Date(t0).toLocaleDateString(LOC, { weekday: 'long', day: 'numeric', month: 'long' });
   const its = abItems({ ...st, day: o.i });
@@ -194,7 +190,8 @@ openAgendaItem = function (o) {
     const go = $('#ai-go'); if (go) go.onclick = () => { closeSheet(); openAbStart(); };
     const po = $('#ai-post'); if (po) po.onclick = () => { const s2 = getAbs(); s2.nextAt = addDays(Math.max(dayStart(Date.now()), s2.nextAt || 0), 1); setAbs(s2); closeSheet(); renderCal(); renderAbs(); toast(t('Pasado al {0}', t(WDN[wdOf(s2.nextAt)]))); };
   });
-};
+  }
+});
 
 /* ---------- En Planes: el plan de abdominales con su cronograma ---------- */
 const AB_DESC = ['Para empezar: 3 o 4 ejercicios básicos por sesión, de 6 a 26 repeticiones.', 'Más ejercicios y repeticiones, con oblicuos y planchas laterales.', 'Sesiones largas y exigentes, con planchas dinámicas y hasta 50 repeticiones.'];
@@ -221,9 +218,7 @@ function abPlansHTML() {
     <div class="block">${rows}</div>
     <div class="row"><button class="btn ghost small" id="abp-cfg">${t('Ajustes')}</button></div>`;
 }
-const _rpAb = renderPlans;
-renderPlans = function () {
-  _rpAb();
+after('renderPlans', () => {
   const el = $('#v-plans'); if (!el || !PROFILE) return;
   const box = document.createElement('div'); box.id = 'abs-plans'; box.innerHTML = abPlansHTML(); el.appendChild(box);
   box.querySelectorAll('[data-abl]').forEach(b => b.onclick = () => openAbSetup(false, +b.dataset.abl));
@@ -237,7 +232,7 @@ renderPlans = function () {
   const nx = $('#abp-next'); if (nx) nx.onclick = abNextLevel;
   const ag = $('#abp-again'); if (ag) ag.onclick = abRepeatLevel;
   bindAbOpts(box);
-};
+});
 /* =========================================================
    Coach inteligente de abdominales: sin fecha de fin.
    Mide tu capacidad (crunches en 1 minuto y plancha), arma cada sesión con los
@@ -433,33 +428,29 @@ setFeedback = function (fb) {
   if (msg) { msg.innerHTML = `${fb === 'hard' ? t('La próxima sesión será un poco más suave.') : fb === 'easy' ? t('La próxima sesión sube un poco más.') : t('La próxima sesión sube un poco.')} ${t('Nivel {0}', d1(st.I))}.`; msg.classList.remove('hidden'); }
 };
 // calendario: las próximas sesiones del coach (las de más adelante se ajustan con cada respuesta)
-const _agAi = buildAgenda;
-buildAgenda = function () {
-  const ag = _agAi(), st = getAbAi(); if (!st) return ag;
+agendaSource('absai', {
+  add(ag) {
+  const st = getAbAi(); if (!st) return;
   const today = dayStart(Date.now()); let t0 = Math.max(today, dayStart(st.nextAt || Date.now())), streak = st.streak || 0;
   if (dayStart(t0) - dayStart(st.lastAt || 0) > DAY) streak = 0;
   for (let c = 0; c < 40 && t0 <= addDays(today, HORIZON); c++) {
     const k = dkey(t0); (ag[k] = ag[k] || []).push({ type: 'absai', n: (st.sessions || 0) + 1 + c, first: c === 0 });
     streak++; t0 = addDays(t0, streak >= 2 ? 2 : 1); if (streak >= 2) streak = 0;
   }
-  return ag;
-};
-const _itAi = itemTitle, _isAi = itemSub;
-itemTitle = x => x.type === 'absai' ? `${t('Abdominales')} · ${t('Sesión {0}', x.n)}` : _itAi(x);
-itemSub = x => { if (x.type !== 'absai') return _isAi(x); const st = getAbAi(); if (!st) return ''; if (!x.first) return t('se ajusta según la sesión anterior'); const ss = abAiSession(st); return `${t('{0} ejercicios', ss.items.length)} · ~${abAiMinutes(ss.items)} min`; };
-const _oaAi = openAgendaItem;
-openAgendaItem = function (o) {
-  if (o.type !== 'absai') return _oaAi(o);
+  },
+  title: x => `${t('Abdominales')} · ${t('Sesión {0}', x.n)}`,
+  sub: x => { const st = getAbAi(); if (!st) return ''; if (!x.first) return t('se ajusta según la sesión anterior'); const ss = abAiSession(st); return `${t('{0} ejercicios', ss.items.length)} · ~${abAiMinutes(ss.items)} min`; },
+  open(o) {
   const st = getAbAi(); if (!st) return;
   if (o.first) { openAbAiStart(); return; }
   sheet(`<h3>${esc(itemTitle(o))}</h3><p class="sub">${t('Los ejercicios y las repeticiones se eligen después de la sesión anterior, según cómo te fue.')}</p>`);
-};
+  }
+});
 const _rdeAi = renderDoneExtras;
 renderDoneExtras = function (full, secs) {
   const st = getAbAi(); if (st && st.before && (!P.w || !P.w.ai)) { delete st.before; setAbAi(st); }
   _rdeAi(full, secs);
 };
 SUBTAB_SHOW['coach:abs'] = renderAbAi;
-const _rsAb = renderSmart;
-renderSmart = function () { _rsAb(); try { renderAbAi(); } catch (e) { console.error(e); } };
+after('renderSmart', () => renderAbAi());
 renderAbAi();

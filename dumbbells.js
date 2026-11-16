@@ -255,24 +255,20 @@ renderDoneExtras = function (full, secs) {
 const busyDay = (ag, t) => (ag[dkey(t)] || []).some(x => x.type === 'smart' || x.type === 'plan');
 function dbFreeDay(t, ag) {
   if (dayStart(t) <= dayStart(Date.now())) return t;   // hoy no se mueve: el que hagas primero corre al otro a mañana
-  ag = ag || _agDb();
+  ag = ag || agendaCore();   // lo de antes de las mancuernas (historial, plan, coach, retos)
   for (let i = 0; i < 3; i++) { const d = addDays(t, i); if (!busyDay(ag, d)) return d; }
   return t;
 }
-const _agDb = buildAgenda;
-buildAgenda = function () {
-  const ag = _agDb(), st = getDumb(); if (!st) return ag;
+agendaSource('db', {
+  add(ag) {
+  const st = getDumb(); if (!st) return;
   const today = dayStart(Date.now());
   let t = dbFreeDay(Math.max(today, dayStart(st.nextAt || Date.now())), ag), ty = st.type || 'A';
   for (let c = 0; c < 20 && t <= addDays(today, HORIZON); c++) { const k = dkey(t); (ag[k] = ag[k] || []).push({ type: 'db', ty, first: c === 0 }); t = dbFreeDay(addDays(t, 2), ag); ty = ty === 'A' ? 'B' : 'A'; }
-  return ag;
-};
-const _itDb = itemTitle, _isDb = itemSub;
-itemTitle = x => x.type === 'db' ? `Mancuernas · ${DB_SESS[x.ty].n}` : _itDb(x);
-itemSub = x => x.type === 'db' ? DB_SESS[x.ty].ids.map(id => LANG === 'es' ? DB_EX[id].n.split(' ')[0] : tr(DB_EX[id].n)).join(' · ') : _isDb(x);
-const _oaDb = openAgendaItem;
-openAgendaItem = function (o) {
-  if (o.type !== 'db') return _oaDb(o);
+  },
+  title: x => `Mancuernas · ${DB_SESS[x.ty].n}`,
+  sub: x => DB_SESS[x.ty].ids.map(id => LANG === 'es' ? DB_EX[id].n.split(' ')[0] : tr(DB_EX[id].n)).join(' · '),
+  open(o) {
   const st = getDumb(); if (!st) return;
   const t = o.t != null ? o.t : Date.now(), isToday = dkey(t) === dkey(Date.now()), when = isToday ? 'hoy' : new Date(t).toLocaleDateString(LOC, { weekday: 'long', day: 'numeric', month: 'long' });
   sheet(`<h3>${esc(itemTitle(o))}</h3><p class="sub">Programada para ${esc(when)} · ${DB_LV[(st.level || 1) - 1]}</p>
@@ -285,8 +281,8 @@ openAgendaItem = function (o) {
     const sk = $('#ai-skip'); if (sk) sk.onclick = () => confirmApp('¿Saltar esta sesión?', 'Se pasa a la siguiente sesión, dentro de dos días.', 'Saltar', () => { const s2 = getDumb(); s2.type = s2.type === 'A' ? 'B' : 'A'; s2.nextAt = addDays(Math.max(Date.now(), s2.nextAt || 0), 2); setDumb(s2); closeSheet(); renderCal(); renderDumb(); toast('Sesión saltada'); });
     $('#ai-quit').onclick = () => confirmApp('¿Desactivar mancuernas?', 'Se borran tus pesos y el progreso de fuerza. El historial se mantiene.', 'Desactivar', () => { setDumb(null); closeSheet(); renderCal(); renderDumb(); }, true);
   });
-};
+  }
+});
 // la tarjeta se actualiza con el resto del Coach
-const _rsDb = renderSmart;
-renderSmart = function () { _rsDb(); try { renderDumb(); } catch (e) { console.error(e); } };
+after('renderSmart', () => renderDumb());
 renderDumb();

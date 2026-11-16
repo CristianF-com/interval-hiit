@@ -21,7 +21,7 @@ const dateStr = t => new Date(t).toLocaleDateString(LOC, { weekday: 'short', day
    Anota lo que pasa con el audio, la pantalla encendida, los giros y los guardados (lo que no se puede ver
    desde afuera en el iPhone). Se ve y se comparte en Perfil → Ajustes → Diagnóstico. Últimas 600 líneas. */
 // versión de la app: tiene que coincidir con VERSION de sw.js (la prueba tver.mjs lo controla)
-const APP_V = 156;
+const APP_V = 157;
 const DIAG_KEY = 'inhiit.diag', DIAG_MAX = 600;
 let DIAG_BUF = null, DIAG_T = null;
 function diag(ev, data) {
@@ -49,6 +49,27 @@ function diagFlush() { try { if (DIAG_BUF) localStorage.setItem(DIAG_KEY, JSON.s
 addEventListener('pagehide', diagFlush);
 addEventListener('error', e => diag('error', (e.message || '') + ' @' + String(e.filename || '').split('/').pop() + ':' + e.lineno));
 addEventListener('unhandledrejection', e => diag('promesa', String(e.reason && (e.reason.message || e.reason)).slice(0, 200)));
+
+/* --- ganchos: los otros archivos se suman a lo que hace una función («después de…») sin reemplazarla ---
+   after('show', (args, resultado) => …). Si un gancho falla, los demás siguen y queda en Diagnóstico. */
+const AFTER = {};
+function after(name, fn) { (AFTER[name] = AFTER[name] || []).push(fn); }
+function hookUp(names) {
+  names.forEach(n => {
+    const f = window[n]; if (typeof f !== 'function' || f.__hooked) return;
+    const w = function (...a) {
+      const r = f.apply(this, a);
+      (AFTER[n] || []).forEach(h => { try { h(a, r); } catch (e) { console.error(e); diag('gancho:error', n + ' ' + (e && e.message)); } });
+      return r;
+    };
+    w.__hooked = true; window[n] = w;
+  });
+}
+// finish/rFinish/importBackup se envuelven al final (por fuera de los ajustes propios de mancuernas y abdominales);
+// se escucha «app-ready» directo (sin esperar) para que quede antes de cualquier arranque diferido
+const HOOK_LATE = ['finish', 'rFinish', 'importBackup'];
+addEventListener('app-ready', () => hookUp(HOOK_LATE), { once: true });
+addEventListener('load', () => hookUp(HOOK_LATE), { once: true });
 
 /* ---------- Almacenamiento (por perfil) ----------
    Lo chico va en localStorage (unos 5 MB en total). Lo grande (historial y fotos de respaldo) va en la base local
@@ -2431,3 +2452,5 @@ document.addEventListener('click', e => {
   const a = document.activeElement;
   if (isField(a) && e.target.closest('button,[role=button]')) setTimeout(() => { if (document.activeElement === a) a.blur(); }, 0);
 }, true);
+// las pantallas que otros archivos completan (ver «ganchos» arriba)
+hookUp(['show', 'renderResume', 'switchProfile', 'renderHist', 'renderSmart', 'renderPlans']);

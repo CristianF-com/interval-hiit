@@ -593,5 +593,4 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 window.addEventListener('pagehide', rSave);
 
 migrateRetos();
-const _swR = switchProfile;
-switchProfile = function (id) { _swR(id); try { migrateRetos(); } catch (e) {} };
+after('switchProfile', () => migrateRetos());

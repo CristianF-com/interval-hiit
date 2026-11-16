@@ -548,15 +548,8 @@ function renderBkRemind() {
     <button class="btn small" id="bkr-go">Guardar</button></div>`;
   $('#bkr-go').onclick = saveCloud;
 }
-const _renderResume = renderResume;
-renderResume = function () { _renderResume(); try { renderBkRemind(); } catch (e) {} };
-const _finish = finish;
-finish = function (...a) {
-  _finish(...a);
-  const d = $('#d-bk'); if (!d) return;
-  d.innerHTML = bkDue() && bkFreq() === 'cada' ? `<button class="btn ghost" id="dbk-go">☁ Guardar copia en la nube</button><div class="gap"></div>` : '';
-  const b = $('#dbk-go'); if (b) b.onclick = saveCloud;
-};
+after('renderResume', () => renderBkRemind());
+// (el aviso de #d-bk al terminar lo pone cloud.js)
 
 // al cargar: estado del botón de pulso y logros ya conseguidos (sin avisos)
 hrUI();

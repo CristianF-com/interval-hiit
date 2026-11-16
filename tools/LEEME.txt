@@ -15,3 +15,12 @@ voces/     Grabación de frases nuevas (lista en un JSON: ["Frase uno.", "Frase 
            Dora y Alex (Kokoro, local):   KOKORO_DIR=carpeta python3 tools/voces/gen_list_kokoro.py . frases.json dora alex
            Paula, Julio, Ona y Kimetz:    AAI_KEY=… python3 tools/voces/gen_list_aai.py . frases.json paula julio ona kimetz
            La clave de AssemblyAI va solo en la variable AAI_KEY: nunca en un archivo ni en el repositorio.
+
+== Orden interno (v157) ==
+- Agenda/calendario: cada archivo registra su tipo con agendaSource(tipo, { add(ag), title(x), sub(x), open(o) })
+  (calendar.js). agendaCore() arma lo base (historial, plan, coach, retos); buildAgenda() suma las fuentes.
+- Ganchos: en vez de reemplazar funciones (const _x = x; x = function…), los archivos usan
+  after('show' | 'renderResume' | 'switchProfile' | 'renderHist' | 'renderSmart' | 'renderPlans' |
+  'finish' | 'rFinish' | 'importBackup', (args, resultado) => …). Corren en orden de carga; si uno falla
+  los demás siguen y queda «gancho:error» en Diagnóstico. finish/rFinish/importBackup se envuelven al
+  llegar «app-ready», por fuera de los ajustes propios de mancuernas/abdominales (que siguen como estaban).
