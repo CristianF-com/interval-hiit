@@ -118,5 +118,7 @@ if (LANG !== 'es') {
       }
     }).observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: _ATTRS });
   };
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
+  // con el cargador de index.html los scripts llegan después de DOMContentLoaded: se espera a que estén todos
+  if (window.BIGMEM && !window.APP_READY) window.addEventListener('app-ready', start, { once: true });
+  else if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
 }

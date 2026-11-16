@@ -224,6 +224,7 @@ function tmExtend() {   // sin final: siempre hay al menos dos rondas por delant
 function tmStart(c0, resume) {
   if (P.running) { toast('Termina primero el entrenamiento en curso'); return; }
   const c = tmNorm(c0); if (!tmLoop(c)) { toast('Agrega al menos un bloque con tiempo'); return; }
+  diag('timer:empezar', (c0 && c0.n || '') + (resume ? ' (retomado)' : '') + (S.tmBg !== false ? ' · fondo' : ''));
   try { audioSession(true); audioCtx(); } catch (e) {}
   beep(660, 60, .12);   // desbloquea el audio en iPhone
   Object.assign(TP, { c, seg: tmPlan(c, (resume ? resume.pos : 0) + 2 * tmLoop(c) + 5), i: 0, pos: resume ? resume.pos : 0, act: resume ? resume.act : 0, log: resume ? resume.log || [] : [],

@@ -17,20 +17,107 @@ function toast(t) { const el = $('#toast'); el.textContent = t; el.classList.add
 const d1 = v => (+v).toLocaleString(LOC, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
 const dateStr = t => new Date(t).toLocaleDateString(LOC, { weekday: 'short', day: 'numeric', month: 'short' });
 
-/* ---------- Almacenamiento (por perfil) ---------- */
+/* ---------- Registro de diagnóstico ----------
+   Anota lo que pasa con el audio, la pantalla encendida, los giros y los guardados (lo que no se puede ver
+   desde afuera en el iPhone). Se ve y se comparte en Perfil → Ajustes → Diagnóstico. Últimas 600 líneas. */
+const DIAG_KEY = 'inhiit.diag', DIAG_MAX = 600;
+let DIAG_BUF = null, DIAG_T = null;
+function diag(ev, data) {
+  try {
+    if (!DIAG_BUF) { try { DIAG_BUF = JSON.parse(localStorage.getItem(DIAG_KEY) || '[]'); } catch (e) { DIAG_BUF = []; } }
+    let d = ''; if (data !== undefined) { try { d = typeof data === 'string' ? data : JSON.stringify(data); } catch (e) { d = String(data); } }
+    DIAG_BUF.push([Date.now(), ev, d.slice(0, 300)]);
+    if (DIAG_BUF.length > DIAG_MAX) DIAG_BUF.splice(0, DIAG_BUF.length - DIAG_MAX);
+    clearTimeout(DIAG_T); DIAG_T = setTimeout(diagFlush, 1500);
+  } catch (e) {}
+}
+function diagText() {
+  diagFlush();
+  const sw = (navigator.serviceWorker && navigator.serviceWorker.controller) ? 'sw' : 'sin sw';
+  const head = `INHIIT · registro de diagnóstico · ${new Date().toLocaleString()} · ${sw} · ${screen.width}×${screen.height} @${devicePixelRatio}`;
+  return head + '\n' + (DIAG_BUF || []).map(([at, ev, d]) => { const t0 = new Date(at); return `${t0.toLocaleDateString(undefined, { day: '2-digit', month: '2-digit' })} ${t0.toLocaleTimeString(undefined, { hour12: false })}.${String(at % 1000).padStart(3, '0')} ${ev}${d ? ' ' + d : ''}`; }).join('\n');
+}
+async function diagShare() {
+  const text = diagText();
+  try { if (navigator.share) { await navigator.share({ title: 'Registro de INHIIT', text }); return; } } catch (e) { if (e && e.name === 'AbortError') return; }
+  try { await navigator.clipboard.writeText(text); toast('Registro copiado: pégalo en un mensaje'); return; } catch (e) {}
+  sheet(`<h3>Registro de diagnóstico</h3><p class="sub">Selecciona todo y cópialo.</p><textarea class="paste" readonly>${esc(text)}</textarea>`);
+}
+function diagFlush() { try { if (DIAG_BUF) localStorage.setItem(DIAG_KEY, JSON.stringify(DIAG_BUF)); } catch (e) {} }
+addEventListener('pagehide', diagFlush);
+addEventListener('error', e => diag('error', (e.message || '') + ' @' + String(e.filename || '').split('/').pop() + ':' + e.lineno));
+addEventListener('unhandledrejection', e => diag('promesa', String(e.reason && (e.reason.message || e.reason)).slice(0, 200)));
+
+/* ---------- Almacenamiento (por perfil) ----------
+   Lo chico va en localStorage (unos 5 MB en total). Lo grande (historial y fotos de respaldo) va en la base local
+   (IndexedDB, mucho más lugar): se lee completo al arrancar (BIGMEM, ver el cargador en index.html) y se usa en
+   memoria igual que antes; cada cambio se escribe enseguida en la base. Si la base no está, todo va a localStorage. */
 const NS = 'intervalo.';
-const LS = {
-  get(k, d) { try { const v = localStorage.getItem(NS + k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
-  set(k, v) { try { localStorage.setItem(NS + k, JSON.stringify(v)); return true; } catch (e) { toast('No se pudo guardar (almacenamiento lleno o bloqueado)'); return false; } },
-  del(k) { try { localStorage.removeItem(NS + k); } catch (e) {} },
-  keys() { try { return Object.keys(localStorage).filter(k => k.startsWith(NS)).map(k => k.slice(NS.length)); } catch (e) { return []; } }
+const BIG_RE = /^intervalo\.p\.[^.]+\.(history|photos)$/;
+const KV = {
+  on: !!(window.BIG_OK && window.KVDB), mem: window.BIGMEM || {}, warned: false,
+  put(key, str) {
+    try {
+      const tx = KVDB.transaction('kv', 'readwrite'); tx.objectStore('kv').put(str, key);
+      tx.onerror = tx.onabort = () => { diag('guardar:error', key + ' ' + (tx.error && tx.error.name)); KV.fail(); };
+      return tx;
+    } catch (e) { diag('guardar:error', key + ' ' + e.name); KV.fail(); return null; }
+  },
+  del(key) { try { KVDB.transaction('kv', 'readwrite').objectStore('kv').delete(key); } catch (e) {} },
+  fail() { if (!KV.warned) { KV.warned = true; try { toast('No se pudo guardar: el teléfono no tiene lugar libre'); } catch (e) {} } }
 };
+const LS = {
+  get(k, d) {
+    const key = NS + k;
+    if (KV.on && BIG_RE.test(key)) { const v = KV.mem[key]; if (v == null) return d; try { return JSON.parse(v); } catch (e) { return d; } }
+    try { const v = localStorage.getItem(key); return v == null ? d : JSON.parse(v); } catch (e) { return d; }
+  },
+  set(k, v) {
+    const key = NS + k;
+    if (KV.on && BIG_RE.test(key)) { const s = JSON.stringify(v); KV.mem[key] = s; return !!KV.put(key, s); }
+    try { localStorage.setItem(key, JSON.stringify(v)); return true; }
+    catch (e) { diag('guardar:lleno', k + ' ' + e.name); toast('No se pudo guardar: el teléfono no tiene lugar libre'); return false; }
+  },
+  del(k) {
+    const key = NS + k;
+    if (KV.on && BIG_RE.test(key)) { delete KV.mem[key]; KV.del(key); }
+    try { localStorage.removeItem(key); } catch (e) {}
+  },
+  keys() {
+    let a = []; try { a = Object.keys(localStorage).filter(k => k.startsWith(NS)); } catch (e) {}
+    if (KV.on) a = a.concat(Object.keys(KV.mem).filter(k => BIG_RE.test(k)));
+    return [...new Set(a)].map(k => k.slice(NS.length));
+  }
+};
+// pasar lo grande que había en localStorage a la base (una sola vez; si ya estaba en los dos lados se combinan las sesiones)
+(function kvMigrate() {
+  if (!KV.on) { diag('base', 'sin base local: se usa localStorage'); return; }
+  let keys = []; try { keys = Object.keys(localStorage).filter(k => BIG_RE.test(k)); } catch (e) {}
+  keys.forEach(key => {
+    let s = null; try { s = localStorage.getItem(key); } catch (e) {} if (s == null) return;
+    let out = s;
+    if (KV.mem[key] != null) {
+      try {
+        const a = JSON.parse(KV.mem[key]), b = JSON.parse(s), seen = new Set();
+        out = JSON.stringify(a.concat(b).filter(x => { const id = x && (x.id || x.at); if (seen.has(id)) return false; seen.add(id); return true; }).sort((x, y) => (y.at || 0) - (x.at || 0)));
+      } catch (e) { out = KV.mem[key]; }
+    }
+    KV.mem[key] = out;
+    const tx = KV.put(key, out);
+    if (tx) tx.oncomplete = () => { try { localStorage.removeItem(key); } catch (e) {} diag('base', 'pasado a la base: ' + key.split('.').pop()); };
+  });
+})();
+try { caches.keys().then(k => diag('version', k.filter(x => /^intervalo-v/.test(x)).join(' '))); } catch (e) {}
+diag('inicio', { app: matchMedia('(display-mode: standalone)').matches || navigator.standalone ? 'instalada' : 'navegador', base: KV.on, ua: navigator.userAgent.replace(/^Mozilla\/5\.0 /, '').slice(0, 140) });
+// que el sistema no borre los datos de la app si se queda sin lugar
+try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().then(ok => diag('persistente', ok)); } catch (e) {}
 /* Historial: hasta 2000 sesiones por perfil (todos los tipos juntos). Si el teléfono se queda sin lugar,
    las sesiones más viejas pierden primero el detalle (tiempos serie por serie y la gráfica de pulso),
    pero conservan fecha, tipo, duración, pulso medio y calorías. */
 const HIST_MAX = 2000;
 function saveHistory(h) {
   h = h.slice(0, HIST_MAX);
+  if (KV.on) return LS.set(`p.${PROFILE.id}.history`, h);   // en la base entra todo
   const key = NS + `p.${PROFILE.id}.history`;
   const put = v => { try { localStorage.setItem(key, JSON.stringify(v)); return true; } catch (e) { return false; } };
   if (put(h)) return true;
@@ -40,7 +127,7 @@ function saveHistory(h) {
   }
   return LS.set(`p.${PROFILE.id}.history`, h.slice(0, 400));
 }
-const PROFILE_KEYS = ['settings', 'favs', 'history', 'plan', 'plansDone', 'session', 'smart', 'awards', 'retos', 'dumb', 'abs', 'absAi', 'body', 'routines', 'groups', 'timers', 'tsession'];
+const PROFILE_KEYS = ['settings', 'favs', 'history', 'plan', 'plansDone', 'session', 'smart', 'awards', 'retos', 'dumb', 'abs', 'absAi', 'body', 'routines', 'groups', 'timers', 'tsession', 'photos'];
 let PROFILE = null;
 const PS = {
   get: (k, d) => LS.get(`p.${PROFILE.id}.${k}`, d),
@@ -154,6 +241,7 @@ function createProfile(name, variant, data) {
   return p;
 }
 function switchProfile(id) {
+  setTimeout(() => { try { if (typeof phSync === 'function') phSync(); } catch (e) {} }, 1500);
   const p = profiles().find(x => x.id === id); if (!p) return;
   PROFILE = p; LS.set('active', id);
   S = { ...DEFAULTS, ...PS.get('settings', {}) };
@@ -269,6 +357,7 @@ try { SYS_LIGHT.addEventListener('change', () => { if (!THEMES[S.theme] || S.the
      (un instante con maximum-scale=1) y se fuerza a recolocar la barra. */
   const vpMeta = document.querySelector('meta[name=viewport]'), vpBase = vpMeta ? vpMeta.content : '';
   const relayout = () => {
+    try { const r = document.querySelector('nav.tabs').getBoundingClientRect(); diag('giro', { o: document.documentElement.className.match(/land|port/g), w: innerWidth, h: innerHeight, vvh: Math.round(vv.height), sc: vv.scale, nav: [Math.round(r.top), Math.round(r.bottom)] }); } catch (e) {}
     if (vpMeta && vv.scale && Math.abs(vv.scale - 1) > 0.01) { vpMeta.content = vpBase + ', maximum-scale=1'; setTimeout(() => { vpMeta.content = vpBase; }, 400); }
     const nav = document.querySelector('nav.tabs');
     if (nav) { nav.style.display = 'none'; void nav.offsetHeight; nav.style.display = ''; }
@@ -359,6 +448,9 @@ function openProfiles() {
     <div class="toggles"><div class="tg-row"><span>Pausa para acomodarte<small>Antes de empezar y entre calentamiento o estiramientos</small></span>${accSegHTML('pf-acc')}</div>
     ${gapRowHTML('pf-gap')}</div>
     <p class="note">Valen para todos los entrenamientos. También se cambian en las opciones de cada coach y en el menú de pausa.</p>
+    <h2>Diagnóstico</h2>
+    <p class="note">Si algo falla en el teléfono (el audio, la pantalla, la barra de abajo), comparte el registro con quien te ayuda: anota qué hizo la app en esos momentos. No incluye tu historial ni datos personales.</p>
+    <div class="row"><button class="btn ghost small" id="pf-diag">Compartir el registro</button><button class="btn ghost small" id="pf-diag-x">Borrar</button></div>
     <h2>Voz y pulso</h2>
     <div class="row"><button class="btn ghost small" id="pf-voice">Voz del entrenador</button><button class="btn ghost small" id="pf-hr">Pulsómetro y zonas</button></div>
     </div>
@@ -380,6 +472,8 @@ function openProfiles() {
     bindSeg('pf-theme', 't', t => { S.theme = t; save(); applyTheme(); });
     bindSeg('pf-lang', 'l', l => { if (l !== LANG) setLang(l); });
     bindAcc('pf-acc'); bindGap('pf-gap');
+    $('#pf-diag').onclick = () => diagShare();
+    $('#pf-diag-x').onclick = () => { DIAG_BUF = []; diagFlush(); toast('Registro borrado'); };
     const pa = $('#pf-avoid'); if (pa) pa.onclick = () => { S.avoid = []; save(); closeSheet(); toast('Ya no se cuida ninguna zona'); };
     $('#pf-backup').onclick = sheetFrom(openProfiles, openBackup);
     $('#pf-cloud').onclick = sheetFrom(openProfiles, () => openCloud());
@@ -623,7 +717,9 @@ function offlineStatus() {
   return { ok: false, msg: 'Preparando el modo sin conexión… vuelve a abrir la app una vez con internet.' };
 }
 // Si el sistema cerró la app en pleno entrenamiento, al volver se retoma en pausa
-window.addEventListener('load', () => {
+// con el cargador de index.html se espera a «app-ready» (todos los scripts cargados), que hace las veces de «load»
+const onAppReady = fn => { if (window.BIGMEM) { if (window.APP_READY) setTimeout(fn); else window.addEventListener('app-ready', () => setTimeout(fn), { once: true }); } else window.addEventListener('load', fn); };
+onAppReady(() => {
   if (!PROFILE) return;
   const fresh = x => x && Date.now() - x.savedAt < 30 * 60e3;
   const s = PS.get('session', null), r = PS.get('rsession', null);
@@ -1640,7 +1736,7 @@ function noSleepVideo(on) {
       nsv.style.cssText = 'position:fixed;left:0;top:0;width:2px;height:2px;opacity:.01;pointer-events:none;z-index:-1';
       document.body.appendChild(nsv);
     }
-    const p = nsv.play(); if (p && p.catch) p.catch(() => {});
+    const p = nsv.play(); if (p && p.then) p.then(() => diag('pantalla:video', 'ok'), e => diag('pantalla:video', 'falló ' + (e && e.name)));
   } else if (nsv) nsv.pause();
 }
 async function wake(on) {
@@ -1648,11 +1744,12 @@ async function wake(on) {
   try {
     if (on && 'wakeLock' in navigator) {
       if (!lock || lock.released) {
-        lock = await navigator.wakeLock.request('screen');
-        lock.addEventListener('release', () => { if (WAKE_WANT && document.visibilityState === 'visible') setTimeout(() => wake(true), 400); });
+        lock = await navigator.wakeLock.request('screen'); diag('pantalla:lock', 'ok');
+        lock.addEventListener('release', () => { diag('pantalla:lock', 'soltado' + (WAKE_WANT ? ' (se quería)' : '')); if (WAKE_WANT && document.visibilityState === 'visible') setTimeout(() => wake(true), 400); });
       }
     } else if (!on && lock) { const l = lock; lock = null; await l.release(); }
-  } catch (e) {}
+  } catch (e) { diag('pantalla:lock', 'falló ' + (e && e.name)); }
+  diag('pantalla', on ? 'encender' : 'apagar');
   if (IOS || !('wakeLock' in navigator)) noSleepVideo(on);
 }
 // si algo lo cortó (otra app, una llamada), el siguiente toque en la pantalla lo vuelve a activar
@@ -1682,6 +1779,7 @@ function cycleSound() {
 const cur = () => P.tl[P.i];
 
 function startWorkout(w, resume) {
+  diag('entrenar:empezar', (w && (w.kind || '') + ' ' + (w.title || '')) + (resume ? ' (retomado)' : ''));
   if (!resume) w = applyAvoid(w);
   P.fromView = currentView === 'preview' ? previewFrom : currentView;
   P.w = clone(w); P.tl = buildTimeline(P.w); P.running = true; P.animId = null;

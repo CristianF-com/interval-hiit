@@ -311,6 +311,7 @@ async function motionPermission() {
 const RP = { key: null, s: null, d: null, set: 0, count: 0, extra: 0, done: [], phase: 'idle', restEnd: 0, timer: null, det: null, t0: 0, initial: false, mode: 'toque', sensOn: false };
 const sensorMode = (key, mode) => mode !== 'toque' && mode !== 'ritmo';
 async function startReto(key, opts = {}) {
+  diag('reto:empezar', key + (opts && opts.mode ? ' ' + opts.mode : ''));
   // la pantalla encendida se pide ya, con el toque: después del permiso de sensores el iPhone no lo deja (le pasaba a sentadillas)
   wake(true);
   // audio antes de pedir permiso a los sensores: después de ese aviso ya no cuenta como toque y el iPhone lo deja mudo

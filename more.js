@@ -180,7 +180,9 @@ function openBodyList() {
 }
 
 /* ---------- Fotos de progreso ----------
-   Quedan SOLO en este teléfono (IndexedDB), no van a la nube ni a la copia: son privadas. */
+   La foto completa queda en este teléfono (IndexedDB 'inhiit-photos'). Además, una versión reducida (720 px,
+   unos 60 KB) va en PS 'photos' = [{ id, at, d: dataURL }], que viaja en la copia y en la nube: así no se pierden
+   al cambiar de teléfono. Al restaurar, las que faltan acá se recrean desde esa versión (phSync). */
 const PH_DB = 'inhiit-photos';
 function phDB() {
   return new Promise((res, rej) => { const r = indexedDB.open(PH_DB, 1); r.onupgradeneeded = () => r.result.createObjectStore('p', { keyPath: 'id' }); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); });
@@ -190,16 +192,48 @@ async function phAll() {
   return new Promise(res => { const out = []; const q = db.transaction('p').objectStore('p').openCursor(); q.onsuccess = () => { const c = q.result; if (c) { if (c.value.pid === PROFILE.id) out.push(c.value); c.continue(); } else res(out.sort((a, b) => b.at - a.at)); }; q.onerror = () => res(out); });
 }
 async function phPut(o) { const db = await phDB(); return new Promise((res, rej) => { const tx = db.transaction('p', 'readwrite'); tx.objectStore('p').put(o); tx.oncomplete = res; tx.onerror = () => rej(tx.error); }); }
-async function phDel(id) { const db = await phDB(); return new Promise(res => { const tx = db.transaction('p', 'readwrite'); tx.objectStore('p').delete(id); tx.oncomplete = res; tx.onerror = res; }); }
+// versión reducida para la copia
+async function phSmall(blob) {
+  const url = URL.createObjectURL(blob);
+  try {
+    const img = await new Promise((res, rej) => { const i = new Image(); i.onload = () => res(i); i.onerror = rej; i.src = url; });
+    const k = Math.min(1, 720 / Math.max(img.naturalWidth, img.naturalHeight)), c = document.createElement('canvas');
+    c.width = Math.round(img.naturalWidth * k); c.height = Math.round(img.naturalHeight * k);
+    const g = c.getContext('2d'); g.imageSmoothingQuality = 'high'; g.drawImage(img, 0, 0, c.width, c.height);
+    return c.toDataURL('image/jpeg', 0.62);
+  } finally { URL.revokeObjectURL(url); }
+}
+const phBlob = d => fetch(d).then(r => r.blob());
+// copia ↔ teléfono: sube a la copia las que faltan y recrea en el teléfono las que vinieron en una copia
+let phSyncing = false;
+// al abrir la app (y al cambiar de perfil o restaurar una copia) se sincroniza solo, sin esperar a abrir las fotos
+setTimeout(() => { try { phSync(); } catch (e) {} }, 2500);
+async function phSync() {
+  if (phSyncing || !PROFILE) return; phSyncing = true;
+  try {
+    const pid = PROFILE.id, here = await phAll(), bk = PS.get('photos', []) || [];
+    const ids = new Set(here.map(p => p.id)), bids = new Set(bk.map(p => p.id));
+    let add = 0, back = 0;
+    for (const p of here) if (!bids.has(p.id)) { try { bk.push({ id: p.id, at: p.at, d: await phSmall(p.blob) }); add++; } catch (e) {} }
+    for (const b of bk) if (!ids.has(b.id) && b.d) { try { await phPut({ id: b.id, pid, at: b.at, blob: await phBlob(b.d), fromBk: 1 }); back++; } catch (e) {} }
+    if (PROFILE && PROFILE.id === pid && add) PS.set('photos', bk.sort((a, b) => b.at - a.at));
+    if (add || back) diag('fotos', `copia +${add} · teléfono +${back}`);
+    return back;
+  } catch (e) { diag('fotos:error', String(e && e.message || e)); return 0; }
+  finally { phSyncing = false; }
+}
+async function phDel(id) {
+  PS.set('photos', (PS.get('photos', []) || []).filter(p => p.id !== id)); const db = await phDB(); return new Promise(res => { const tx = db.transaction('p', 'readwrite'); tx.objectStore('p').delete(id); tx.oncomplete = res; tx.onerror = res; }); }
 let phUrls = [], phSel = [];
 async function renderPhotos() {
   const el = $('#photos'); if (!el) return;
   phUrls.forEach(u => URL.revokeObjectURL(u)); phUrls = [];
   const tok = (renderPhotos.tok = (renderPhotos.tok || 0) + 1);
+  if (renderPhotos.synced !== PROFILE.id) { renderPhotos.synced = PROFILE.id; if (await phSync()) { renderPhotos(); return; } }
   let P = []; try { P = await phAll(); } catch (e) { if (el.isConnected) el.innerHTML = '<p class="note">Este navegador no permite guardar fotos.</p>'; return; }
   if (tok !== renderPhotos.tok || !el.isConnected) return;   // mientras leía, la sección se volvió a dibujar
   phSel = phSel.filter(id => P.some(p => p.id === id));
-  el.innerHTML = `<p class="note">Solo quedan en este teléfono (no se suben a la nube). Toca dos para compararlas.</p>
+  el.innerHTML = `<p class="note">Se guardan en este teléfono y, en tamaño reducido, en tu copia y en la nube. Toca dos para compararlas.</p>
     <div class="ph-grid"><button class="ph-add" id="ph-add"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg><span>${t('Agregar foto')}</span></button>
     ${P.map(p => { const u = URL.createObjectURL(p.blob); phUrls.push(u); return `<button class="ph" data-ph="${p.id}" aria-pressed="${phSel.includes(p.id)}"><img src="${u}" alt=""><span data-noi18n>${dateStr(p.at)}</span></button>`; }).join('')}</div>
     ${phSel.length === 2 ? '<button class="btn" id="ph-cmp" style="margin-top:10px">Comparar las dos fotos</button>' : ''}`;
@@ -220,7 +254,9 @@ function addProgressPhoto() {
       c.width = Math.round(img.naturalWidth * k); c.height = Math.round(img.naturalHeight * k);
       const g = c.getContext('2d'); g.imageSmoothingQuality = 'high'; g.drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url);
       const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', 0.82));
-      await phPut({ id: uid(), pid: PROFILE.id, at: Date.now(), blob });
+      const rec = { id: uid(), pid: PROFILE.id, at: Date.now(), blob };
+      await phPut(rec);
+      try { const bk = PS.get('photos', []) || []; bk.unshift({ id: rec.id, at: rec.at, d: await phSmall(blob) }); PS.set('photos', bk); } catch (e) { diag('fotos:error', 'copia ' + (e && e.message)); }
       renderPhotos(); toast('Foto guardada');
     } catch (e) { toast('No se pudo guardar la foto'); }
   };
@@ -232,7 +268,7 @@ function comparePhotos(two) {
     <div class="ph-cmp">${two.map((p, i) => `<figure><img src="${us[i]}" alt=""><figcaption data-noi18n>${dateStr(p.at)}</figcaption></figure>`).join('')}</div>
     <div class="row" style="margin-top:12px">${two.map((p, i) => `<button class="btn ghost small" data-pdel="${p.id}">${t(i ? 'Borrar la segunda' : 'Borrar la primera')}</button>`).join('')}</div>`, root => {
     root.querySelectorAll('[data-pdel]').forEach(b => b.onclick = async () => {
-      if (!(await askApp('Borrar foto', 'Se borra de este teléfono y no se puede recuperar.', 'Borrar', true))) return;
+      if (!(await askApp('Borrar foto', 'Se borra de este teléfono, de la copia y de la nube, y no se puede recuperar.', 'Borrar', true))) return;
       await phDel(b.dataset.pdel); phSel = []; renderPhotos();
     });
   });

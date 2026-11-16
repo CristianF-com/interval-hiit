@@ -1063,21 +1063,33 @@ input,textarea,select{font-size:0.9412rem}
 <div id="award-root"></div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<script src="i18n.js"></script>
-<script src="data.js"></script>
-<script src="i18n/en.js"></script>
-<script src="anim.js"></script>
-<script src="app.js"></script>
-<script src="extras.js"></script>
-<script src="voice.js"></script>
-<script src="calendar.js"></script>
-<script src="retos_data.js"></script>
-<script src="retos.js"></script>
-<script src="dumbbells.js"></script>
-<script src="abs.js"></script>
-<script src="stats.js"></script>
-<script src="cloud.js"></script>
-<script src="more.js"></script>
-<script src="timer.js"></script>
+<script>
+/* Arranque: primero se lee la base local (historial y fotos de respaldo, que no entran en el almacenamiento chico)
+   y recién después se cargan los scripts, en orden. Si la base no responde en 4 s se arranca igual con lo de siempre. */
+(function () {
+  var S = ['i18n.js', 'data.js', 'i18n/en.js', 'anim.js', 'app.js', 'extras.js', 'voice.js', 'calendar.js', 'retos_data.js', 'retos.js', 'dumbbells.js', 'abs.js', 'stats.js', 'cloud.js', 'more.js', 'timer.js'], BIG = window.BIGMEM = {}, done = false;
+  function go(ok) {
+    if (done) return; done = true; window.BIG_OK = !!ok;
+    // al terminar el último script: «app-ready» (hace las veces del DOMContentLoaded/load de antes)
+    S.forEach(function (src, i) { var e = document.createElement('script'); e.src = src; e.async = false;
+      if (i === S.length - 1) e.onload = e.onerror = function () { window.APP_READY = true; window.dispatchEvent(new Event('app-ready')); };
+      document.body.appendChild(e); });
+  }
+  setTimeout(function () { go(false); }, 4000);
+  try {
+    var r = indexedDB.open('inhiit-kv', 1);
+    r.onupgradeneeded = function () { r.result.createObjectStore('kv'); };
+    r.onsuccess = function () {
+      var db = window.KVDB = r.result;
+      try {
+        var q = db.transaction('kv').objectStore('kv').openCursor();
+        q.onsuccess = function () { var c = q.result; if (c) { BIG[c.key] = c.value; c.continue(); } else go(true); };
+        q.onerror = function () { go(false); };
+      } catch (e) { go(false); }
+    };
+    r.onerror = r.onblocked = function () { go(false); };
+  } catch (e) { go(false); }
+})();
+</script>
 </body>
 </html>

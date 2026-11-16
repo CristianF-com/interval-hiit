@@ -316,3 +316,19 @@ TIMER: ACTIVIDAD, CALENDARIO Y PANTALLA BLOQUEADA
 - Amigos: la fila del grupo (groups/{código}/members) no puede tener listas dentro de listas (Firestore la
   rechaza entera). Hasta v151 los retos iban como [[k, etapa, …]] y, en cuanto alguien tenía un reto, su fila
   dejaba de actualizarse. Ahora x.rt = [{ k, n, st, pre, d, D, b (máximo), g }]. Prueba: tools/pruebas/tfr.mjs
+
+DATOS Y DIAGNÓSTICO (v153)
+- Arranque (index.html): un cargador lee primero la base local IndexedDB 'inhiit-kv' (store 'kv') en
+  window.BIGMEM y recién después carga los scripts en orden. Si la base no responde en 4 s, arranca igual con
+  localStorage (KV.on = false).
+- Lo grande va en la base, no en localStorage (que tiene ~5 MB): claves BIG_RE = p.<id>.history y p.<id>.photos.
+  LS.get/set/del/keys las atienden igual que antes (en memoria + escritura inmediata en la base), así que copias,
+  nube, perfiles y pruebas no cambian. Al arrancar, lo que había en localStorage se pasa a la base (kvMigrate,
+  combinando sesiones si estaba en los dos lados). Si un guardado falla, avisa «el teléfono no tiene lugar libre».
+- Fotos de progreso: la completa queda en IndexedDB 'inhiit-photos'; una reducida (720 px, ~60 KB) va en
+  PS 'photos' (está en PROFILE_KEYS), o sea en la copia y en la nube. phSync recrea en el teléfono las que
+  vinieron en una copia y sube a la copia las que falten (al abrir, al cambiar de perfil y al abrir las fotos).
+- Registro de diagnóstico: diag(evento, dato) → localStorage 'inhiit.diag' (últimas 600 líneas). Anota inicio,
+  versión, audio (estado, recuperación, voz del sistema), pantalla encendida, app oculta/visible, giros (alto,
+  zoom y posición de la barra), audio de fondo del timer, guardados fallidos y errores. Perfil → Ajustes →
+  Diagnóstico → «Compartir el registro». Prueba: tools/pruebas/tdatos.mjs

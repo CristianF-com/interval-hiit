@@ -1899,7 +1899,16 @@ I18N = {
 "El peso más alto que usaste en cada sesión con este ejercicio (las últimas 20).": "The heaviest weight you used in each session with this exercise (last 20).",
 "Segundos por repetición en cada sesión, según cuándo tocas ✓ o lo que cuenta el reto (las últimas 20). Más bajo es más rápido. Las series que pasan solas no cuentan.": "Seconds per rep in each session, based on when you tap ✓ or what the challenge counts (last 20). Lower is faster. Sets that advance on their own don't count.",
 "primera etapa": "first stage",
-"máximo {0}": "max {0}"
+"máximo {0}": "max {0}",
+"Diagnóstico": "Diagnostics",
+"Si algo falla en el teléfono (el audio, la pantalla, la barra de abajo), comparte el registro con quien te ayuda: anota qué hizo la app en esos momentos. No incluye tu historial ni datos personales.": "If something fails on the phone (audio, screen, the bottom bar), share the log with whoever helps you: it records what the app did at those moments. It doesn't include your history or personal data.",
+"Compartir el registro": "Share the log",
+"Registro borrado": "Log cleared",
+"Registro copiado: pégalo en un mensaje": "Log copied: paste it into a message",
+"Registro de diagnóstico": "Diagnostic log",
+"No se pudo guardar: el teléfono no tiene lugar libre": "Couldn't save: the phone is out of space",
+"Se guardan en este teléfono y, en tamaño reducido, en tu copia y en la nube. Toca dos para compararlas.": "They're saved on this phone and, at a reduced size, in your backup and the cloud. Tap two to compare them.",
+"Se borra de este teléfono, de la copia y de la nube, y no se puede recuperar.": "It's deleted from this phone, the backup and the cloud, and can't be recovered."
 };
 I18N_PAT = [
 [

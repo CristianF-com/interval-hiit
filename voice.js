@@ -28,7 +28,7 @@ const vbuf = new Map();
 // las voces grabadas (Dora, Alex, Paula, Julio, Ona y Kimetz) son en español: en otro idioma se usa la del teléfono
 const voiceOf = () => LANG !== 'es' ? 'sistema' : (S.voiceSrc && READY_VOICES.includes(S.voiceSrc)) ? S.voiceSrc : 'dora';
 function audioCtx() {
-  if (!AC) AC = new (window.AudioContext || window.webkitAudioContext)();
+  if (!AC) { AC = new (window.AudioContext || window.webkitAudioContext)(); const c = AC; diag('audio', 'contexto creado ' + c.state); c.onstatechange = () => diag('audio:estado', c.state); }
   if (AC.state !== 'running') AC.resume().catch(() => {}); // iOS: «suspended» o «interrupted» (tras un aviso del sistema)
   return AC;
 }
@@ -105,7 +105,7 @@ say = function (t) {
   const v = voiceOf();
   if (v === 'sistema') { vStop(); sysSay(t); return; }
   try { speechSynthesis.cancel(); } catch (e) {}
-  vPlay(t, v).then(ok => { if (!ok) sysSay(t); }).catch(() => sysSay(t));
+  vPlay(t, v).then(ok => { if (!ok) { diag('voz:sistema', (AC ? AC.state + ' · ' : '') + t); sysSay(t); } }).catch(e => { diag('voz:error', String(e && e.message || e)); sysSay(t); });
 };
 // al empezar un entrenamiento se precargan los audios que se van a usar
 function vPreload(tl) {
@@ -143,27 +143,30 @@ const acAlive = (ctx, ms = 160) => new Promise(res => { const t0 = ctx.currentTi
 let acFixing = false, AUDIO_WANT = false;
 async function acRecover() {
   if (acFixing || !AC || document.visibilityState !== 'visible') return;
-  acFixing = true;
+  acFixing = true; diag('audio:recuperar', 'inicio ' + AC.state);
   try {
     for (let n = 0; n < 14 && AC && document.visibilityState === 'visible'; n++) {   // unos 6 segundos de intentos
       const ctx = AC;
       // reactivar la sesión de audio del sistema antes de reanudar (a veces queda desactivada tras el bloqueo)
       if (AUDIO_WANT && (n === 2 || n === 7)) { try { navigator.audioSession.type = 'auto'; navigator.audioSession.type = 'transient'; } catch (e) {} }
       if (ctx.state !== 'running') await acRace(ctx.resume(), 350);
-      if (await acAlive(ctx)) return;
+      if (await acAlive(ctx)) { diag('audio:recuperar', 'ok en intento ' + (n + 1)); return; }
+      diag('audio:recuperar', 'intento ' + (n + 1) + ' ' + ctx.state);
       if (ctx.state === 'running') {   // «running» pero mudo
         await acRace(ctx.suspend(), 300); await acRace(ctx.resume(), 350);
-        if (await acAlive(ctx)) return;
+        if (await acAlive(ctx)) { diag('audio:recuperar', 'ok tras suspender/reanudar'); return; }
       }
       if (n === 6 && AC === ctx) {   // nada alcanzó: contexto nuevo (los audios ya descargados se vuelven a usar)
         try { ctx.close(); } catch (e) {}
-        AC = null; try { audioCtx(); } catch (e) {}
+        AC = null; try { audioCtx(); } catch (e) {} diag('audio:recuperar', 'contexto nuevo');
       }
       await acSleep(220);
     }
+    diag('audio:recuperar', 'no se pudo ' + (AC && AC.state));
   } finally { acFixing = false; }
 }
 document.addEventListener('visibilitychange', () => {
+  diag('app:' + (document.visibilityState === 'hidden' ? 'oculta' : 'visible'), AC ? AC.state : 'sin audio');
   if (document.visibilityState === 'hidden') {
     if (BG_KEEP) return;   // timer con avisos en segundo plano: el audio sigue
     vStop(); try { speechSynthesis.cancel(); } catch (e) {}
@@ -181,7 +184,7 @@ setInterval(() => {
   if (!AC || acFixing || document.visibilityState !== 'visible' || !document.querySelector('.player:not(.hidden)')) { acLastT = -1; return; }
   const stuck = AC.state !== 'running' || AC.currentTime === acLastT;
   acLastT = AC.currentTime;
-  if (stuck) acRecover();
+  if (stuck) { diag('audio:trabado', AC.state); acRecover(); }
 }, 1500);
 /* ---------- Avisos con la pantalla bloqueada (timer) ----------
    Una pista casi muda en bucle mantiene viva la app y su audio con el teléfono bloqueado, como una app de música.
@@ -189,12 +192,12 @@ setInterval(() => {
    bloqueo muestra el bloque actual con pausa, anterior y siguiente (Media Session). */
 let BG_KEEP = false, bgEl = null;
 function bgAudio(on, h) {
-  BG_KEEP = !!on;
+  BG_KEEP = !!on; diag('fondo', on ? 'activar' : 'apagar');
   try {
     if (on) {
       try { if (navigator.audioSession) navigator.audioSession.type = 'playback'; } catch (e) {}
       if (!bgEl) { bgEl = new Audio('silencio.mp3'); bgEl.loop = true; bgEl.preload = 'auto'; bgEl.setAttribute('playsinline', ''); }
-      const p = bgEl.play(); if (p && p.catch) p.catch(() => {});
+      const p = bgEl.play(); if (p && p.then) p.then(() => diag('fondo:pista', 'ok'), e => diag('fondo:pista', 'falló ' + (e && e.name)));
       if ('mediaSession' in navigator && h) {
         const set = (a, f) => { try { navigator.mediaSession.setActionHandler(a, f); } catch (e) {} };
         set('play', () => { try { bgEl.play().catch(() => {}); audioCtx(); } catch (e) {} h.play(); }); set('pause', () => { h.pause(); try { bgEl.play().catch(() => {}); } catch (e) {} });
