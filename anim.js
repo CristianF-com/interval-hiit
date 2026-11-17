@@ -863,9 +863,9 @@ const Anim = (() => {
 
   /* ---------- dibujo ---------- */
   const C = {
-    skin: '#e8c3a6', skinFar: '#b8957c', shirt: '#ff5a36', shirtFar: '#c4472a',
-    shorts: '#5b6474', shortsFar: '#3f4652', shoe: '#ff5a36', shoeFar: '#c4472a',
-    hair: '#2b2f37', hot: '#ffd23f'
+    skin: '#e9c2a2', skinD: '#d4a886', skinFar: '#b98f72', shirt: '#ff5a36', shirtFar: '#d9441f',
+    shorts: '#4a5366', shortsFar: '#343a48', shoe: '#f3f4f6', shoeFar: '#c9ccd2', sole: '#ff5a36', soleFar: '#d9441f',
+    hair: '#2a2420', hot: '#ffd23f'
   };
   // segmentos: [grupo, desde, hasta, radio inicio, radio fin, capa]
   const PARTS = [
@@ -884,6 +884,89 @@ const Anim = (() => {
     return `M${f(p[0] + nx * r1)} ${f(p[1] + ny * r1)}L${f(q[0] + nx * r2)} ${f(q[1] + ny * r2)}L${f(q[0] - nx * r2)} ${f(q[1] - ny * r2)}L${f(p[0] - nx * r1)} ${f(p[1] - ny * r1)}Z` + circ(p, r1) + circ(q, r2);
   }
   const mixPt = (p, q, t) => [lerp(p[0], q[0], t), lerp(p[1], q[1], t)];
+
+  /* ---------- figura «humana»: contornos con forma (muslo, pantorrilla, tronco, cabeza de perfil) ---------- */
+  const vsub = (a, b) => [a[0] - b[0], a[1] - b[1]], vadd = (a, b) => [a[0] + b[0], a[1] + b[1]], vmul = (a, k) => [a[0] * k, a[1] * k];
+  const vnorm = a => { const l = Math.hypot(a[0], a[1]) || 1e-6; return [a[0] / l, a[1] / l]; };
+  const ff = v => v.toFixed(1);
+  // ancho a lo largo del segmento: [[s, ancho], ...] con transición suave
+  const hprof = (pts, s) => { for (let i = 1; i < pts.length; i++) if (s <= pts[i][0]) { const [s0, w0] = pts[i - 1], [s1, w1] = pts[i], t = (s - s0) / (s1 - s0 || 1), e = t * t * (3 - 2 * t); return w0 + (w1 - w0) * e; } return pts[pts.length - 1][1]; };
+  // contorno de un segmento con un perfil distinto de cada lado (A = +n, B = -n) y tapas redondeadas
+  function hlimb(P, Q, A, B, s0 = 0, s1 = 1, caps = true) {
+    const d = vsub(Q, P), L = Math.hypot(d[0], d[1]) || 1e-6, u = [d[0] / L, d[1] / L], n = [-u[1], u[0]], N = 10;
+    const l = [], r = [];
+    for (let i = 0; i <= N; i++) { const t = s0 + (s1 - s0) * i / N, c = vadd(P, vmul(d, t)); l.push(vadd(c, vmul(n, hprof(A, t)))); r.push(vadd(c, vmul(n, -hprof(B, t)))); }
+    const ra = (hprof(A, s1) + hprof(B, s1)) / 2, rb = (hprof(A, s0) + hprof(B, s0)) / 2;
+    let p = 'M' + l.map(q => ff(q[0]) + ' ' + ff(q[1])).join('L');
+    const e = r[r.length - 1];
+    p += caps ? `A${ff(ra)} ${ff(ra)} 0 0 0 ${ff(e[0])} ${ff(e[1])}` : `L${ff(e[0])} ${ff(e[1])}`;
+    for (let i = r.length - 2; i >= 0; i--) p += `L${ff(r[i][0])} ${ff(r[i][1])}`;
+    return p + (caps ? `A${ff(rb)} ${ff(rb)} 0 0 0 ${ff(l[0][0])} ${ff(l[0][1])}Z` : 'Z');
+  }
+  // curva suave por puntos (Catmull-Rom)
+  function hsmooth(pts, closed = true) {
+    const n = pts.length, g = i => closed ? pts[(i + n) % n] : pts[Math.max(0, Math.min(n - 1, i))];
+    let d = `M${ff(pts[0][0])} ${ff(pts[0][1])}`;
+    for (let i = 0; i < (closed ? n : n - 1); i++) { const p0 = g(i - 1), p1 = g(i), p2 = g(i + 1), p3 = g(i + 2);
+      const c1 = vadd(p1, vmul(vsub(p2, p0), 1 / 6)), c2 = vsub(p2, vmul(vsub(p3, p1), 1 / 6));
+      d += `C${ff(c1[0])} ${ff(c1[1])} ${ff(c2[0])} ${ff(c2[1])} ${ff(p2[0])} ${ff(p2[1])}`; }
+    return d + (closed ? 'Z' : '');
+  }
+  // perfiles de lado (A = atrás/abajo, B = adelante/arriba; la figura mira hacia la derecha de su tronco)
+  const HP = {
+    thighA: [[0, 8.2], [0.3, 7.8], [0.75, 6.4], [1, 5.4]], thighB: [[0, 8.2], [0.35, 8.8], [0.8, 6.2], [1, 5.2]],
+    shinA: [[0, 5.2], [0.28, 6.6], [0.6, 4.6], [1, 3.2]], shinB: [[0, 5], [0.3, 4.2], [1, 3]],
+    uarmA: [[0, 5.2], [0.45, 4.6], [1, 3.6]], uarmB: [[0, 5.4], [0.18, 5.2], [0.55, 4.4], [1, 3.6]],
+    farmA: [[0, 3.6], [0.3, 4], [1, 2.6]], farmB: [[0, 3.6], [0.25, 3.9], [1, 2.7]],
+    // de frente / desde arriba: simétricos
+    thighF: [[0, 7.8], [0.3, 7.6], [0.8, 5.8], [1, 5.2]], shinF: [[0, 5], [0.3, 5.6], [1, 3.2]],
+    uarmF: [[0, 5], [0.3, 4.8], [1, 3.6]], farmF: [[0, 3.6], [0.3, 3.9], [1, 2.6]],
+  };
+  const HPATH = (d, fill) => `<path d="${d}" fill="${fill}"/>`;
+  // zapatilla de perfil: talón detrás del tobillo, punta redondeada y suela de color
+  function hShoe(ank, toe, far) {
+    const fd = vnorm(vsub(toe, ank)), up = [fd[1], -fd[0]];
+    const heel = vadd(vadd(ank, vmul(fd, -4.6)), vmul(up, -1.2)), tip = vadd(toe, vmul(fd, 3.2));
+    const a1 = vadd(heel, vmul(up, -2.4)), a2 = vadd(tip, vmul(up, -2.4)), a3 = vadd(tip, vmul(up, 2.6)), a4 = vadd(vadd(ank, vmul(fd, 1)), vmul(up, 5.4)), a5 = vadd(heel, vmul(up, 4.4));
+    const P = q => ff(q[0]) + ' ' + ff(q[1]);
+    let o = HPATH(`M${P(a1)}L${P(a2)}Q${P(vadd(tip, vmul(fd, 3)))} ${P(a3)}Q${P(vadd(a4, vmul(fd, 4)))} ${P(a4)}L${P(a5)}Q${P(vsub(heel, vmul(fd, 2.4)))} ${P(a1)}Z`, far ? C.shoeFar : C.shoe);
+    const b1 = vadd(a1, vmul(up, 1.6)), b2 = vadd(a2, vmul(up, 1.6));
+    return o + HPATH(`M${P(a1)}L${P(a2)}L${P(b2)}L${P(b1)}Z`, far ? C.soleFar : C.sole);
+  }
+  // cabeza de perfil con pelo corto: la oreja es la piel que asoma en el hueco del pelo
+  function hHeadSide(J) {
+    const v = vnorm(vsub(J.head, J.neck)), fw = [-v[1], v[0]], c = vadd(J.head, vmul(v, -1.4));
+    const P = (a, b) => vadd(vadd(c, vmul(v, a)), vmul(fw, b)), PP = l => l.map(([a, b]) => P(a, b));
+    let o = HPATH(hlimb(J.sh, P(-4.6, -3.2), [[0, 4.4], [1, 3.8]], [[0, 4.2], [1, 3.7]]), C.skinD);
+    o += HPATH(hsmooth(PP([[10.6, 2.5], [9.8, 6.2], [7.6, 8.4], [4.8, 9.1], [2.6, 9.2], [0.6, 10.2], [-0.8, 10.9], [-1.9, 9.6], [-4.4, 9.2], [-7.2, 8.8],
+      [-9, 7.2], [-9.2, 4.6], [-8, 1.6], [-7, -0.6], [-6.6, -4.6], [-5.6, -8], [-2, -10.2], [3, -10.5], [7.8, -7.8], [10.2, -3]])), C.skin);
+    o += HPATH(hsmooth(PP([[7.6, 8.1], [10.4, 7.2], [12.1, 3], [12.2, -2.6], [10.4, -7.6], [6.4, -10.9], [1.4, -11.2], [-2.2, -10.3], [-4.4, -8.6],
+      [-3, -6.6], [-1.6, -5.1], [1, -4.8], [2.7, -2.8], [2.6, -0.2], [0.8, 1.2], [-1.4, 1.5], [-1.2, 2.7], [2.2, 3.4], [5.4, 5.2]])), C.hair);
+    return o;
+  }
+  // cabeza de frente: cara con las orejas a los costados y el pelo corto arriba
+  function hHeadFront(J) {
+    const v = vnorm(vsub(J.head, J.neck)), fw = [-v[1], v[0]], c = vadd(J.head, vmul(v, -1));
+    const P = (a, b) => vadd(vadd(c, vmul(v, a)), vmul(fw, b)), PP = l => l.map(([a, b]) => P(a, b));
+    const sym = l => [...l, ...l.slice().reverse().map(([a, b]) => [a, -b])];
+    let o = HPATH(hlimb(J.sh, P(-6, 0), [[0, 4.6], [1, 4]], [[0, 4.6], [1, 4]]), C.skinD);
+    o += HPATH(hsmooth(PP(sym([[10.4, 0.01], [9.6, 5.4], [6.6, 8.6], [2.4, 9.3], [1.8, 11], [-1.4, 11.3], [-3, 9.4], [-6, 7.6], [-8.8, 4.4], [-10.2, 0.01]]))), C.skin);
+    o += HPATH(hsmooth(PP(sym([[6.8, 0.01], [6.4, 4], [5, 7.8], [2.6, 9.2], [3.2, 11], [7.8, 11.2], [11.4, 7.4], [12.6, 0.01]]))), C.hair);
+    return o;
+  }
+  // cabeza vista desde arriba: coronilla (boca abajo) o cara con el pelo hacia atrás (boca arriba)
+  function hHeadTop(J, face) {
+    const v = vnorm(vsub(J.head, J.neck)), fw = [-v[1], v[0]], c = J.head;
+    const P = (a, b) => vadd(vadd(c, vmul(v, a)), vmul(fw, b)), PP = l => l.map(([a, b]) => P(a, b));
+    const sym = l => [...l, ...l.slice().reverse().map(([a, b]) => [a, -b])];
+    let o = HPATH(hlimb(J.sh, P(-6, 0), [[0, 4.6], [1, 4]], [[0, 4.6], [1, 4]]), C.skinD);
+    o += HPATH(hsmooth(PP(sym([[-1, 0.01], [1.8, 9.4], [1, 11.2], [-2, 11], [-3.4, 8.6]]))), C.skin);
+    if (face) {
+      o += HPATH(hsmooth(PP(sym([[10.6, 0.01], [9.8, 5.6], [6.2, 9], [0, 9.6], [-6, 7.8], [-9.4, 3.8], [-10.2, 0.01]]))), C.skin);
+      o += HPATH(hsmooth(PP(sym([[3.2, 0.01], [4.4, 5.4], [2.6, 9.4], [6.4, 10.6], [10.8, 7.2], [12.2, 0.01]]))), C.hair);
+    } else o += HPATH(hsmooth(PP(sym([[-6.4, 0.01], [-4.6, 7.6], [1, 10.4], [7, 9], [11.2, 4.6], [12.2, 0.01]]))), C.hair);
+    return o;
+  }
 
 
   // Esquema de la posición de las manos (vista desde arriba) en la esquina superior izquierda
@@ -948,55 +1031,68 @@ const Anim = (() => {
     const paint = (part, far) => {
       const [g, p, q, r1, r2] = part;
       const P = J[p], Q = J[q];
+      const sk = far ? C.skinFar : C.skin, lg = far ? C.shortsFar : C.shorts;
       if (/^arm/.test(g)) {
-        if (q.startsWith('elbow')) {
-          html += `<path d="${capsule(P, Q, r1, r2)}" fill="${far ? C.skinFar : C.skin}"/>`;
-          html += `<path d="${capsule(P, mixPt(P, Q, 0.42), r1 + 0.3, r1 + 0.1)}" fill="${far ? C.shirtFar : C.shirt}"/>`;
-        } else html += `<path d="${capsule(P, Q, r1, r2)}" fill="${far ? C.skinFar : C.skin}"/><circle cx="${f1(Q[0])}" cy="${f1(Q[1])}" r="3.8" fill="${far ? C.skinFar : C.skin}"/>`;
+        if (q.startsWith('elbow')) html += HPATH(side ? hlimb(P, Q, HP.uarmA, HP.uarmB) : hlimb(P, Q, HP.uarmF, HP.uarmF), sk);
+        else {
+          html += HPATH(side ? hlimb(P, Q, HP.farmA, HP.farmB) : hlimb(P, Q, HP.farmF, HP.farmF), sk);
+          const dir = vnorm(vsub(Q, P)), c = vadd(Q, vmul(dir, 2.6));
+          html += `<ellipse cx="${f1(c[0])}" cy="${f1(c[1])}" rx="4.7" ry="3.4" transform="rotate(${f1(Math.atan2(dir[1], dir[0]) * 180 / Math.PI)} ${f1(c[0])} ${f1(c[1])})" fill="${sk}"/>`;
+        }
         // mancuerna: de lado y de frente se ve el disco (el eje apunta hacia la cámara)
         if (a.db && q.startsWith('hand') && (a.db === 'two' || g === 'armR')) {
           const r = a.db === 'one' ? 7.2 : 6.2, c = a.db === 'one' ? mixPt(J.handL, J.handR, 0.5) : Q;
           html += `<circle cx="${f1(c[0])}" cy="${f1(c[1])}" r="${r}" fill="${far ? '#3d424c' : '#555c69'}" stroke="#262a31" stroke-width="1.6"/><circle cx="${f1(c[0])}" cy="${f1(c[1])}" r="${(r * 0.38).toFixed(1)}" fill="#262a31"/>`;
         }
       } else if (/^leg/.test(g)) {
-        html += `<path d="${capsule(P, Q, r1, r2)}" fill="${far ? C.skinFar : C.skin}"/>`;
-        if (p.startsWith('hip')) html += `<path d="${capsule(P, mixPt(P, Q, 0.6), r1 + 0.7, r2 + 1.2)}" fill="${far ? C.shortsFar : C.shorts}"/>`;
+        if (p.startsWith('hip')) html += HPATH(side ? hlimb(P, Q, HP.thighA, HP.thighB) : hlimb(P, Q, HP.thighF, HP.thighF), lg);
+        else {
+          const A = side ? HP.shinA : HP.shinF, B = side ? HP.shinB : HP.shinF, wide = l => l.map(([t, w]) => [t, w + 0.5]);
+          html += HPATH(hlimb(P, Q, A, B), sk) + HPATH(hlimb(P, Q, wide(A), wide(B), 0, 0.62, false), lg);   // calza hasta media pantorrilla
+          html += `<circle cx="${f1(P[0])}" cy="${f1(P[1])}" r="5.3" fill="${lg}"/>`;
+        }
       } else if (/^foot/.test(g)) {
-        html += `<path d="${capsule(P, Q, r1, r2)}" fill="${far ? C.shoeFar : C.shoe}"/>`;
+        if (side) html += hShoe(P, Q, far);
+        else {
+          if (!top) html += `<path d="${capsule([P[0], P[1] + 1.8], [Q[0], Q[1] + 1.8], 3.4, 3.2)}" fill="${far ? C.soleFar : C.sole}"/>`;
+          html += `<path d="${capsule(P, Q, 4, 3.7)}" fill="${far ? C.shoeFar : C.shoe}"/>`;
+        }
       } else if (g === 'torso') {
         if (p === 'hip') html += torsoSVG();
-      } else if (g === 'neck') html += `<path d="${capsule(P, Q, r1, r2)}" fill="${C.skin}"/>`;
+      }
       // músculos que trabajan: franja naranja translúcida
       if (inst.hot.has(g) && !/^foot/.test(g) && g !== 'torso' && g !== 'neck') html += `<path d="${capsule(mixPt(P, Q, 0.12), mixPt(P, Q, 0.82), r1 * 0.5, r2 * 0.5)}" fill="${C.hot}" fill-opacity="${far ? .4 : .62}"/>`;
       if (inst.hot.has(g) && g === 'torso' && p === 'hip') html += `<path d="${capsule(mixPt(P, Q, 0.3), mixPt(P, Q, 0.85), r1 * 0.45, r2 * 0.45)}" fill="${C.hot}" fill-opacity=".55"/>`;
     };
-    // tronco: pantalón abajo y remera recta encima (dobladillo recto que tapa la cintura)
+    // tronco: musculosa con forma (espalda, cintura, pecho), calza con glúteo y cintura; los hombros en piel
     function torsoSVG() {
       const Hp = J.hip, S = J.sh, L = Math.hypot(S[0] - Hp[0], S[1] - Hp[1]) || 1e-3;
       const u = [(S[0] - Hp[0]) / L, (S[1] - Hp[1]) / L], nn = [-u[1], u[0]];
-      const pt = (c, w) => [c[0] + nn[0] * w, c[1] + nn[1] * w];
-      const poly = ps => `<path d="M${ps.map(q => f1(q[0]) + ' ' + f1(q[1])).join('L')}Z" fill="${C.shirt}"/>`;
       let o = '';
       if (side) {
-        const hem = mixPt(Hp, S, 0.2), ar = arch;
-        if (Math.abs(ar) > 0.3) {
-          // espalda curvada (gato-vaca): todo el tronco (pantalón y remera) sigue una curva de la cadera a los hombros
-          const mid = pt(mixPt(Hp, S, 0.5), ar), Cc = [2 * mid[0] - (Hp[0] + S[0]) / 2, 2 * mid[1] - (Hp[1] + S[1]) / 2];
-          const B = u => [(1 - u) * (1 - u) * Hp[0] + 2 * u * (1 - u) * Cc[0] + u * u * S[0], (1 - u) * (1 - u) * Hp[1] + 2 * u * (1 - u) * Cc[1] + u * u * S[1]];
-          const Nn = u => { const d = [2 * (1 - u) * (Cc[0] - Hp[0]) + 2 * u * (S[0] - Cc[0]), 2 * (1 - u) * (Cc[1] - Hp[1]) + 2 * u * (S[1] - Cc[1])], l = Math.hypot(d[0], d[1]) || 1; return [-d[1] / l, d[0] / l]; };
-          const band = (u0, u1, w0, w1, col) => { const a = [], b = []; for (let i = 0; i <= 8; i++) { const u = u0 + (u1 - u0) * i / 8, w = w0 + (w1 - w0) * i / 8, c = B(u), n = Nn(u); a.push([c[0] + n[0] * w, c[1] + n[1] * w]); b.unshift([c[0] - n[0] * w, c[1] - n[1] * w]); }
-            return `<path d="M${a.concat(b).map(q => f1(q[0]) + ' ' + f1(q[1])).join('L')}Z" fill="${col}"/>`; };
-          o += `<circle cx="${f1(Hp[0])}" cy="${f1(Hp[1])}" r="9.4" fill="${C.shorts}"/>` + band(0, 0.34, 9.4, 9.3, C.shorts);
-          o += band(0.2, 1, 9.5, 9.2, C.shirt) + `<circle cx="${f1(S[0])}" cy="${f1(S[1])}" r="9.2" fill="${C.shirt}"/>`;
-        } else {
-          o += `<path d="${capsule(Hp, mixPt(Hp, S, 0.32), 9.4, 9.3)}" fill="${C.shorts}"/>`;
-          o += poly([pt(hem, 9.5), pt(S, 9.2), pt(S, -9.2), pt(hem, -9.5)]) + `<circle cx="${f1(S[0])}" cy="${f1(S[1])}" r="9.2" fill="${C.shirt}"/>`;
+        // eje del tronco: recto o curvado (gato-vaca)
+        let B = t => [Hp[0] + (S[0] - Hp[0]) * t, Hp[1] + (S[1] - Hp[1]) * t], Nn = () => nn;
+        if (Math.abs(arch) > 0.3) {
+          const mid = vadd(mixPt(Hp, S, 0.5), vmul(nn, arch)), Cc = [2 * mid[0] - (Hp[0] + S[0]) / 2, 2 * mid[1] - (Hp[1] + S[1]) / 2];
+          B = t => [(1 - t) * (1 - t) * Hp[0] + 2 * t * (1 - t) * Cc[0] + t * t * S[0], (1 - t) * (1 - t) * Hp[1] + 2 * t * (1 - t) * Cc[1] + t * t * S[1]];
+          Nn = t => { t = Math.max(0, Math.min(1, t)); const d = vnorm([2 * (1 - t) * (Cc[0] - Hp[0]) + 2 * t * (S[0] - Cc[0]), 2 * (1 - t) * (Cc[1] - Hp[1]) + 2 * t * (S[1] - Cc[1])]); return [-d[1], d[0]]; };
         }
+        const at = (t, w) => vadd(B(t), vmul(Nn(t), w));
+        const back = [[-0.08, -7.8], [0.12, -7.8], [0.35, -6.9], [0.65, -8.2], [0.9, -8.6], [1.07, -6.2]];
+        const front = [[1.07, 5.4], [0.9, 8.8], [0.72, 9.8], [0.5, 7.4], [0.3, 7.6], [0.1, 8], [-0.08, 7.2]];
+        o += HPATH(hsmooth([...back, ...front].map(([t, w]) => at(t, w))), C.shirt);
+        const g0 = at(0.02, -2), n0 = Nn(0), ang = Math.atan2(-n0[0], n0[1]) * 180 / Math.PI;
+        o += `<ellipse cx="${f1(g0[0])}" cy="${f1(g0[1])}" rx="8" ry="7.2" transform="rotate(${f1(ang)} ${f1(g0[0])} ${f1(g0[1])})" fill="${C.shorts}"/>`;
+        o += HPATH('M' + [at(0.2, -8.4), at(0.2, 8.1), at(-0.02, 7.6), at(-0.02, -8.8)].map(q => f1(q[0]) + ' ' + f1(q[1])).join('L') + 'Z', C.shorts);
+        const shc = at(0.97, -1); o += `<circle cx="${f1(shc[0])}" cy="${f1(shc[1])}" r="5.2" fill="${C.skin}"/>`;
       } else {
         const hw = Math.hypot(J.hipL[0] - Hp[0], J.hipL[1] - Hp[1]), sw = Math.hypot(J.shL[0] - S[0], J.shL[1] - S[1]);
-        const hem = mixPt(Hp, S, Math.min(0.5, 6.5 / L));
-        o += `<path d="${capsule(J.hipL, J.hipR, 7.6, 7.6)}" fill="${C.shorts}"/><path d="${capsule(Hp, hem, 8, 8)}" fill="${C.shorts}"/>`;
-        o += poly([pt(hem, hw + 7.8), pt(S, sw + 4.6), pt(S, -(sw + 4.6)), pt(hem, -(hw + 7.8))]) + `<path d="${capsule(J.shL, J.shR, 4.6, 4.6)}" fill="${C.shirt}"/>`;
+        const hs = Math.min(0.5, 6.5 / L), at = (t, w) => [Hp[0] + u[0] * L * t + nn[0] * w, Hp[1] + u[1] * L * t + nn[1] * w];
+        o += `<path d="${capsule(J.hipL, J.hipR, 7.6, 7.6)}" fill="${C.shorts}"/><path d="${capsule(Hp, at(hs, 0), 8, 8)}" fill="${C.shorts}"/>`;
+        o += `<path d="${capsule(J.shL, J.shR, 4.6, 4.6)}" fill="${C.skin}"/>`;
+        const half = [[hs - 0.04, hw + 7.4], [0.45, (hw + sw) / 2 + 5.2], [0.8, sw + 4.4], [1, sw + 1.2], [1.02, 3.6]];
+        const pts = [[hs - 0.06, 0.01], ...half, [0.9, 0.01], ...half.slice().reverse().map(([t, w]) => [t, -w])];
+        o += HPATH(hsmooth(pts.map(([t, w]) => at(t, w))), C.shirt);
       }
       return o;
     }
@@ -1006,26 +1102,8 @@ const Anim = (() => {
     PARTS.filter(x => x[5] === 'far' && !((a.armsBack || a.armsFront) && arm(x)) && !(a.legsFront && legP(x))).forEach(pt => paint(pt, side || a.farShade));
     PARTS.filter(x => x[5] === 'mid').forEach(pt => paint(pt, false));
     if (a.armsFront) PARTS.filter(x => x[5] === 'far' && arm(x)).forEach(pt => paint(pt, false));
-    // cabeza: pelo y cara hacia donde mira
-    const H = J.head, nk = J.neck, hv = [H[0] - nk[0], H[1] - nk[1]], hl = Math.hypot(hv[0], hv[1]) || 1, up = [hv[0] / hl, hv[1] / hl];
-    html += `<circle cx="${f1(H[0])}" cy="${f1(H[1])}" r="11" fill="${C.skin}"/>`;
-    const at = (dx, dy) => [H[0] + dx, H[1] + dy];
-    const circ = (c, r, col) => `<circle cx="${f1(c[0])}" cy="${f1(c[1])}" r="${r}" fill="${col}"/>`;
-    if (side) {
-      // pelo: coronilla, nuca y un poco de frente; la cara asoma por delante y abajo
-      const fw = [-up[1], up[0]];
-      html += circ(at(-fw[0] * 1.6 + up[0] * 1.3, -fw[1] * 1.6 + up[1] * 1.3), 11.6, C.hair);
-      html += circ(at(-fw[0] * 6.5 - up[0] * 4.5, -fw[1] * 6.5 - up[1] * 4.5), 5, C.hair);
-      html += circ(at(fw[0] * 3.2 - up[0] * 1.8, fw[1] * 3.2 - up[1] * 1.8), 8.8, C.skin);
-    } else if (top) {
-      // desde arriba se ve la coronilla; boca arriba (face), la cara con el pelo hacia la coronilla
-      if (a.face) { html += circ(at(up[0] * 2.4, up[1] * 2.4), 10.4, C.hair); html += circ(at(-up[0] * 1.4, -up[1] * 1.4), 8.6, C.skin); }
-      else html += circ(at(up[0] * 1.5, up[1] * 1.5), 9.6, C.hair);
-    } else {
-      // de frente: pelo arriba y a los lados, flequillo cubriendo parte de la frente
-      html += circ(at(up[0] * 2.2, up[1] * 2.2), 11.5, C.hair);
-      html += circ(at(-up[0] * 1.8, -up[1] * 1.8), 9.2, C.skin);
-    }
+    // cabeza (con el cuello): de perfil, de frente o desde arriba
+    html += side ? hHeadSide(J) : top ? hHeadTop(J, a.face) : hHeadFront(J);
     if (a.legsFront) PARTS.filter(x => x[5] === 'far' && legP(x)).forEach(pt => paint(pt, false));
     PARTS.filter(x => x[5] === 'near' && !(a.armsBack && arm(x))).forEach(pt => paint(pt, false));
     inst.g.innerHTML = html;
