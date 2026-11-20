@@ -1,0 +1,33 @@
+// retos: «Saltar descanso/Empezar ya» deja 3 s con la cuenta; «+10 s» alarga el descanso
+import { chromium } from 'playwright';
+const b = await chromium.launch({ executablePath: process.env.PW_CHROME || undefined });
+const c = await b.newContext({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, serviceWorkers: 'block', locale: 'es-AR' });
+await c.addInitScript(() => { window.NO_CLOUD = 1; });
+const p = await c.newPage(); const errs = []; p.on('pageerror', e => errs.push(e.message));
+const ok = (v, m) => console.log((v ? 'OK  ' : 'FALLA ') + m); const D = process.argv[2];
+await p.goto('http://localhost:8776/'); await p.waitForTimeout(800);
+await p.fill('#ob-name', 'Cris'); await p.click('#ob-go'); await p.waitForTimeout(400);
+await p.evaluate(() => startReto('pushups', { mode: 'toque' })); await p.waitForTimeout(500);
+ok(await p.evaluate(() => RP.phase === 'prep'), 'arranca en preparación');
+ok((await p.textContent('#rp-minus')).trim() === '+10 s', 'en la preparación el botón dice +10 s');
+await p.screenshot({ path: D + '/reto-descanso.png' });
+const r0 = await p.evaluate(() => RP.restEnd - performance.now());
+await p.click('#rp-minus');
+const r1 = await p.evaluate(() => RP.restEnd - performance.now());
+ok(r1 - r0 > 9000, '+10 s suma (' + Math.round(r0 / 1000) + ' → ' + Math.round(r1 / 1000) + ')');
+await p.evaluate(() => { window.__said = []; const o = say; say = (x, ...a) => { window.__said.push(x); return o(x, ...a); }; });
+await p.click('#rp-done');
+const r2 = await p.evaluate(() => [RP.phase, RP.restEnd - performance.now()]);
+ok(r2[0] === 'prep' && r2[1] <= 3000 && r2[1] > 2400, 'Empezar ya deja 3 s sin arrancar');
+await p.waitForTimeout(3600);
+const r3 = await p.evaluate(() => [RP.phase, window.__said.join('|')]);
+ok(r3[0] === 'work', 'después de la cuenta arranca la serie');
+ok(/3/.test(r3[1]) && /1/.test(r3[1]), 'cuenta 3, 2, 1: ' + r3[1]);
+ok((await p.textContent('#rp-minus')).includes('Quitar una'), 'en la serie vuelve a «Quitar una»');
+// descanso entre series
+await p.evaluate(() => { RP.d = { ...RP.d, test: false, sets: [3, 3, 3], rest: 30 }; RP.initial = false; RP.set = 0; rEndSet(); }); await p.waitForTimeout(300);
+ok(await p.evaluate(() => RP.phase === 'rest'), 'descanso entre series');
+await p.evaluate(() => { RP.restEnd = performance.now() + 2000; });
+await p.click('#rp-done'); await p.waitForTimeout(400);
+ok(await p.evaluate(() => RP.phase === 'work'), 'con menos de 3 s arranca directo');
+ok(!errs.length, 'sin errores ' + errs.join(' | ')); await b.close();

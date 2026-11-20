@@ -434,6 +434,7 @@ function rRender() {
   $('#rp-help').textContent = prep ? (RP.ps ? RP.ps.tip + ' ' : 'Ponte en posición. ') + (R.how[RP.mode] || '') : rest ? 'Recupera el aire. A 10 s del final te aviso.' : RP.mode === 'ritmo' ? (lastSet && !d.test && RP.count >= tgt ? 'Objetivo cumplido: toca la pantalla por cada extra o «Terminar».' : d.test ? 'Una por pitido. Cuando no puedas más, toca «Terminar» (y «−1» si la última no salió).' : `Una por pitido, cada ${RP.tempo} s. Si no llegas, «Serie hecha».`) : RP.sensOn ? (RP.det.hint + ' · también puedes tocar la pantalla') : (R.how.toque || 'Toca la pantalla en cada repetición.');
   $('#rp-meter').classList.toggle('hidden', !RP.sensOn || rest);
   $('#rp-done').textContent = prep ? 'Empezar ya' : rest ? 'Saltar descanso' : (d.test || lastSet) ? 'Terminar' : 'Serie hecha';
+  const mb = $('#rp-minus'); mb.textContent = rest ? '+10 s' : '↶ Quitar una'; mb.setAttribute('aria-label', rest ? 'Sumar 10 segundos' : 'Quitar una repetición');
   const pb = $('#rp-close'); pb.innerHTML = RP.paused ? PLAY_SVG : PAUSE_SVG; pb.setAttribute('aria-label', RP.paused ? 'Seguir' : 'Pausa y opciones');
   const m = $('#rp-anim'); if (m && m.dataset.animId !== R.ex) Anim.mount(m, R.ex, { label: true });
 }
@@ -515,9 +516,16 @@ $('#rplayer').addEventListener('pointerdown', e => {
     e.preventDefault(); rCount(1);
   }
 });
-$('#rp-minus').onclick = () => rCount(-1);
+// en el descanso: «Saltar descanso» / «Empezar ya» deja 3 s con la cuenta 3-2-1 (si ya quedan 3 s o menos, arranca); «+10 s» alarga
+const rResting = () => RP.phase === 'rest' || RP.phase === 'prep';
+function rRestTo3() {
+  const base = RP.paused && RP.pausedAt ? RP.pausedAt : performance.now();
+  RP.restEnd = RP.restEnd - base <= 3000 ? base : base + 3000; RP.lastSec = null; rRender(); rSave();
+}
+function rRestMore() { RP.restEnd += 10000; RP.restLen = (RP.restLen || 0) + 10; RP.lastSec = null; beep(523, 90, .15); rRender(); rSave(); }
+$('#rp-minus').onclick = () => rResting() ? rRestMore() : rCount(-1);
 $('#rp-done').onclick = () => {
-  if (RP.phase === 'rest' || RP.phase === 'prep') { RP.restEnd = performance.now(); return; }
+  if (rResting()) { rRestTo3(); return; }
   if (RP.d.test || RP.set === RP.d.sets.length - 1) { rFinish(); return; }
   rEndSet();
 };
