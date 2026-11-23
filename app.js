@@ -21,7 +21,7 @@ const dateStr = t => new Date(t).toLocaleDateString(LOC, { weekday: 'short', day
    Anota lo que pasa con el audio, la pantalla encendida, los giros y los guardados (lo que no se puede ver
    desde afuera en el iPhone). Se ve y se comparte en Perfil → Ajustes → Diagnóstico. Últimas 600 líneas. */
 // versión de la app: tiene que coincidir con VERSION de sw.js (la prueba tver.mjs lo controla)
-const APP_V = 161;
+const APP_V = 162;
 const DIAG_KEY = 'inhiit.diag', DIAG_MAX = 600;
 let DIAG_BUF = null, DIAG_T = null;
 function diag(ev, data) {
@@ -416,6 +416,39 @@ try { SYS_LIGHT.addEventListener('change', () => { if (!THEMES[S.theme] || S.the
   const onRotate = () => [80, 350, 800].forEach(ms => setTimeout(relayout, ms));
   addEventListener('orientationchange', onRotate);
   try { screen.orientation.addEventListener('change', onRotate); } catch (e) {}
+  /* Al desbloquear el iPhone en horizontal, Safari a veces deja la vista con alto 0 (o negativo) y desde ahí la barra
+     queda corrida y se mueve con el scroll. Se revisa al volver a la app, al girar y al terminar de scrollear;
+     si la barra no está pegada abajo o la vista quedó sin alto, se fuerza a recalcularla (se cambia y se repone la
+     etiqueta viewport, se sube arriba un instante y se vuelve donde estaba). */
+  const navOff = () => {
+    const nav = document.querySelector('nav.tabs'); if (!nav) return false;
+    const r = nav.getBoundingClientRect(); if (!r.height) return false;   // oculta (reproductor abierto)
+    const a = document.activeElement; if (a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) return false;   // teclado
+    return vv.height <= 0 || Math.abs(r.bottom - innerHeight) > 2;
+  };
+  let fixing = 0, tries = 0;   // al scrollear se intenta como mucho 2 veces (si no se arregla, no hacer saltar la página)
+  const repair = why => {
+    if (fixing || (why === 'scroll' && tries >= 2) || !navOff()) return; fixing = 1; tries++;
+    const r = document.querySelector('nav.tabs').getBoundingClientRect();
+    diag('giro:arreglo', { why, h: innerHeight, vvh: Math.round(vv.height), vvt: Math.round(vv.offsetTop), nav: [Math.round(r.top), Math.round(r.bottom)] });
+    const y = scrollY;
+    if (vpMeta) vpMeta.content = vpBase + ', maximum-scale=1';
+    scrollTo(scrollX, 0);
+    requestAnimationFrame(() => {
+      if (vpMeta) vpMeta.content = vpBase;
+      relayout();
+      requestAnimationFrame(() => {
+        scrollTo(scrollX, y); fixing = 0;
+        setTimeout(() => { if (navOff()) { const q = document.querySelector('nav.tabs').getBoundingClientRect(); diag('giro:sigue', { vvh: Math.round(vv.height), nav: [Math.round(q.top), Math.round(q.bottom)] }); } }, 300);
+      });
+    });
+  };
+  const check = why => { tries = 0; [120, 500, 1200].forEach(ms => setTimeout(() => repair(why), ms)); };
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) check('volver'); });
+  addEventListener('pageshow', () => check('volver'));
+  addEventListener('orientationchange', () => check('girar'));
+  vv.addEventListener('resize', () => check('vista'));
+  let scT = 0; addEventListener('scroll', () => { clearTimeout(scT); scT = setTimeout(() => repair('scroll'), 250); }, { passive: true });
   // el teclado tarda en subir (o ya estaba arriba al pasar de un campo a otro): se centra varias veces
   document.addEventListener('focusin', e => { if (/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) [60, 320, 650].forEach(ms => setTimeout(fit, ms)); });
   document.addEventListener('focusout', () => setTimeout(fit, 350));
