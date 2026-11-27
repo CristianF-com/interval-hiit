@@ -21,7 +21,7 @@ const dateStr = t => new Date(t).toLocaleDateString(LOC, { weekday: 'short', day
    Anota lo que pasa con el audio, la pantalla encendida, los giros y los guardados (lo que no se puede ver
    desde afuera en el iPhone). Se ve y se comparte en Perfil → Ajustes → Diagnóstico. Últimas 600 líneas. */
 // versión de la app: tiene que coincidir con VERSION de sw.js (la prueba tver.mjs lo controla)
-const APP_V = 162;
+const APP_V = 163;
 const DIAG_KEY = 'inhiit.diag', DIAG_MAX = 600;
 let DIAG_BUF = null, DIAG_T = null;
 function diag(ev, data) {
@@ -49,6 +49,9 @@ function diagFlush() { try { if (DIAG_BUF) localStorage.setItem(DIAG_KEY, JSON.s
 addEventListener('pagehide', diagFlush);
 addEventListener('error', e => diag('error', (e.message || '') + ' @' + String(e.filename || '').split('/').pop() + ':' + e.lineno));
 addEventListener('unhandledrejection', e => diag('promesa', String(e.reason && (e.reason.message || e.reason)).slice(0, 200)));
+
+// lo que scrollea es #app (la página en sí queda quieta; ver «la página no scrollea» en index.html)
+function pageScroller() { return document.getElementById('app') || document.scrollingElement; }
 
 /* --- ganchos: los otros archivos se suman a lo que hace una función («después de…») sin reemplazarla ---
    after('show', (args, resultado) => …). Si un gancho falla, los demás siguen y queda en Diagnóstico. */
@@ -410,45 +413,14 @@ try { SYS_LIGHT.addEventListener('change', () => { if (!THEMES[S.theme] || S.the
     if (vpMeta && vv.scale && Math.abs(vv.scale - 1) > 0.01) { vpMeta.content = vpBase + ', maximum-scale=1'; setTimeout(() => { vpMeta.content = vpBase; }, 400); }
     const nav = document.querySelector('nav.tabs');
     if (nav) { nav.style.display = 'none'; void nav.offsetHeight; nav.style.display = ''; }
-    const y = scrollY; scrollTo(scrollX, y + 1); scrollTo(scrollX, y);
     fit();
   };
   const onRotate = () => [80, 350, 800].forEach(ms => setTimeout(relayout, ms));
   addEventListener('orientationchange', onRotate);
   try { screen.orientation.addEventListener('change', onRotate); } catch (e) {}
-  /* Al desbloquear el iPhone en horizontal, Safari a veces deja la vista con alto 0 (o negativo) y desde ahí la barra
-     queda corrida y se mueve con el scroll. Se revisa al volver a la app, al girar y al terminar de scrollear;
-     si la barra no está pegada abajo o la vista quedó sin alto, se fuerza a recalcularla (se cambia y se repone la
-     etiqueta viewport, se sube arriba un instante y se vuelve donde estaba). */
-  const navOff = () => {
-    const nav = document.querySelector('nav.tabs'); if (!nav) return false;
-    const r = nav.getBoundingClientRect(); if (!r.height) return false;   // oculta (reproductor abierto)
-    const a = document.activeElement; if (a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName)) return false;   // teclado
-    return vv.height <= 0 || Math.abs(r.bottom - innerHeight) > 2;
-  };
-  let fixing = 0, tries = 0;   // al scrollear se intenta como mucho 2 veces (si no se arregla, no hacer saltar la página)
-  const repair = why => {
-    if (fixing || (why === 'scroll' && tries >= 2) || !navOff()) return; fixing = 1; tries++;
-    const r = document.querySelector('nav.tabs').getBoundingClientRect();
-    diag('giro:arreglo', { why, h: innerHeight, vvh: Math.round(vv.height), vvt: Math.round(vv.offsetTop), nav: [Math.round(r.top), Math.round(r.bottom)] });
-    const y = scrollY;
-    if (vpMeta) vpMeta.content = vpBase + ', maximum-scale=1';
-    scrollTo(scrollX, 0);
-    requestAnimationFrame(() => {
-      if (vpMeta) vpMeta.content = vpBase;
-      relayout();
-      requestAnimationFrame(() => {
-        scrollTo(scrollX, y); fixing = 0;
-        setTimeout(() => { if (navOff()) { const q = document.querySelector('nav.tabs').getBoundingClientRect(); diag('giro:sigue', { vvh: Math.round(vv.height), nav: [Math.round(q.top), Math.round(q.bottom)] }); } }, 300);
-      });
-    });
-  };
-  const check = why => { tries = 0; [120, 500, 1200].forEach(ms => setTimeout(() => repair(why), ms)); };
-  document.addEventListener('visibilitychange', () => { if (!document.hidden) check('volver'); });
-  addEventListener('pageshow', () => check('volver'));
-  addEventListener('orientationchange', () => check('girar'));
-  vv.addEventListener('resize', () => check('vista'));
-  let scT = 0; addEventListener('scroll', () => { clearTimeout(scT); scT = setTimeout(() => repair('scroll'), 250); }, { passive: true });
+  /* Al desbloquear el iPhone en horizontal, Safari a veces deja la vista con alto 0 o negativo. Por eso la página
+     en sí no scrollea (scrollea #app): sin scroll del documento la barra fija de abajo no se corre. Solo se anota. */
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) setTimeout(() => { if (vv.height <= 0) diag('vista:sin alto', { h: innerHeight, vvh: Math.round(vv.height), vvt: Math.round(vv.offsetTop) }); }, 300); });
   // el teclado tarda en subir (o ya estaba arriba al pasar de un campo a otro): se centra varias veces
   document.addEventListener('focusin', e => { if (/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) [60, 320, 650].forEach(ms => setTimeout(fit, ms)); });
   document.addEventListener('focusout', () => setTimeout(fit, 350));
@@ -1399,7 +1371,7 @@ function bindSubtabs(g, root = document) {
     const b = e.target.closest('[data-st]'); if (!b) return;
     setSubtab(g, b.dataset.st, root);
     // si la página estaba más abajo, la parte nueva empieza arriba (justo debajo de la barra)
-    if (root === document) { const pane = document.querySelector(`[data-pane="${g}:${b.dataset.st}"]`); if (pane) { const y = pane.getBoundingClientRect().top + scrollY - bar.offsetHeight - 6; if (scrollY > y) window.scrollTo(0, Math.max(0, y)); } }
+    if (root === document) { const pane = document.querySelector(`[data-pane="${g}:${b.dataset.st}"]`); if (pane) { const sc = pageScroller(), y = pane.getBoundingClientRect().top + sc.scrollTop - bar.offsetHeight - 6; if (sc.scrollTop > y) sc.scrollTo(0, Math.max(0, y)); } }
   };
   bar.scrollLeft = 0;
   // pista de que hay más opciones a la derecha: el borde se desvanece mientras queden fuera de pantalla
@@ -1423,7 +1395,7 @@ function show(view) {
   if (view === 'hist') { renderHist(); bindSubtabs('hist'); }
   if (view === 'lib') renderLib();
   if (view === 'cal') renderCal();
-  window.scrollTo(0, 0); syncViewTitle();
+  pageScroller().scrollTo(0, 0); syncViewTitle();
 }
 function openPreview(w, from) {
   // planes: el calendario y la lista traen el día sin calentamiento; se agrega según la última elección
@@ -1634,7 +1606,7 @@ function reviewWeek(delta) {
   if (newLevel !== p.level) p.log.push({ at: Date.now(), week: p.week + 1, level: newLevel });
   p.level = newLevel; p.week++; setPlan(p); viewWeek = p.week; renderPlans(); checkAwards(true);
   toast(delta > 0 ? `Subimos a nivel ${PLAN_LEVELS[newLevel]}` : delta < 0 ? `Bajamos a nivel ${PLAN_LEVELS[newLevel]}` : `Semana ${p.week}: mismo nivel`);
-  window.scrollTo(0, 0);
+  pageScroller().scrollTo(0, 0);
 }
 
 function planDayWorkout(week, dayIdx) {

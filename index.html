@@ -41,6 +41,11 @@ body{min-height:100dvh;overflow-x:hidden}
 button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 input,select{font:inherit}
 .app{max-width:560px;margin:0 auto;padding:0 16px calc(96px + env(safe-area-inset-bottom))}
+/* la página no scrollea: scrollea #app. Así Safari de iPhone no corre la barra de abajo cuando, al desbloquear en
+   horizontal, deja la vista con un alto inválido (el contenido sigue centrado con un ancho máximo de 560px) */
+html,body{height:100%;overflow:hidden}
+.app{position:fixed;inset:0;max-width:none;margin:0;overflow-x:hidden;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain;
+  padding-left:max(16px,calc((100% - 528px) / 2));padding-right:max(16px,calc((100% - 528px) / 2))}
 header.top{display:flex;align-items:center;gap:10px;padding:calc(16px + env(safe-area-inset-top)) 0 8px}
 header.top .logo{height:46px;width:46px;aspect-ratio:1;display:block;flex:none}
 /* logo de la cabecera teñido con el acento del tema: mismos tonos del original, pero de ese color */
